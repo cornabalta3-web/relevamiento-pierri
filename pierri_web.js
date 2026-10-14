@@ -66,7 +66,8 @@
   const PDF_MAXIMO = 60 * 1024 * 1024;       // un PDF cifrado tiene que entrar en un solo envío a GitHub (100 MB en base64)
   const PAQUETE = 30 * 1024 * 1024;          // los PDF se suben en paquetes de hasta 30 MB (40 MB en base64)
   // Se guarda en GitHub cada 60 MB de PDF leídos o cada 250 archivos, lo que llegue primero: lo leído no espera al final.
-  // Cada tanda son unas 12 escrituras; GitHub permite 500 por hora, así que 7.000 PDF (unos 35 tandas) entran holgados.
+  // Cada tanda son 12 o 13 escrituras (2 o 3 paquetes); 7.000 PDF son unas 35 tandas, unas 450 de las 500 escrituras por
+  // hora que permite GitHub si la carga entera dura menos de una hora. Si se pasa, GitHub pide una pausa y se espera.
   const TANDA_BYTES = 60 * 1024 * 1024;
   const TANDA_ARCHIVOS = 250;
   const LECTURA_MAXIMA = 1500 * 1024;        // una lectura cifrada que pasa este tamaño se cierra y se empieza otra
@@ -286,8 +287,12 @@
   /** Trae un PDF guardado: solo su tramo del paquete (pedido por rango), y lo descifra. */
   async function traerPDF(a) {
     const p = a.pdf;
-    const r = await red(`https://raw.githubusercontent.com/${REPO.owner}/${REPO.repo}/${p.commit}/${p.pack}`, { headers: { Range: `bytes=${p.off}-${p.off + p.len - 1}` }, cache: 'force-cache' });
-    if (!r.ok) throw new Error(`GitHub no devolvió el PDF (respuesta ${r.status}). Si recién lo cargaste, esperá un minuto y volvé a probar.`);
+    const url = `https://raw.githubusercontent.com/${REPO.owner}/${REPO.repo}/${p.commit}/${p.pack}`, rango = { Range: `bytes=${p.off}-${p.off + p.len - 1}` };
+    // El paquete no cambia nunca (va por commit): se aprovecha lo guardado en el navegador. Pero si lo guardado es un
+    // error (pedido antes de que GitHub lo tuviera), se vuelve a pedir sin usarlo.
+    let r = await red(url, { headers: rango, cache: 'force-cache' });
+    if (!r.ok) r = await red(url, { headers: rango, cache: 'reload' });
+    if (!r.ok) throw new Error(`GitHub no devolvió el PDF (respuesta ${r.status}). Si recién lo cargaste, esperá unos cinco minutos y volvé a probar.`);
     let u = new Uint8Array(await r.arrayBuffer());
     if (r.status === 200 && u.length !== p.len) u = u.subarray(p.off, p.off + p.len);   // el servidor mandó el paquete entero
     return new Uint8Array(await S.decrypt({ name: 'AES-GCM', iv: desb64(p.iv) }, await llaveAES(desb64(p.k)), u));
@@ -336,7 +341,8 @@
     }
     if (!carga) throw cortarSesion('Tu contraseña cambió en otra sesión. Volvé a ingresar.');
     const ak = await abrirCon(priv, adm.ak);
-    const boveda = JSON.parse(td.decode(await descifrar(ak, adm)));
+    const plano = await descifrar(ak, adm);   // desde la v3 va comprimida, como los demás
+    const boveda = JSON.parse(adm.v >= 3 ? await descomprimir(plano) : td.decode(plano));
     return { lista, dek: desb64(carga.k), ak, boveda };
   }
   /** El estado del último commit, leído por la API (lo usa el administrador para no depender de la demora de Pages). */
@@ -351,7 +357,8 @@
     return JSON.stringify({ v: 2, iteraciones: ITER, sal, usuarios: mezclar(usuarios) }, null, 1);
   }
   async function sellarBoveda(boveda, ak, pubAdmin) {
-    return JSON.stringify(Object.assign({ v: 2, ak: await sellarPara(pubAdmin, ak) }, await cifrar(ak, te.encode(JSON.stringify(boveda)))));
+    // Comprimida: se reescribe con cada cambio y cada versión queda en el historial, que así crece mucho menos.
+    return JSON.stringify(Object.assign({ v: 3, ak: await sellarPara(pubAdmin, ak) }, await cifrar(ak, await comprimir(JSON.stringify(boveda)))));
   }
   const sellarBovedaDe = (ab, s) => sellarBoveda(ab.boveda, ab.ak, desb64(ab.boveda.usuarios[s.usuario].pub));
   async function sellarDatos(dek, contenido) { return JSON.stringify(Object.assign({ v: 2 }, await cifrar(dek, await comprimir(JSON.stringify(contenido))))); }
@@ -791,6 +798,7 @@
     if (n) { try { sessionStorage.setItem('pierri_pendientes', String(n)); } catch (e) { /* sin almacenamiento */ } }
     PEND = pendienteNuevo();
   }
+  let CATASTRO_CAIDO = false;
   // Una sola cosa por vez con lo leído sin guardar, como la cola `procesando` del kit: leer un PDF, guardar una tanda.
   let COLA = Promise.resolve();
   function enCola(fn) { const p = COLA.then(fn, fn); COLA = p.then(() => {}, () => {}); return p; }
@@ -898,8 +906,9 @@
         let parcelas = null;
         const cuentas = [...new Set(lote.registros.map(r => r.derivado && r.derivado.geo && r.derivado.geo.cuenta_normalizada).filter(Boolean).map(x => x.replace(/\D/g, '')))]
           .filter(x => x.length === 12 && !(CACHE && CACHE.catastro && CACHE.catastro[x]));
-        if (cuentas.length) {
-          try { progreso('Consultando Catastro…'); parcelas = await consultarParcelas(cuentas); } catch (e) { parcelas = null; }
+        // Si Catastro no respondió una vez en esta carga, no se lo vuelve a esperar en cada tanda: queda para el botón.
+        if (cuentas.length && !CATASTRO_CAIDO) {
+          try { progreso('Consultando Catastro…'); parcelas = await consultarParcelas(cuentas); } catch (e) { parcelas = null; CATASTRO_CAIDO = true; }
         }
         progreso('Guardando las resoluciones leídas…');
         const n = Object.keys(lote.archivos).length, m = lote.resoluciones;
@@ -1031,10 +1040,11 @@
   /** Consulta cuentas en Catastro. Devuelve lo que hay que guardar: { cuenta: { p: parcela o null, en } }. */
   async function consultarParcelas(cuentas) {
     let enc;
-    try { enc = await window.PierriCore.consultarCatastro(cuentas); }
+    // Cada pedido tiene 20 segundos: si Catastro acepta la conexión y no contesta, no puede trabar una carga.
+    try { enc = await window.PierriCore.consultarCatastro(cuentas, u => fetch(u, { signal: AbortSignal.timeout(20000) })); }
     catch (e) {
-      // fetch falla sin respuesta si no hay internet o si Catastro no acepta consultas desde otra página (CORS).
-      if (e instanceof TypeError) throw new Error('Catastro no respondió desde el navegador (sin conexión, o el servidor de Catastro no acepta consultas desde esta página). Mientras tanto, lo que no tiene parcela se ubica por localidad.');
+      // fetch falla sin respuesta si no hay internet, si Catastro no acepta consultas desde otra página (CORS) o si tardó.
+      if (e instanceof TypeError || (e && (e.name === 'TimeoutError' || e.name === 'AbortError'))) throw new Error('Catastro no respondió desde el navegador (sin conexión, tardó demasiado, o el servidor de Catastro no acepta consultas desde esta página). Mientras tanto, lo que no tiene parcela se ubica por localidad.');
       throw e;
     }
     const t = ahora(), out = {};
@@ -1094,8 +1104,8 @@
     return { ok: true, token: true };
   }
 
-  // Cerrar la pestaña con PDF leídos sin guardar: el navegador pregunta antes.
-  window.addEventListener('beforeunload', e => { if (SESION && hayPendiente()) { e.preventDefault(); e.returnValue = ''; } });
+  // Cerrar la pestaña con PDF leídos sin guardar, o mientras se lee o se sube una tanda: el navegador pregunta antes.
+  window.addEventListener('beforeunload', e => { if (SESION && (hayPendiente() || OCUPADO > 0)) { e.preventDefault(); e.returnValue = ''; } });
 
   // ───────────── Rutas que pide el Tablero ─────────────
   async function api(ruta, opciones) {
