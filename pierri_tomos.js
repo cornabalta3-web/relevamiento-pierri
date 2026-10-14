@@ -130,7 +130,53 @@
       lectura: { fuente: 'texto_incompleto', cobertura: lect.cobertura, faltan: lect.faltan } });
   }
 
-  return { textoDeItems,
+  const MODELO_POR_DEFECTO = 'claude-haiku-4-5-20251001';
+  function cuerpoModelo(datosB64, modelo, sistema, usuario) {
+    return {
+      model: modelo || MODELO_POR_DEFECTO, max_tokens: 3000, temperature: 0,
+      system: [{ type: 'text', text: sistema, cache_control: { type: 'ephemeral' } }],
+      messages: [{ role: 'user', content: [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: datosB64 } },
+        { type: 'text', text: usuario },
+      ] }],
+    };
+  }
+  function respuestaModelo(data) {
+    const texto = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+    const extraido = PierriCore.parsearJSON(texto);
+    if (!extraido) return null;
+    const u = data.usage || {};
+    extraido._fuente = 'modelo';
+    return { extraido, tokens: (u.input_tokens || 0) + (u.output_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0) };
+  }
+  function motivoModelo(err) {
+    const m = String((err && err.message) || err || '');
+    if (/401|authentication|invalid x-api-key|API key is invalid/i.test(m)) return { texto: 'la clave de API no es válida', grave: true };
+    if (/credit balance|billing|402|insufficient/i.test(m)) return { texto: 'la cuenta de Anthropic no tiene crédito', grave: true };
+    if (/403|permission/i.test(m)) return { texto: 'la clave no tiene permiso para usar el modelo', grave: true };
+    if (/429|rate/i.test(m)) return { texto: 'demasiados pedidos seguidos; reintentar en unos minutos', grave: false };
+    if (/red|fetch failed|ENOTFOUND|ECONN|network/i.test(m)) return { texto: 'no hay conexión a internet', grave: false };
+    return { texto: 'el modelo no respondió (' + m.slice(0, 120) + ')', grave: false };
+  }
+  function fusionar(deTexto, delModelo) {
+    const e = JSON.parse(JSON.stringify(delModelo));
+    e._fuente = 'mixto';
+    if (!e.expediente && deTexto.expediente) e.expediente = deTexto.expediente;
+    if (deTexto.dominio.afectados.length) {
+      for (const a of e.dominio.afectados || []) {
+        if (a.cuenta) continue;
+        const t = deTexto.dominio.afectados.find(x => x.matricula === a.matricula && x.cuenta);
+        if (t) a.cuenta = t.cuenta;
+      }
+      if (!(e.dominio.afectados || []).length) e.dominio.afectados = deTexto.dominio.afectados;
+    }
+    if (!e.posesion.antiguedad_anios && !e.posesion.fecha_inicio_declarada && (deTexto.posesion.antiguedad_anios || deTexto.posesion.fecha_inicio_declarada))
+      Object.assign(e.posesion, deTexto.posesion);
+    return e;
+  }
+  function nombreControlDe(r) { return r.tomo ? (r.tomo.expedienteVisto ? `documento_${r.tomo.expedienteVisto.replace('/', '-')}_tomo.pdf` : r.archivo) : r.archivo; }
+
+  return { textoDeItems, MODELO_POR_DEFECTO, cuerpoModelo, respuestaModelo, motivoModelo, fusionar, nombreControlDe,
     RE_INICIO, RE_EXP, RE_EXP_TEMPRANO, RE_FIN, RE_FIN_FUERTE, RE_RESOLUTIVA, RE_ORDEN_INSCRIPCION, RE_ORDENAR,
     puntajeResolucion, esTomo, expedienteDelNombre, cortarTomo, mejorDe, unaPorExpediente,
     unidadesDe, leerTexto, registroBase, registroPorTexto, registroIncompleto,

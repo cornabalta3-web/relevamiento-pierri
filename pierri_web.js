@@ -57,8 +57,13 @@
   // guardados para cuando haya más funciones.
   const PERMISOS = { ver: ['veedor', 'editor', 'admin'], revisar: ['admin'], cargar: ['admin'], administrar: ['admin'] };
   const RUTAS = { usuarios: 'datos/usuarios.json', datos: 'datos/relevamiento.enc', admin: 'datos/admin.enc', indice: 'datos/indice.json',
-    revisiones: 'datos/revisiones.enc', padron: 'datos/padron.enc', inventario: 'datos/inventario.enc', catastro: 'datos/catastro.enc' };
+    revisiones: 'datos/revisiones.enc', padron: 'datos/padron.enc', inventario: 'datos/inventario.enc', catastro: 'datos/catastro.enc',
+    instrucciones: 'datos/modelo.enc', completadas: 'datos/completadas.enc' };
   const CLAVE_TOKEN = 'pierri_web_token';
+  // La clave de API de Anthropic, como el token: solo en esta computadora y cifrada con la contraseña del administrador.
+  const CLAVE_API = 'pierri_web_clave_api', CLAVE_MODELO = 'pierri_web_modelo';
+  const MODELOS = ['claude-haiku-4-5-20251001', 'claude-sonnet-4-6'];
+  const LOTE_MODELO = 15;   // resoluciones por cada guardado al completar con el modelo
   const REPO = window.PIERRI_WEB_REPO || repoDesdeDireccion();
   const RAMA_PDF = REPO.ramaPdf || 'pdf';
   const AVISO_DEMORA = 'Si te acaban de crear el usuario o cambiar la contraseña, esperá unos minutos: GitHub tarda en publicar los cambios.';
@@ -125,11 +130,13 @@
     return descifrar(await llaveCompartida(priv, await S.importKey('raw', desb64(sobre.e), EC, false, [])), sobre);
   }
   const importarPriv = bytes => S.importKey('pkcs8', bytes, EC, false, ['deriveBits']);
-  /** Llave para guardar el token en esta computadora: sale de la llave de la contraseña del administrador. */
-  async function llaveToken(kek) {
+  /** Llaves para guardar el token y la clave de API en esta computadora: salen de la llave de la contraseña del administrador. */
+  async function llaveLocal(kek, uso) {
     const base = await S.importKey('raw', kek, 'HKDF', false, ['deriveKey']);
-    return S.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(32), info: te.encode('relevamiento-pierri:token') }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    return S.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(32), info: te.encode('relevamiento-pierri:' + uso) }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
   }
+  const llaveToken = kek => llaveLocal(kek, 'token');
+  const llaveApi = kek => llaveLocal(kek, 'api');
   function rellenar(texto, n) {
     const b = te.encode(texto);
     if (b.length > n) throw new Error('El nombre es demasiado largo.');
@@ -304,15 +311,17 @@
   function guardarSesion(s) { SESION = s; }
   const tokenGuardado = () => (SESION && SESION.token) || '';
   /** Guarda el token cifrado en esta computadora (y lo deja en la sesión). Con '' lo borra. */
-  async function guardarToken(s, t) {
-    s.token = t || '';
+  async function guardarToken(s, t) { s.token = t || ''; await guardarSecreto(CLAVE_TOKEN, s.token, s.llaveToken); }
+  async function leerToken(llave) { return leerSecreto(CLAVE_TOKEN, llave); }
+  async function guardarClaveApi(s, k) { s.claveApi = k || ''; await guardarSecreto(CLAVE_API, s.claveApi, s.llaveApi); }
+  async function guardarSecreto(nombre, valor, llave) {
     try {
-      if (!t) { localStorage.removeItem(CLAVE_TOKEN); return; }
-      localStorage.setItem(CLAVE_TOKEN, JSON.stringify(await cifrar(null, te.encode(t), s.llaveToken)));
+      if (!valor) { localStorage.removeItem(nombre); return; }
+      localStorage.setItem(nombre, JSON.stringify(await cifrar(null, te.encode(valor), llave)));
     } catch (e) { /* sin almacenamiento: queda solo en la sesión */ }
   }
-  async function leerToken(llave) {
-    try { const t = localStorage.getItem(CLAVE_TOKEN); return t ? td.decode(await descifrar(null, JSON.parse(t), llave)) : ''; }
+  async function leerSecreto(nombre, llave) {
+    try { const t = localStorage.getItem(nombre); return t ? td.decode(await descifrar(null, JSON.parse(t), llave)) : ''; }
     catch (e) { return ''; }   // de otra contraseña u otro usuario: no sirve
   }
   const puede = (s, p) => !!s && (PERMISOS[p] || []).includes(s.rol);
@@ -379,7 +388,8 @@
   }
   /** Todo lo que está cifrado con la DEK en un commit: lo que hay que volver a cifrar al cambiarla. */
   async function rutasCifradas(estado) {
-    return [RUTAS.datos, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro].concat(leerIndice(await estado.leer(RUTAS.indice)).lecturas);
+    return [RUTAS.datos, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro, RUTAS.instrucciones, RUTAS.completadas]
+      .concat(leerIndice(await estado.leer(RUTAS.indice)).lecturas);
   }
   function anotar(boveda, s, accion, detalle) {
     boveda.cambios = boveda.cambios || [];
@@ -423,8 +433,9 @@
       return archivos;
     }, mensaje);
     if (nuevaSesion.kekNueva) {   // cambió la contraseña del administrador: el token se vuelve a cifrar con la llave nueva
-      nuevaSesion.llaveToken = await llaveToken(nuevaSesion.kekNueva); delete nuevaSesion.kekNueva;
+      nuevaSesion.llaveToken = await llaveToken(nuevaSesion.kekNueva); nuevaSesion.llaveApi = await llaveApi(nuevaSesion.kekNueva); delete nuevaSesion.kekNueva;
       await guardarToken(nuevaSesion, s.token);
+      await guardarClaveApi(nuevaSesion, s.claveApi);
     }
     guardarSesion(nuevaSesion); CACHE = null;
   }
@@ -453,7 +464,7 @@
         };
       }, 'Puesta en marcha');
     } catch (e) { guardarSesion(null); throw e; }
-    sesionNueva.llaveToken = await llaveToken(kekAdmin);
+    sesionNueva.llaveToken = await llaveToken(kekAdmin); sesionNueva.llaveApi = await llaveApi(kekAdmin);
     await guardarToken(sesionNueva, token);
     guardarSesion(sesionNueva);
     return { ok: true };
@@ -475,7 +486,8 @@
     const s = { usuario: u, nombre: carga.n, rol: carga.r, dek: carga.k };
     if (carga.r === 'admin') {
       s.priv = privKey;
-      s.llaveToken = await llaveToken(kek);
+      s.llaveToken = await llaveToken(kek); s.llaveApi = await llaveApi(kek);
+      s.claveApi = await leerSecreto(CLAVE_API, s.llaveApi);
       s.token = await leerToken(s.llaveToken);
       if (s.token) {   // lo último de verdad, aunque Pages todavía no haya publicado el último cambio
         try { s.dek = b64((await abrirEstado(await estadoFresco(s.token), s)).dek); } catch (e) { if (/cambió en otra sesión/.test(e.message)) throw new Error('Usuario o contraseña incorrectos. ' + AVISO_DEMORA); }
@@ -577,13 +589,16 @@
     }
     const dek = desb64(s.dek);
     try {
-      const [txtKit, txtIndice, ...extras] = await Promise.all([RUTAS.datos, RUTAS.indice, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro].map(leer));
+      const [txtKit, txtIndice, ...extras] = await Promise.all([RUTAS.datos, RUTAS.indice, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro,
+        RUTAS.instrucciones, RUTAS.completadas].map(leer));
       const indice = leerIndice(txtIndice);
       const textos = await Promise.all(indice.lecturas.map(leer));
       const lecturas = {};
       for (let i = 0; i < textos.length; i++) if (textos[i]) lecturas[indice.lecturas[i]] = limpiar(await abrirJSON(dek, textos[i]));
-      const [revisiones, padron, inventario, catastro] = await Promise.all(extras.map(t => abrirJSON(dek, t).then(limpiar)));
-      return { dek: s.dek, kit: limpiar(await abrirDatosTexto(dek, txtKit)), indice, lecturas, revisiones, padron, inventario, catastro };
+      const [revisiones, padron, inventario, catastro, instrucciones, completadas] = await Promise.all(extras.map(t => abrirJSON(dek, t)));
+      // Las instrucciones del modelo van al modelo tal cual (no se muestran): no se les cambia nada.
+      return { dek: s.dek, kit: limpiar(await abrirDatosTexto(dek, txtKit)), indice, lecturas, revisiones: limpiar(revisiones), padron: limpiar(padron),
+        inventario: limpiar(inventario), catastro: limpiar(catastro), instrucciones, completadas: limpiar(completadas) };
     } catch (e) {
       if (e.name !== 'OperationError') throw e;
       // El administrador cambió la llave de los datos: hay que volver a ingresar para recibir la nueva.
@@ -607,7 +622,7 @@
       if (cambios.indice.lecturas.some(r => r !== cambios.ruta && !CACHE.lecturas[r])) { CACHE = null; return; }
       CACHE.indice = cambios.indice; CACHE.lecturas[cambios.ruta] = cambios.contenido;
     }
-    for (const k of ['kit', 'revisiones', 'padron', 'inventario', 'catastro']) if (k in cambios) CACHE[k] = cambios[k];
+    for (const k of ['kit', 'revisiones', 'padron', 'inventario', 'catastro', 'instrucciones', 'completadas']) if (k in cambios) CACHE[k] = cambios[k];
   }
   /** Lo leído en la web: los archivos (con dónde está cada PDF) y los registros, sin repetir. */
   function lecturasWeb(c) {
@@ -675,7 +690,9 @@
     const deKit = (c.kit.resultados || []).filter(Boolean);
     const enKit = new Set(deKit.map(r => r.hash));
     const web = lecturasWeb(c);
-    const todos = structuredClone(deKit.concat(web.registros.filter(r => !enKit.has(r.hash))));
+    // Lo completado después con el modelo reemplaza a la lectura por texto de esa misma resolución.
+    const comp = c.completadas || {};
+    const todos = structuredClone(deKit.concat(web.registros.filter(r => !enKit.has(r.hash))).map(r => comp[r.hash] || r));
     const revs = c.revisiones || {}, cat = c.catastro || {};
     for (const r of todos) {
       if (!r.derivado) continue;
@@ -716,7 +733,9 @@
       repetidas: (Number(kr.repetidas) || 0) + todos.filter(r => r.repetido_de).length,
       errores: (Number(kr.errores) || 0) + todos.filter(r => r.error).length,
       incompletas: validos.filter(r => r.fuente === 'texto_incompleto').length,
-      tokens: Math.max(Number(kr.tokens) || 0, todos.reduce((a, r) => a + (Number(r.tokens) || 0), 0)),
+      // Los tokens del kit (de su resumen) más los gastados en la web al completar con el modelo.
+      tokens: (Number(kr.tokens) || deKit.reduce((a, r) => a + (Number(r.tokens) || 0), 0)) + Object.values(comp).reduce((a, r) => a + (Number(r.tokens) || 0), 0),
+      instrucciones_modelo: !!(c.instrucciones && c.instrucciones.prompt_sistema),
       cargado_web: c.kit.fecha || null,
       pdf_guardados: Object.values(web.archivos).filter(a => a.pdf).length,
     });
@@ -724,7 +743,8 @@
     resumen.inventario = { cargado: false };
     if (c.inventario) resumen.inventario = B.resumenInventario(c.inventario.filas || [], parcelasDe(cat), todos, { archivo: c.inventario.archivo || null, cargado_en: c.inventario.cargado_en || null });
     VISTA = { todos, archivos: web.archivos, cruce };
-    return { config: Object.assign({ key: '', modelo: '' }, cfg), resumen, registros: todos.filter(r => r.derivado) };
+    const clave = s.claveApi || '';
+    return { config: Object.assign({}, cfg, { key: clave ? '••••' + clave.slice(-4) : '', modelo: modeloElegido() }), resumen, registros: todos.filter(r => r.derivado) };
   }
   async function datos() {
     const s = exigir('ver');
@@ -950,6 +970,148 @@
     });
   }
 
+  // ───────────── Lectura con el modelo (solo con el botón) ─────────────
+  // La web nunca llama al modelo sola: solo cuando el administrador toca "Completar incompletas con el modelo".
+  // Lee nada más las resoluciones que el texto no resolvió y que tienen su PDF guardado.
+  const ENCABEZADOS_API = k => ({ 'x-api-key': k, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' });
+  function modeloElegido() {
+    let m = null; try { m = localStorage.getItem(CLAVE_MODELO); } catch (e) { m = null; }
+    return MODELOS.includes(m) ? m : window.PierriTomos.MODELO_POR_DEFECTO;
+  }
+  /** Comprueba la clave con un pedido que no cuesta nada (la lista de modelos). No dice si la cuenta tiene crédito. */
+  async function verificarClave(k) {
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/models', { headers: ENCABEZADOS_API(k), cache: 'no-store' });
+      return r.ok ? { ok: true, texto: 'La clave es válida.' } : { ok: false, texto: window.PierriTomos.motivoModelo(new Error('la API respondió ' + r.status)).texto };
+    } catch (e) { return { ok: false, texto: 'no se pudo verificar la clave: no hay conexión a internet' }; }
+  }
+  async function configModelo(c) {
+    const s = exigir('administrar');
+    let verificacion = null;
+    if (typeof c.key === 'string' && !c.key.startsWith('••••')) {
+      const k = c.key.trim();
+      if (k) verificacion = await verificarClave(k);
+      await guardarClaveApi(s, k);
+    }
+    if (c.modelo && MODELOS.includes(c.modelo)) { try { localStorage.setItem(CLAVE_MODELO, c.modelo); } catch (e) { /* queda el de siempre */ } }
+    return { ok: true, verificacion };
+  }
+  /**
+   * Las instrucciones del modelo citan resoluciones reales como ejemplo: no pueden ir en el código publicado. Se cargan
+   * una vez desde un archivo y quedan cifradas con la DEK, como los datos.
+   */
+  async function cargarInstrucciones(cuerpo) {
+    const s = exigir('administrar'); exigirToken();
+    let d;
+    try { d = JSON.parse((typeof cuerpo === 'string' ? cuerpo : await cuerpo.text()).replace(/^\ufeff/, '')); } catch (e) { throw new Error('El archivo no es un JSON válido.'); }
+    if (!d || typeof d.prompt_sistema !== 'string' || d.prompt_sistema.length < 500 || typeof d.prompt_usuario !== 'string' || !d.prompt_usuario)
+      throw new Error('Ese archivo no son las instrucciones del modelo (instrucciones_modelo.json).');
+    const inst = { prompt_sistema: d.prompt_sistema, prompt_usuario: d.prompt_usuario, version: String(d.version || ''), cargado_en: ahora() };
+    let escrito = null;
+    await ocupado(() => transaccion(async estado => {
+      const ab = await abrirEstado(estado, s);
+      anotar(ab.boveda, s, 'carga_instrucciones', 'instrucciones del modelo' + (inst.version ? ' ' + inst.version : ''));
+      escrito = ab.dek;
+      return { [RUTAS.instrucciones]: await sellarDatos(ab.dek, inst), [RUTAS.admin]: await sellarBovedaDe(ab, s) };
+    }, 'Actualización del relevamiento'));
+    alGuardar(s, escrito, { instrucciones: inst });
+    return { ok: true };
+  }
+  let PDFLIB = null;
+  function cargarScript(src) {
+    return new Promise((ok, mal) => { const e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = () => mal(new Error('No se pudo cargar ' + src + '.')); document.head.appendChild(e); });
+  }
+  /** Las páginas de una resolución dentro de un tomo, como hace el kit antes de mandarla al modelo (pdf-lib). */
+  async function recortarPaginas(bytes, desde, hasta) {
+    if (!PDFLIB) { if (!window.PDFLib) await cargarScript('vendor/pdflib/pdf-lib.min.js'); PDFLIB = window.PDFLib; }
+    const src = await PDFLIB.PDFDocument.load(bytes, { ignoreEncryption: true });
+    const out = await PDFLIB.PDFDocument.create();
+    const idx = []; for (let p = desde; p <= hasta; p++) idx.push(p);
+    (await out.copyPages(src, idx)).forEach(pg => out.addPage(pg));
+    return new Uint8Array(await out.save());
+  }
+  /** El mismo pedido y los mismos reintentos que el kit (pierri_lector.js), desde el navegador. */
+  async function leerConModelo(bytes, k, modelo, inst) {
+    const cuerpo = window.PierriTomos.cuerpoModelo(b64(bytes), modelo, inst.prompt_sistema, inst.prompt_usuario);
+    let ultimo = 'sin respuesta';
+    for (let intento = 0; intento < 5; intento++) {
+      let resp;
+      try {
+        resp = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST',
+          headers: Object.assign({ 'content-type': 'application/json' }, ENCABEZADOS_API(k)), body: JSON.stringify(cuerpo) });
+      } catch (err) { ultimo = 'error de red: ' + err.message; await dormir(1500 * 2 ** intento); continue; }
+      if (resp.status === 429 || resp.status >= 500) { ultimo = 'la API respondió ' + resp.status; await dormir(1500 * 2 ** intento); continue; }
+      if (!resp.ok) throw new Error('la API respondió ' + resp.status + ': ' + (await resp.text()).slice(0, 300));
+      const leido = window.PierriTomos.respuestaModelo(await resp.json());
+      if (!leido) { ultimo = 'el modelo no devolvió JSON válido'; continue; }
+      return leido;
+    }
+    throw new Error(ultimo);
+  }
+  /** "Completar incompletas con el modelo": hasta LOTE_MODELO por vez, en la cola con las cargas. */
+  function completar() {
+    const s = exigir('cargar'); exigirToken();
+    return enCola(() => ocupado(() => completarAhora(s)));
+  }
+  async function completarAhora(s) {
+    if (!s.claveApi) return { completadas: 0, pendientes: 0, motivo: 'sin clave' };
+    await datos();
+    const c = CACHE, T = window.PierriTomos, P = window.PierriCore;
+    if (!c.instrucciones || !c.instrucciones.prompt_sistema) throw new Error('Faltan las instrucciones del modelo: cargalas una vez en Configuración.');
+    const incompletas = VISTA.todos.filter(r => r.derivado && r.fuente === 'texto_incompleto' && !r.error);
+    const conPdf = incompletas.filter(r => r.pdf_web);
+    const lote = conPdf.slice(0, LOTE_MODELO), ix = indices(c), modelo = modeloElegido(), cfg = cfgDe(c, s);
+    // El registro tal como se guardó (sin lo que se calcula al mirar), del kit o de lo leído en la web.
+    const original = new Map();
+    for (const r of (c.kit.resultados || []).concat(lecturasWeb(c).registros)) if (r && !original.has(r.hash)) original.set(r.hash, r);
+    const nuevas = {}, fallas = [];
+    let n = 0, tokens = 0;
+    for (let i = 0; i < lote.length; i++) {
+      const r = lote[i];
+      progreso(`Leyendo con el modelo ${i + 1} de ${lote.length}: ${(r.derivado && r.derivado.expediente) || r.archivo}…`);
+      try {
+        let bytes = await traerPDF(ix.archivos[r.pdf_web]);
+        if (r.tomo) bytes = await recortarPaginas(bytes, r.tomo.desde, r.tomo.hasta);
+        const leido = await leerConModelo(bytes, s.claveApi, modelo, c.instrucciones);
+        const reg = structuredClone(original.get(r.hash) || r);
+        const fusion = T.fusionar(reg.extraido, leido.extraido);
+        reg.extraido = fusion; reg.derivado = P.procesarRegistro(fusion, cfg, tabla(), new Set(), { nombreArchivo: T.nombreControlDe(reg) });
+        reg.fuente = 'modelo'; reg.tokens = leido.tokens; reg.lectura = { fuente: 'modelo', completada_despues: true, modelo, en: ahora() };
+        delete reg.falla_modelo; delete reg.error_modelo;
+        nuevas[r.hash] = limpiar(reg); n++; tokens += leido.tokens;
+      } catch (err) {
+        const m = T.motivoModelo(err); fallas.push(m.texto);
+        if (m.grave) break;   // clave mala o sin crédito: no tiene sentido seguir
+      }
+    }
+    if (n) {
+      let parcelas = null;
+      const cuentas = [...new Set(Object.values(nuevas).map(r => r.derivado.geo && r.derivado.geo.cuenta_normalizada).filter(Boolean).map(x => x.replace(/\D/g, '')))]
+        .filter(x => x.length === 12 && !(c.catastro && c.catastro[x]));
+      if (cuentas.length && !CATASTRO_CAIDO) { try { parcelas = await consultarParcelas(cuentas); } catch (e) { CATASTRO_CAIDO = true; } }
+      progreso('Guardando lo leído con el modelo…');
+      let escrito = null;
+      await transaccion(async estado => {
+        const ab = await abrirEstado(estado, s);
+        const comp = Object.assign((await abrirJSON(ab.dek, await estado.leer(RUTAS.completadas))) || {}, nuevas);
+        const archivos = { [RUTAS.completadas]: await sellarDatos(ab.dek, comp) };
+        escrito = { dek: ab.dek, completadas: comp };
+        if (parcelas && Object.keys(parcelas).length) {
+          const cat = sumarParcelas(await abrirJSON(ab.dek, await estado.leer(RUTAS.catastro)), parcelas);
+          archivos[RUTAS.catastro] = await sellarDatos(ab.dek, cat); escrito.catastro = cat;
+        }
+        anotar(ab.boveda, s, 'completar_con_modelo', `${n} resolución(es), ${tokens} tokens (${modelo})`);
+        archivos[RUTAS.admin] = await sellarBovedaDe(ab, s);
+        return archivos;
+      }, 'Actualización del relevamiento');
+      const cambios = { completadas: escrito.completadas };
+      if (escrito.catastro) cambios.catastro = escrito.catastro;
+      alGuardar(s, escrito.dek, cambios);
+    }
+    progreso('');
+    return { completadas: n, pendientes: conPdf.length - n, sin_pdf: incompletas.length - conPdf.length, tokens, fallas: fallas.slice(0, 3) };
+  }
+
   // ───────────── Ver un PDF guardado ─────────────
   async function verPDF(h) {
     const s = exigir('ver');
@@ -1130,6 +1292,7 @@
       case '/api/datos': return datos();
       case '/api/config': {
         const s = exigir('ver'), c = cuerpoJSON();
+        if ('key' in c || 'modelo' in c) return configModelo(c);
         s.config = { regla: c.regla === 'PLAZO_MOVIL' ? 'PLAZO_MOVIL' : 'CORTE_FIJO', fechaCorte: c.fechaCorte, margenBordeMeses: Number(c.margenBordeMeses) || 0 };
         return { ok: true };
       }
@@ -1146,6 +1309,8 @@
       case '/api/web/importar': return importar(o.body, url.searchParams.get('nombre'));
       case '/api/web/guardar': return guardarPendiente();
       case '/api/web/pdf': return verPDF(url.searchParams.get('h'));
+      case '/api/web/instrucciones': return cargarInstrucciones(o.body);
+      case '/api/completar': return completar();
       case '/api/web/token': return token(metodo, cuerpoJSON());
       default:
         throw new Error('Esto todavía no está en la versión web.');
