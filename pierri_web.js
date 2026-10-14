@@ -468,7 +468,8 @@
       if (token) {
         const estado = await estadoFresco(token);
         s.dek = b64((await abrirEstado(estado, s)).dek);
-        texto = await estado.leer(RUTAS.datos);
+        // Si la lectura directa del archivo grande falla (red, o GitHub la desvía), se usa lo publicado.
+        try { texto = await estado.leer(RUTAS.datos); } catch (e) { if (!e.red) throw e; texto = await leerPublicado(RUTAS.datos); }
       } else texto = await leerPublicado(RUTAS.datos);
       let contenido;
       try { contenido = await abrirDatosTexto(desb64(s.dek), texto); }

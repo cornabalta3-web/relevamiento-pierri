@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-ltY4sMfT9EMwzQeLt3O4UftK+1TB13N5qm+1s6E2MUY=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-KdNrPuWmou8bMbavErAoDuRN+h7+ihlZSR7DJRwTsfM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-ltY4sMfT9EMwzQeLt3O4UftK+1TB13N5qm+1s6E2MUY=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-QKlSeiyVdsZ+S1w7Rart0jDkZVV9T7rXO/nIsxJz1b8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1766,7 +1766,9 @@ function poblarFiltros(){
   const anios = [...new Set(R.map(d => d.resolucion_anio).filter(Boolean))].sort();
   opciones('fAnioD', anios.map(String), '—'); opciones('fAnioH', anios.map(String), '—');
 }
-$('buscar').addEventListener('input', () => { pagina = 0; pintarTodo(); });
+// Se espera a que termine de escribir: con miles de resoluciones, redibujar en cada letra congelaba la pantalla.
+let esperaBusqueda = null;
+$('buscar').addEventListener('input', () => { clearTimeout(esperaBusqueda); esperaBusqueda = setTimeout(() => { pagina = 0; pintarTodo(); }, 200); });
 function pasa(r, ignorarLoc){
   const d = r.derivado, c = cl(d);
   if(F.elig === 'ELEGIBLE' && !c.startsWith('ELEGIBLE')) return false;
@@ -1816,7 +1818,7 @@ function limpiarFiltros(){
   $('buscar').value = ''; localidadSel = null; F.elig = 'TODOS'; F.lect = null; F.ctrl = null; marcarChips();
   pagina = 0; pintarTodo();
 }
-function pintarTodo(){ poblarFiltros(); vista = registros.filter(r => pasa(r)); pintarMetricas(); pintarRecientes(); pintarTabla(); pintarRanking(); pintarPadron(); pintarMapa(); pintarPie(); }
+function pintarTodo(){ poblarFiltros(); vista = registros.filter(r => pasa(r)); pintarMetricas(); pintarRecientes(); pintarTabla(); pintarRanking(); pintarPadron(); if(!$('v-mapa').classList.contains('oculto')) pintarMapa(); pintarPie(); }
 /** "21/09 18:42", o "hoy 18:42" si es de hoy. */
 function fechaCarga(iso){
   if(!iso) return '—'; const f = new Date(iso); if(isNaN(f)) return '—';
