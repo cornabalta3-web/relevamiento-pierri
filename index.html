@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ltY4sMfT9EMwzQeLt3O4UftK+1TB13N5qm+1s6E2MUY=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-4DdRLmseyw6ddCPcFfDH/gq6VMdi8RCUVOAdN47DoVk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-ltY4sMfT9EMwzQeLt3O4UftK+1TB13N5qm+1s6E2MUY=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-KdNrPuWmou8bMbavErAoDuRN+h7+ihlZSR7DJRwTsfM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,6 +14,7 @@
   Diseño y desarrollo: Baltasar Corna Fantin, 2026.
 -->
 <title>Relevamiento Ley Pierri</title>
+<script>try{var t=localStorage.getItem('pierri_tema');if(t==='oscuro'||t==='claro')document.documentElement.setAttribute('data-tema',t);}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -23,24 +24,40 @@
   --marca:#16436e; --marca2:#0f2f4e; --fondo:#eef0f3; --blanco:#ffffff; --linea:#dfe4ea; --linea2:#c9d0d9; --suave:#f6f8fa;
   --texto:#1c2430; --texto2:#5b6675; --texto3:#8a94a6;
   --verde:#1d6b45; --verde2:#dff3e8; --ambar:#8a5a12; --ambar2:#fbefd6; --gris:#4b5563; --gris2:#e9ecf0; --rojo:#a8321f; --rojo2:#fbe3de; --azul2:#e3ecf6;
+  --acento:#16436e; --nav:#16436e; --barra-no:#c3cad4; --barra-sin:#e0b9b2;
   --r:10px; --r2:6px;
+}
+/* Modo oscuro: lo elige la persona con el botón del menú; si no eligió, sigue al sistema. */
+:root[data-tema="oscuro"]{
+  --marca:#2c64a3; --marca2:#0b1a2b; --fondo:#0f141a; --blanco:#171e27; --linea:#2a3441; --linea2:#3a4656; --suave:#1d2631;
+  --texto:#e6ebf1; --texto2:#a9b4c2; --texto3:#8794a4;
+  --verde:#5cc28d; --verde2:#143a28; --ambar:#e2b25a; --ambar2:#3b2d12; --gris:#b5bfcc; --gris2:#262f3a; --rojo:#f19483; --rojo2:#47211b; --azul2:#1b2d44;
+  --acento:#8cb8ea; --nav:#0d2035; --barra-no:#556172; --barra-sin:#8f4c42; color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-tema="claro"]){
+    --marca:#2c64a3; --marca2:#0b1a2b; --fondo:#0f141a; --blanco:#171e27; --linea:#2a3441; --linea2:#3a4656; --suave:#1d2631;
+    --texto:#e6ebf1; --texto2:#a9b4c2; --texto3:#8794a4;
+    --verde:#5cc28d; --verde2:#143a28; --ambar:#e2b25a; --ambar2:#3b2d12; --gris:#b5bfcc; --gris2:#262f3a; --rojo:#f19483; --rojo2:#47211b; --azul2:#1b2d44;
+    --acento:#8cb8ea; --nav:#0d2035; --barra-no:#556172; --barra-sin:#8f4c42; color-scheme:dark;
+  }
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--fondo);color:var(--texto);font-family:"Public Sans",system-ui,sans-serif;font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
 h1,h2,h3,.disp{font-family:"Manrope","Public Sans",sans-serif;font-weight:800;margin:0;letter-spacing:-.01em}
-a{color:var(--marca)}
+a{color:var(--acento)}
 button{font:600 13px "Public Sans",sans-serif;padding:9px 14px;border-radius:var(--r2);border:1px solid var(--marca);background:var(--marca);color:#fff;cursor:pointer}
 button.sec{background:var(--blanco);color:var(--texto);border-color:var(--linea2)}
 button.chip{padding:6px 11px;font-size:12px;border-radius:99px;border-color:var(--linea2);background:var(--blanco);color:var(--texto)}
-button.chip.on{border-color:var(--marca);background:var(--marca);color:#fff}
+button.chip.on{border-color:var(--acento);background:var(--marca);color:#fff}
 button:disabled{opacity:.45;cursor:not-allowed}
 input,select{font:inherit;font-size:13.5px;padding:9px 11px;border:1px solid var(--linea2);border-radius:var(--r2);background:var(--blanco);color:var(--texto)}
 input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--marca);outline-offset:1px}
 .oculto{display:none!important}
 
 .app{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100vh}
-nav{background:var(--marca);color:#fff;display:flex;flex-direction:column;padding:22px 14px;gap:4px;position:sticky;top:0;height:100vh}
+nav{background:var(--nav);color:#fff;display:flex;flex-direction:column;padding:22px 14px;gap:4px;position:sticky;top:0;height:100vh}
 .logo{display:flex;align-items:center;gap:10px;padding:4px 10px 18px}
 .logo b{display:block;font-family:"Manrope",sans-serif;font-size:15px;font-weight:800;line-height:1.1}
 .logo small{font-size:11px;opacity:.75}
@@ -75,7 +92,7 @@ button.chip.a.on{border-color:#c9911e;background:var(--ambar2);color:var(--ambar
 .acciones-pendientes{display:flex;flex-direction:column;gap:9px}
 .rotulo{font-size:11.5px;color:var(--texto2);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .grid-acciones{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
-.accion{background:var(--blanco);border:1px solid var(--linea);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left}
+.accion{background:var(--blanco);color:var(--texto);border:1px solid var(--linea);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left}
 .accion .txt{display:flex;flex-direction:column}
 .accion .txt b{font-size:13px;font-weight:500;color:var(--texto)}
 .accion .txt small{font-size:11.5px;color:var(--texto2)}
@@ -86,10 +103,10 @@ button.chip.a.on{border-color:#c9911e;background:var(--ambar2);color:var(--ambar
 .tarjeta .n{font-family:"Manrope",sans-serif;font-size:38px;font-weight:800;line-height:1}
 .tarjeta .b{height:6px;background:var(--fondo);border-radius:99px;overflow:hidden}
 .tarjeta .b i{display:block;height:100%;border-radius:99px}
-.pill{font-size:11px;font-weight:600;border-radius:99px;padding:2px 8px}
-.c-v{color:var(--verde)} .c-a{color:var(--ambar)} .c-g{color:var(--gris)} .c-r{color:var(--rojo)} .c-m{color:var(--marca)}
+.pill{font-size:11px;font-weight:600;border-radius:99px;padding:2px 8px;white-space:nowrap}
+.c-v{color:var(--verde)} .c-a{color:var(--ambar)} .c-g{color:var(--gris)} .c-r{color:var(--rojo)} .c-m{color:var(--acento)}
 .f-v{background:var(--verde)} .f-a{background:#c9911e} .f-g{background:#8a94a6} .f-r{background:#c9463a} .f-m{background:var(--marca)}
-.p-v{color:var(--verde);background:var(--verde2)} .p-a{color:var(--ambar);background:var(--ambar2)} .p-g{color:var(--gris);background:var(--gris2)} .p-r{color:var(--rojo);background:var(--rojo2)} .p-m{color:var(--marca);background:var(--azul2)}
+.p-v{color:var(--verde);background:var(--verde2)} .p-a{color:var(--ambar);background:var(--ambar2)} .p-g{color:var(--gris);background:var(--gris2)} .p-r{color:var(--rojo);background:var(--rojo2)} .p-m{color:var(--acento);background:var(--azul2)}
 
 .panel{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--r);display:flex;flex-direction:column;min-width:0}
 .panel .cabp{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--fondo)}
@@ -100,7 +117,7 @@ button.chip.a.on{border-color:#c9911e;background:var(--ambar2);color:var(--ambar
 @media (max-width:980px){.dos{grid-template-columns:1fr!important}}
 
 .zona{border:2px dashed var(--linea2);border-radius:var(--r);background:var(--blanco);padding:44px 24px;text-align:center;cursor:pointer}
-.zona.sobre{border-color:var(--marca);background:var(--azul2)}
+.zona.sobre{border-color:var(--acento);background:var(--azul2)}
 .zona strong{display:block;font-family:"Manrope",sans-serif;font-size:20px;font-weight:800;margin-bottom:4px}
 .zona span{color:var(--texto2);font-size:13.5px}
 .fila-carga{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--fondo);font-size:13px;flex-wrap:wrap}
@@ -108,7 +125,7 @@ button.chip.a.on{border-color:#c9911e;background:var(--ambar2);color:var(--ambar
 .mini{font-size:12px;color:var(--texto2)}
 .origen{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--texto2)}
 .origen b{color:var(--texto);font-weight:600}
-.msg{padding:10px 12px;border-radius:var(--r2);background:var(--azul2);color:var(--marca);font-size:13.5px}
+.msg{padding:10px 12px;border-radius:var(--r2);background:var(--azul2);color:var(--acento);font-size:13.5px}
 .msg.err{background:var(--rojo2);color:var(--rojo)}
 
 .controles{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
@@ -121,7 +138,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:left;padding:10px 12px;border-top:1px solid var(--fondo);vertical-align:top}
 thead tr{background:var(--suave)}
 th{font-size:12px;color:var(--texto2);font-weight:600;cursor:pointer;white-space:nowrap;user-select:none;border-top:0}
-th.orden::after{content:" ↓";color:var(--marca)} th.orden.asc::after{content:" ↑"}
+th.orden::after{content:" ↓";color:var(--acento)} th.orden.asc::after{content:" ↑"}
 tr.fila{cursor:pointer} tr.fila:hover td{background:var(--suave)}
 td.exp{white-space:nowrap;font-weight:600}
 .pag{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 18px;font-size:12px;color:var(--texto2);border-top:1px solid var(--fondo)}
@@ -137,8 +154,8 @@ tr.fila.rev td:first-child{box-shadow:inset 3px 0 0 var(--verde)}
 .boton-ver{display:inline-block;font:600 13px "Public Sans",sans-serif;padding:9px 14px;border-radius:var(--r2);border:1px solid var(--marca);background:var(--marca);color:#fff;text-decoration:none}
 .boton-ver:hover{background:var(--marca2)}
 .clicable{cursor:pointer;transition:box-shadow .12s,border-color .12s}
-tr.rc-resalte td{background:#fdf3dc!important;transition:background .4s}
-.clicable:hover{border-color:var(--marca);box-shadow:0 1px 6px rgba(22,67,110,.14)}
+tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
+.clicable:hover{border-color:var(--acento);box-shadow:0 1px 6px rgba(22,67,110,.14)}
 
 .ranking .item{display:grid;grid-template-columns:130px 1fr 52px;gap:10px;align-items:center;font-size:13px;padding:6px 4px;cursor:pointer;border-radius:var(--r2)}
 .ranking .item:hover,.ranking .item.on{background:var(--suave)}
@@ -150,6 +167,27 @@ tr.rc-resalte td{background:#fdf3dc!important;transition:background .4s}
 .leyenda{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--texto2)}
 .punto{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
 @media (max-width:760px){.app{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:12px}.logo{padding:4px 10px;width:100%}nav .pie{display:none}main{padding:16px}.cab h1{font-size:22px}#mapa{height:380px}.col-sec{display:none}}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--blanco);color:var(--texto)}
+.leaflet-container a.leaflet-popup-close-button{color:var(--texto2)}
+.tema{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 10px;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;min-height:34px}
+.tema:hover{background:rgba(255,255,255,.1)}
+/* ¿Está cumpliendo? — la cadena del relevamiento y tres preguntas: avance, calidad, resultado */
+.embudo{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:var(--blanco);border:1px solid var(--linea);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.embudo .paso{padding:16px 18px;border-right:1px solid var(--linea);display:flex;flex-direction:column;gap:4px;position:relative;min-width:0}
+.embudo .paso:last-child{border-right:0}
+.embudo .paso .r{font-size:12px;color:var(--texto2);font-weight:600}
+.embudo .paso .v{font-family:Manrope,sans-serif;font-weight:800;font-size:30px;line-height:1}
+.embudo .paso small{font-size:11.5px;color:var(--texto2)}
+.embudo .paso.prota{background:var(--verde2)} .embudo .paso.prota .v{font-size:46px;color:var(--verde)}
+.embudo .paso:not(:last-child)::after{content:"›";position:absolute;right:-6px;top:50%;transform:translateY(-50%);color:var(--texto3);font-size:20px;z-index:1}
+.cumple{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.cumple .panel{margin:0}
+.cumple .cuerpo{gap:9px}
+.fila-m{display:flex;justify-content:space-between;gap:10px;font-size:13px;border-bottom:1px solid var(--linea);padding-bottom:6px}
+.fila-m:last-child{border-bottom:0} .fila-m b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.apilada{height:12px;border-radius:99px;overflow:hidden;display:flex;background:var(--fondo)}
+#protagonista{display:none} .cabecera-resumen{grid-template-columns:1fr!important}
+@media (max-width:900px){.embudo{grid-template-columns:repeat(2,minmax(0,1fr))}.embudo .paso{border-bottom:1px solid var(--linea)}.embudo .paso::after{display:none}.cumple{grid-template-columns:1fr}}
 </style>
 <style>
 .ing-fondo{position:fixed;inset:0;background:var(--marca);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px}
@@ -208,6 +246,7 @@ tr.rc-resalte td{background:#fdf3dc!important;transition:background .4s}
   <a href="#config" class="item" data-vista="config"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Configuración</a>
   <div class="pie usuario-pie oculto" id="pieUsuario"></div>
   <div class="pie" id="pie">sin datos cargados</div>
+  <div class="pie"><button type="button" class="tema" id="btnTema"></button></div>
   <div class="pie" style="margin-top:8px;opacity:.55;border-top:1px solid rgba(255,255,255,.18);padding-top:10px">Desarrollado por<br><b style="font-weight:600">Baltasar Corna Fantin</b><br>Escribanía General de Gobierno<br>Córdoba · 2026</div>
 </nav>
 
@@ -258,11 +297,9 @@ tr.rc-resalte td{background:#fdf3dc!important;transition:background .4s}
       <div><h1>Resumen del relevamiento</h1><p id="avisoCorte"></p></div>
       <div class="acciones"><button class="sec" data-ir="config">Cambiar corte</button><button data-ir="cargar">Cargar documentos</button></div>
     </div>
+    <div class="embudo" id="cumpleEmbudo" aria-label="La cadena del relevamiento"></div>
+    <div class="cumple" id="cumplePaneles"></div>
     <div class="cabecera-resumen"><div class="protagonista" id="protagonista"></div><div class="acciones-pendientes"><span class="rotulo">Para hacer</span><div class="grid-acciones" id="pendientes"></div><p class="mini" style="margin:0">Cada tarjeta abre la lista filtrada.</p></div></div>
-    <div class="panel" id="panelRecientes">
-      <div class="cabp"><h2>Últimas cargadas</h2><div class="acciones"><span class="sub" id="subRecientes"></span><button class="sec" id="verRecientes">Ver todas, de la más reciente</button></div></div>
-      <div class="tabla-scroll"><table><thead><tr><th>Cargada</th><th>Expediente</th><th>Rogante</th><th class="col-sec">Localidad</th><th>Estado</th></tr></thead><tbody id="recientes"></tbody></table></div>
-    </div>
     <div class="dos">
       <div class="panel">
         <div class="cabp"><h2>Dónde empezar</h2><div class="acciones" id="agrupar"><button class="chip" data-g="departamento">Departamento</button><button class="chip on" data-g="localidad">Localidad</button><button class="chip" data-g="seccion">Sección</button></div></div>
@@ -272,6 +309,10 @@ tr.rc-resalte td{background:#fdf3dc!important;transition:background .4s}
         <div class="cabp"><h2>Registro Personal de Poseedores</h2><span class="sub" id="subRegistro"></span></div>
         <div class="cuerpo" id="registroResumen"></div>
       </div>
+    </div>
+    <div class="panel" id="panelRecientes">
+      <div class="cabp"><h2>Últimas cargadas</h2><div class="acciones"><span class="sub" id="subRecientes"></span><button class="sec" id="verRecientes">Ver todas, de la más reciente</button></div></div>
+      <div class="tabla-scroll"><table><thead><tr><th>Cargada</th><th>Expediente</th><th>Rogante</th><th class="col-sec">Localidad</th><th>Estado</th></tr></thead><tbody id="recientes"></tbody></table></div>
     </div>
   </section>
 
@@ -1318,6 +1359,22 @@ const SERVIDOR = WEB || (/^https?:/.test(location.protocol) && !window.DEMO_DATO
 const HASH_INICIAL = location.hash.slice(1);   // antes de que ir() la reescriba al arrancar
 
 const VISTAS = ['cargar','inventario','resumen','expedientes','mapa','padron','config'];
+// Modo oscuro: el botón alterna y la elección queda en esta computadora (solo es una preferencia de pantalla).
+function temaActual(){ const t = document.documentElement.getAttribute('data-tema'); return t || (matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro'); }
+function pintarBotonTema(){
+  const oscuro = temaActual() === 'oscuro';
+  $('btnTema').innerHTML = (oscuro
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Modo claro'
+    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Modo oscuro');
+  $('btnTema').setAttribute('aria-pressed', oscuro ? 'true' : 'false');
+}
+$('btnTema').addEventListener('click', () => {
+  const nuevo = temaActual() === 'oscuro' ? 'claro' : 'oscuro';
+  document.documentElement.setAttribute('data-tema', nuevo);
+  try{ localStorage.setItem('pierri_tema', nuevo); }catch(e){ /* sin almacenamiento: dura hasta recargar */ }
+  pintarBotonTema();
+});
+pintarBotonTema();
 let mapaInv = null, capaInv = null, capaDep = null, capaDepMapa = null;
 function ir(v){
   if(!VISTAS.includes(v)) v = 'cargar';
@@ -1440,8 +1497,11 @@ async function cargarArchivo(f){
   }
   try{
     const txt = await f.text();
-    let lista = txt.trim().startsWith('[') ? JSON.parse(txt) : txt.split('\n').filter(l => l.trim()).map(l => { try{ return JSON.parse(l); }catch(e){ return null; } }).filter(Boolean);
-    if(lista.length && lista[0].resultados) lista = lista[0].resultados;
+    // Puede ser el JSON de "Guardar JSON" (un objeto, en varias líneas), un arreglo, o un resultados.jsonl (una resolución por línea).
+    let lista = null;
+    try{ const todo = JSON.parse(txt.replace(/^\ufeff/, '')); lista = Array.isArray(todo) ? todo : todo && Array.isArray(todo.resultados) ? todo.resultados : [todo]; if(todo && todo.resumen && typeof todo.resumen === 'object') resumenSrv = todo.resumen; }
+    catch(e){ lista = txt.split('\n').filter(l => l.trim()).map(l => { try{ return JSON.parse(l); }catch(e2){ return null; } }).filter(Boolean); }
+    if(lista.length && lista[0] && lista[0].resultados) lista = lista[0].resultados;
     registros = lista.filter(r => r && r.derivado && !r.repetido_de);
     if(!registros.length){ avisar('Ese archivo no tiene resoluciones adentro. Acá solo entra el resultados.jsonl o el JSON exportado por el Tablero. Para cargar PDF hay que abrir la aplicación con 2_abrir.bat y entrar a http://localhost:3777.', true); return; }
     origenNombre = f.name;
@@ -1464,6 +1524,15 @@ function mostrarInicial(){
   setTimeout(() => $('iniUsuario').focus(), 60);
 }
 if(WEB){
+  const LIMITE = 30 * 60 * 1000; let ultimoUso = Date.now();
+  ['mousemove','keydown','click','scroll','touchstart'].forEach(ev => addEventListener(ev, () => { ultimoUso = Date.now(); }, { passive: true }));
+  setInterval(async () => {
+    if(!YO || Date.now() - ultimoUso < LIMITE) return;
+    try{ await api('/api/logout', { method: 'POST' }); }catch(e){}
+    try{ sessionStorage.setItem('pierri_inactividad', '1'); }catch(e){}
+    location.reload();
+  }, 20000);
+  try{ if(sessionStorage.getItem('pierri_inactividad')){ sessionStorage.removeItem('pierri_inactividad'); setTimeout(() => errorIngreso('La sesión se cerró después de 30 minutos sin uso. Volvé a ingresar.'), 300); } }catch(e){}
   $('btnToken').addEventListener('click', async () => {
     try{ await api('/api/web/token', { method: 'POST', body: JSON.stringify({ token: $('tokenWeb').value }) }); $('tokenWeb').value = ''; $('subToken').textContent = 'cargado en esta computadora'; avisar('Permiso de GitHub guardado en esta computadora.'); }
     catch(err){ avisar(err.message, true); }
@@ -1495,6 +1564,8 @@ function aplicarPerfil(){
     // Lo que en la web todavía no existe: leer PDF y planillas, Catastro, el modelo. Se hace en el kit y se sube el JSON.
     ['btnPadron','btnInventario','btnUbicarInv','btnCatastro','btnCompletar','btnReleer','btnVaciar','btnArchivos','panelApp'].forEach(id => { const e = $(id); if(e) e.classList.add('sin-permiso'); });
     $('cargarTitulo').textContent = 'Subí acá el relevamiento del kit';
+    const cabCarga = document.querySelector('#v-cargar .cab p'); if(cabCarga) cabCarga.textContent = 'En la versión web se sube el relevamiento que leyó el kit: el JSON que baja "Guardar JSON". Los PDF, el Padrón y el inventario se cargan en el kit.';
+    const dosInv = $('mapaInv') && $('mapaInv').closest('.dos'); if(dosInv) dosInv.classList.add('sin-permiso');
     $('cargarSub').textContent = 'El archivo que baja "Guardar JSON" en la aplicación del kit (Expedientes). Se guarda cifrado en el repositorio y lo ven todos los usuarios. Los PDF todavía se leen en el kit.';
     $('panelToken').classList.toggle('oculto', !puede.administrar);
     $('subToken').textContent = YO.web_token ? 'cargado en esta computadora' : 'falta: sin él no se pueden guardar cambios';
@@ -1763,7 +1834,62 @@ function pintarRecientes(){
 }
 $('verRecientes').addEventListener('click', () => { limpiarFiltros(); orden = { k: 'cargado', asc: false }; pagina = 0; pintarTabla(); ir('expedientes'); });
 function pintarPie(){ $('pie').innerHTML = registros.length ? `${WEB ? 'versión web' : SERVIDOR ? 'pierri.db' : esc(origenNombre || 'archivo')} · ${registros.length} resoluciones` + (resumenSrv.padron && resumenSrv.padron.filas ? `<br>Padrón: ${resumenSrv.padron.filas} filas` : '') : 'sin datos cargados'; }
+/** ¿Está cumpliendo? La cadena del relevamiento y tres paneles. Siempre sobre todo lo cargado, sin los filtros de Expedientes. */
+function pintarCumple(){
+  const V = registros.filter(r => r && r.derivado && !r.repetido_de && !r.error), R = V.map(r => r.derivado);
+  const n = f => R.filter(f).length, nr = f => V.filter(f).length, inv = (resumenSrv && resumenSrv.inventario) || {};
+  const f = x => x == null || isNaN(x) ? '—' : Number(x).toLocaleString('es-AR'), pc = (a, b) => b ? Math.round(a / b * 100) : 0;
+  const rev = d => !!(d.revision && d.revision.revisado), corr = d => rev(d) && !!(d.revision.posee_desde || d.revision.tipo_documento);
+  const ins = d => d.inscripcion && d.inscripcion.estado, hayPadron = R.some(d => ins(d));
+  const conInv = V.filter(r => r.inventario), cta = conInv.filter(r => typeof r.inventario.cuenta_coincide === 'boolean'), res = conInv.filter(r => typeof r.inventario.resolucion_coincide === 'boolean');
+  const anteriores = n(d => cl(d) === 'ELEGIBLE'), bordeDentro = n(d => cl(d) === 'ELEGIBLE_BORDE'), borde = n(d => cl(d).endsWith('_BORDE'));
+  const posteriores = n(d => cl(d) === 'NO_ELEGIBLE'), sinFecha = n(d => cl(d) === 'SIN_DATO' || cl(d) === 'REVISAR'), noEval = n(d => cl(d) === 'NO_APLICA');
+  const ev = anteriores + borde + posteriores + sinFecha;
+  const esc_ = Number(inv.con_resolucion) || null, leidasInv = inv.cargado ? (Number(inv.leidas) || 0) : null;
+  const texto = nr(r => r.fuente === 'texto'), modelo = nr(r => r.fuente === 'modelo'), noLeidas = nr(r => r.fuente === 'texto_incompleto'), tot = texto + modelo + noLeidas;
+  const insAnt = n(d => cl(d) === 'ELEGIBLE' && ins(d) === 'INSCRIPTA'), noInsAnt = n(d => cl(d) === 'ELEGIBLE' && ins(d) === 'NO_FIGURA_EN_PADRON');
+  const sinCruce = n(d => cl(d) === 'ELEGIBLE' && (!ins(d) || ins(d) === 'AMBIGUO' || ins(d) === 'SIN_NOMBRE_PARA_CRUZAR'));
+  const confirmadas = n(d => cl(d) === 'ELEGIBLE' && rev(d) && ins(d) === 'INSCRIPTA');
+  const cfg = config(), corte = cfg.regla === 'CORTE_FIJO' ? (cfg.fechaCorte || '2006-01-01').split('-').reverse().join('/') : 'plazo móvil de 10 años';
+  $('cumpleEmbudo').innerHTML = `
+    <div class="paso"><span class="r">Escaneadas por la UEST</span><span class="v c-m">${f(esc_)}</span><small>${esc_ ? 'con resolución, según el inventario' : 'cargá el inventario de la UEST'}</small></div>
+    <div class="paso"><span class="r">Leídas</span><span class="v c-m">${f(leidasInv != null ? leidasInv : V.length)}</span><small>${esc_ && leidasInv != null ? `${pc(leidasInv, esc_)} % del inventario` : `${f(V.length)} resoluciones`}</small></div>
+    <div class="paso"><span class="r">Evaluables</span><span class="v">${f(ev)}</span><small>${f(noEval)} no ordenan la inscripción</small></div>
+    <div class="paso prota"><span class="r">Posesión anterior al corte</span><span class="v">${f(anteriores)}</span><small>${bordeDentro ? `+${f(bordeDentro)} en el borde · ` : ''}corte: ${esc(corte)}</small></div>
+    <div class="paso"><span class="r">De esas, inscriptas</span><span class="v c-m">${hayPadron ? f(insAnt) : '—'}</span><small>${hayPadron ? `${f(noInsAnt)} no inscriptas · ${f(sinCruce)} sin cruzar` : 'cargá el Padrón del Registro'}</small></div>
+    <div class="paso"><span class="r">Confirmadas</span><span class="v">${f(confirmadas)}</span><small>anteriores, inscriptas y revisadas a mano</small></div>`;
+  $('cumplePaneles').innerHTML = `
+    <div class="panel"><div class="cabp"><h2>Avance</h2><span class="sub">¿cuánto se leyó?</span></div><div class="cuerpo">
+      <div class="apilada" role="img" aria-label="${esc_ && leidasInv != null ? pc(leidasInv, esc_) + ' % leído' : 'sin inventario'}"><div style="width:${esc_ && leidasInv != null ? pc(leidasInv, esc_) : 0}%;background:var(--marca)"></div></div>
+      <div class="fila-m"><span>Leídas del inventario</span><b>${esc_ && leidasInv != null ? `${f(leidasInv)} de ${f(esc_)}` : '—'}</b></div>
+      <div class="fila-m"><span>Faltan leer</span><b>${esc_ && leidasInv != null ? f(Math.max(0, esc_ - leidasInv)) : '—'}</b></div>
+      <div class="fila-m"><span>Resoluciones cargadas</span><b>${f(V.length)}</b></div>
+      <div class="fila-m"><span>Repetidas · con error</span><b>${f(resumenSrv.repetidas)} · ${f(resumenSrv.errores)}</b></div></div></div>
+    <div class="panel"><div class="cabp"><h2>Calidad</h2><span class="sub">¿cuánto se le puede creer?</span></div><div class="cuerpo">
+      <div class="apilada" role="img" aria-label="lectura por texto, por modelo y no leídas"><div style="width:${pc(texto, tot)}%;background:var(--verde)"></div><div style="width:${pc(modelo, tot)}%;background:var(--marca)"></div><div style="width:${pc(noLeidas, tot)}%;background:var(--ambar)"></div></div>
+      <div class="fila-m"><span>Leídas por texto · por modelo · no leídas</span><b>${f(texto)} · ${f(modelo)} · ${f(noLeidas)}</b></div>
+      <div class="fila-m"><span>Con dudas sin revisar</span><b class="c-a">${f(n(d => d.revisar && !rev(d)))}</b></div>
+      <div class="fila-m"><span>Revisadas a mano · corregidas</span><b>${f(n(rev))} · ${f(n(corr))}</b></div>
+      <div class="fila-m"><span>Cuenta igual al inventario</span><b>${cta.length ? `${pc(cta.filter(r => r.inventario.cuenta_coincide).length, cta.length)} %` : '—'}</b></div>
+      <div class="fila-m"><span>N° de resolución igual al inventario</span><b>${res.length ? `${pc(res.filter(r => r.inventario.resolucion_coincide).length, res.length)} %` : '—'}</b></div></div></div>
+    <div class="panel"><div class="cabp"><h2>Resultado</h2><span class="sub">¿qué encontró?</span></div><div class="cuerpo">
+      <div class="apilada" role="img" aria-label="anteriores, borde, posteriores y sin fecha"><div style="width:${pc(anteriores, ev)}%;background:var(--verde)"></div><div style="width:${pc(borde, ev)}%;background:var(--ambar)"></div><div style="width:${pc(posteriores, ev)}%;background:var(--barra-no)"></div><div style="width:${pc(sinFecha, ev)}%;background:var(--barra-sin)"></div></div>
+      <div class="fila-m"><span>Anteriores al corte</span><b class="c-v">${f(anteriores)}</b></div>
+      <div class="fila-m"><span>En el borde (±${f(cfg.margenBordeMeses)} meses)</span><b class="c-a">${f(borde)}</b></div>
+      <div class="fila-m"><span>Posteriores al corte</span><b>${f(posteriores)}</b></div>
+      <div class="fila-m"><span>Sin fecha de posesión</span><b class="c-r">${f(sinFecha)}</b></div>
+      <div class="fila-m"><span>No evaluables (trámite, cédula, desestima)</span><b class="c-g">${f(noEval)}</b></div></div></div>`;
+}
+/** La fecha de posesión con la precisión que realmente tiene: día/mes/año, mes/año, o solo el año. */
+function fechaPosesion(d){
+  if(!d.posee_desde) return '—';
+  const [a, m, di] = String(d.posee_desde).split('-'), p = d.posee_desde_precision;
+  return p === 'anio' ? `${a} (año aprox.)` : p === 'mes' ? `${m}/${a}` : `${di}/${m}/${a}`;
+}
+const CRITERIOS = { DECLARADA_ROGANTE: 'declarada por el rogante', SURGE_DOCUMENTAL: 'surge de la documental', SURGE_EXPEDIENTE: 'surge del expediente', CORREGIDA_A_MANO: 'corregida a mano', OTRO: 'otro criterio' };
+const VEREDICTOS = { ELEGIBLE: 'Posesión anterior al corte', ELEGIBLE_BORDE: 'Anterior al corte, en el borde', NO_ELEGIBLE: 'Posesión posterior al corte', NO_ELEGIBLE_BORDE: 'Posterior al corte, en el borde', SIN_DATO: 'Sin fecha de posesión', REVISAR: 'Sin fecha de posesión: revisar', NO_APLICA: 'No ordena la inscripción' };
 function pintarMetricas(){
+  pintarCumple();
   const R = registros.map(r => r.derivado);
   const c = k => R.filter(d => cl(d) === k).length;
   const eleg = c('ELEGIBLE') + c('ELEGIBLE_BORDE'), no = c('NO_ELEGIBLE') + c('NO_ELEGIBLE_BORDE');
@@ -1781,22 +1907,20 @@ function pintarMetricas(){
     : `<span class="rot">Entran en la Ley Pierri</span>
        <div style="display:flex;align-items:baseline;gap:12px"><span class="cifra">${eleg}</span><span class="de">de ${n} evaluadas</span></div>
        ${noAplica ? `<span class="mini">Se leyeron ${R.length} documentos: ${noAplica} no aplican porque no ordenan la inscripción (resoluciones de trámite, cédulas, desestimatorias).</span>` : ''}
-       <div class="barra"><div style="width:${pct(eleg)}%;background:var(--verde)"></div><div style="width:${pct(no)}%;background:#c3cad4"></div><div style="width:${pct(sin)}%;background:#e0b9b2"></div></div>
-       <div class="leyenda2"><span><i class="cuadro" style="background:var(--verde)"></i>${pct(eleg)} % elegibles</span><span><i class="cuadro" style="background:#c3cad4"></i>${no} no elegibles</span>${sin ? `<span><i class="cuadro" style="background:#e0b9b2"></i>${sin} sin fecha</span>` : ''}</div>
+       <div class="barra"><div style="width:${pct(eleg)}%;background:var(--verde)"></div><div style="width:${pct(no)}%;background:var(--barra-no)"></div><div style="width:${pct(sin)}%;background:var(--barra-sin)"></div></div>
+       <div class="leyenda2"><span><i class="cuadro" style="background:var(--verde)"></i>${pct(eleg)} % elegibles</span><span><i class="cuadro" style="background:var(--barra-no)"></i>${no} no elegibles</span>${sin ? `<span><i class="cuadro" style="background:var(--barra-sin)"></i>${sin} sin fecha</span>` : ''}</div>
        <div class="mini" style="line-height:1.45"><b>Elegible</b>: cumple el requisito de antigüedad de la posesión que exige la Ley Pierri (${cfg.regla === 'CORTE_FIJO' ? 'posesión anterior al ' + cfg.fechaCorte.split('-').reverse().join('/') : 'diez años de posesión'}). <b>No elegible</b>: no lo cumple. Los demás requisitos de la ley se verifican después, en el trámite.</div>
        <div class="escenario"><div class="mini" style="margin-bottom:3px">${cfg.regla === 'CORTE_FIJO' ? 'Si sale la reforma con media sanción (plazo móvil de 10 años)' : 'Con el corte fijo de 2006'}</div>
          <div style="font-size:15px;font-weight:600">Entrarían <span class="c-v" style="font-family:Manrope,sans-serif;font-size:21px;font-weight:800">${elegAlt}</span> <span class="c-v" style="font-size:13px;font-weight:600">(${elegAlt - eleg >= 0 ? '+' : ''}${elegAlt - eleg})</span></div></div>`;
   // Lo pendiente son tareas, no estadísticas: cada una lleva a su lista.
   // Cuenta lo mismo que muestra el filtro al que lleva, para que el número no engañe.
-  const sinRevisar = R.filter(d => !(d.revision && d.revision.revisado)).length;
+  const revisada = d => !!(d.revision && d.revision.revisado), anterior = d => cl(d).startsWith('ELEGIBLE');
   const incompletas = registros.filter(r => r.fuente === 'texto_incompleto').length;
-  const noFiguran = R.filter(d => d.inscripcion && d.inscripcion.estado === 'NO_FIGURA_EN_PADRON').length;
-  const sinUbicar = R.filter(d => !(d.geo && d.geo.lat != null)).length;
   const tareas = [
-    ['Sin revisar a mano', 'pendientes de control', sinRevisar, '', 'SIN_REVISAR'],
-    ['No se pudieron leer', 'necesitan el modelo', incompletas, 'c-a', 'INCOMPLETA'],
-    ['No inscriptas en el Registro', 'resolución dictada, sin inscribir', noFiguran, 'c-r', 'INSC:NO_FIGURA_EN_PADRON'],
-    ['Sin ubicar en el mapa', 'falta la cuenta', sinUbicar, '', 'SIN_UBICAR'],
+    ['Anteriores al corte sin revisar', 'controlarlas contra el PDF', R.filter(d => anterior(d) && !revisada(d)).length, 'c-v', 'ELEGIBLE+SIN_REVISAR'],
+    ['Con dudas', 'el sistema marcó algo para mirar', R.filter(d => d.revisar).length, 'c-a', 'REVISAR'],
+    ['Anteriores no inscriptas', 'resolución dictada, sin inscribir', R.filter(d => anterior(d) && d.inscripcion && d.inscripcion.estado === 'NO_FIGURA_EN_PADRON').length, 'c-r', 'ELEGIBLE+INSC:NO_FIGURA_EN_PADRON'],
+    ['No se pudieron leer', WEB ? 'se completan en el kit' : 'necesitan el modelo', incompletas, 'c-a', 'INCOMPLETA'],
   ];
   $('pendientes').innerHTML = tareas.map(([t, sub, v, col, f]) =>
     `<button class="accion ${v ? 'clicable' : ''}" ${v ? `data-tarea="${f}"` : 'disabled'}><span class="txt"><b>${t}</b><small class="${v ? col : ''}">${v ? sub : 'nada pendiente'}</small></span><span class="num ${v ? col : 'c-g'}">${v}</span></button>`).join('');
@@ -1804,7 +1928,7 @@ function pintarMetricas(){
     const f = b.dataset.tarea;
     ['fDep','fLoc','fSec','fInsc','fAnioD','fAnioH'].forEach(id => $(id).value = ''); $('buscar').value = ''; localidadSel = null;
     F.elig = 'TODOS'; F.lect = null; F.ctrl = null;
-    if(f.startsWith('INSC:')) $('fInsc').value = f.slice(5); else ponerFiltro(f);
+    for(const x of f.split('+')){ if(x.startsWith('INSC:')) $('fInsc').value = x.slice(5); else ponerFiltro(x); }
     marcarChips();
     pagina = 0; pintarTodo(); ir('expedientes');
   }));
@@ -1850,7 +1974,7 @@ function pintarTabla(){
     return `<tr class="fila ${d.revision && d.revision.revisado ? 'rev' : ''}" data-i="${registros.indexOf(r)}">
       <td class="exp">${esc(d.expediente || '—')}<div class="mini">${esc(d.resolucion_numero ? d.resolucion_numero + '/' + (d.resolucion_anio || '') : '')}</div></td>
       <td>${esc(d.rogante_principal || '—')}${d.cantidad_rogantes > 1 ? ` <span class="mini">+${d.cantidad_rogantes - 1}</span>` : ''}${marcas ? `<div class="mini">${esc(marcas)}</div>` : ''}</td>
-      <td><b>${esc(d.posee_desde ? d.posee_desde.slice(0, 4) : '—')}</b><div class="mini">${esc(d.posee_desde ? d.posee_desde.slice(5) : '')}</div></td>
+      <td><b>${esc(d.posee_desde ? d.posee_desde.slice(0, 4) : '—')}</b><div class="mini">${!d.posee_desde ? '' : d.posee_desde_precision === 'anio' ? 'año aprox.' : d.posee_desde_precision === 'mes' ? 'mes ' + esc(d.posee_desde.slice(5, 7)) : esc(d.posee_desde.slice(8, 10) + '/' + d.posee_desde.slice(5, 7))}</div></td>
       <td>${tagDe(c)}${tagInsc(d)}${d.revisar ? ' <span class="tag p-r">Revisar</span>' : ''}</td>
       <td class="col-sec">${esc(loc(d))}<div class="mini">${esc([d.geo && d.geo.ped_nombre, d.geo && d.geo.dep_nombre].filter(Boolean).join(' · '))}</div></td>
       <td class="col-sec">${esc(mz(d) || '—')}</td>
@@ -1890,9 +2014,9 @@ $('filas').addEventListener('click', e => {
   const ESTADO_REG = { INSCRIPTA: 'Inscripta', PROVISORIA: 'Provisoria', OBSERVADA: 'Observada', NO_FIGURA_EN_PADRON: 'No inscripta (el Registro no tiene la anotación)',
     AMBIGUO: 'Ambigua (el nombre aparece más de una vez)', SIN_NOMBRE_PARA_CRUZAR: 'Sin nombre legible para cruzar con el Registro' };
   const insc = d.inscripcion ? `${esc(ESTADO_REG[d.inscripcion.estado] || d.inscripcion.estado)}${d.inscripcion.diario ? ' · diario ' + esc(d.inscripcion.diario) : ''}${d.inscripcion.candidatas ? ' · candidatas: ' + esc(d.inscripcion.candidatas.map(x => x.diario + ' (' + x.estado + ')').join(', ')) : ''}` : 'sin cruzar con el Padrón';
-  tr.insertAdjacentHTML('afterend', `<tr class="det"><td colspan="7" class="detalle"><dl>
+  tr.insertAdjacentHTML('afterend', `<tr class="det"><td colspan="8" class="detalle"><p style="margin:0 0 10px;font-size:14px"><b class="${cl(d).startsWith('ELEGIBLE') ? 'c-v' : cl(d).startsWith('NO_ELEGIBLE') ? 'c-g' : 'c-r'}">${esc(VEREDICTOS[cl(d)] || cl(d))}</b> · posee desde ${esc(fechaPosesion(d))} · ${config().regla === 'CORTE_FIJO' ? 'corte ' + esc((config().fechaCorte || '2006-01-01').split('-').reverse().join('/')) : 'plazo móvil de 10 años'}</p><dl>
     <dt>Rogantes</dt><dd>${rog || '—'}</dd>
-    <dt>Posesión</dt><dd>${esc(d.posee_desde || '—')} (${esc(d.posee_desde_precision || '')}, ${esc(d.posesion_criterio || 'sin criterio')})<br><span class="mini">${esc(e2.posesion && e2.posesion.texto_original || '')}</span></dd>
+    <dt>Posesión</dt><dd>${esc(fechaPosesion(d))} (${esc(CRITERIOS[d.posesion_criterio] || d.posesion_criterio || 'sin criterio')})<br><span class="mini">${esc(e2.posesion && e2.posesion.texto_original || '')}</span></dd>
     <dt>Inmueble</dt><dd>${esc([e2.inmueble && e2.inmueble.calle, e2.inmueble && e2.inmueble.numero, e2.inmueble && e2.inmueble.manzana && 'mz ' + e2.inmueble.manzana, e2.inmueble && e2.inmueble.superficie_texto].filter(Boolean).join(' · ') || '—')}</dd>
     <dt>Matrículas</dt><dd>${esc((d.matriculas || []).join(', ') || '—')} · titular ${esc(d.titulares_registrales || '—')} · cuenta ${esc(g.cuenta_normalizada || '—')}</dd>
     <dt>Catastro</dt><dd>${c.encontrada ? esc(`${c.localidad} · ${c.nomenclatura_legible} · ${c.estado || ''} · ${c.sup_tierra || '?'} m² tierra, ${c.sup_mejoras || 0} m² construidos`) : 'sin parcela encontrada'}</dd>
@@ -1942,12 +2066,19 @@ async function guardarRevision(caja){
   btn.disabled = false;
 }
 function pintarRanking(){
+  $('ranking').innerHTML = armarRanking(false, 10); $('ranking2').innerHTML = armarRanking(true, 40);
+  enlazarRanking();
+}
+/** Ranking de localidades: con filtros (mapa) o sobre todo lo cargado (Resumen). */
+function armarRanking(conFiltros, cuantos){
   const m = new Map();
-  for(const r of registros){ if(!pasa(r, true)) continue; const d = r.derivado; if(d.tipo_documento !== 'RESOLUCION_INSCRIPCION') continue; const k = claveGrupo(d);
+  for(const r of registros){ if(conFiltros && !pasa(r, true)) continue; const d = r.derivado; if(d.tipo_documento !== 'RESOLUCION_INSCRIPCION') continue; const k = claveGrupo(d);
     if(!m.has(k)) m.set(k, { nombre: k, dep: agrupacion === 'departamento' ? '' : (d.geo && d.geo.dep_nombre || ''), total: 0, eleg: 0 }); const f = m.get(k); f.total++; if(cl(d).startsWith('ELEGIBLE')) f.eleg++; }
   const lista = Array.from(m.values()).sort((a, b) => b.eleg - a.eleg || b.total - a.total), max = Math.max(1, ...lista.map(x => x.eleg));
-  const html = lista.slice(0, 40).map(x => `<div class="item ${localidadSel === x.nombre ? 'on' : ''}" data-loc="${esc(x.nombre)}"><span>${esc(x.nombre)}<small>${esc(x.dep)}</small></span><div class="barra"><i style="width:${Math.round(x.eleg / max * 100)}%"></i></div><span class="cifra">${x.eleg}<small style="font-weight:400"> / ${x.total}</small></span></div>`).join('') || '<div class="vacio">Sin datos todavía.</div>';
-  $('ranking').innerHTML = html; $('ranking2').innerHTML = html;
+  const html = lista.slice(0, cuantos).map(x => `<div class="item ${localidadSel === x.nombre ? 'on' : ''}" data-loc="${esc(x.nombre)}"><span>${esc(x.nombre)}<small>${esc(x.dep)}</small></span><div class="barra"><i style="width:${Math.round(x.eleg / max * 100)}%"></i></div><span class="cifra">${x.eleg}<small style="font-weight:400"> / ${x.total}</small></span></div>`).join('') || '<div class="vacio">Sin datos todavía.</div>';
+  return html;
+}
+function enlazarRanking(){
   $('ranking').querySelectorAll('.item').forEach(el => el.addEventListener('click', () => { localidadSel = el.dataset.loc; pagina = 0; pintarTodo(); ir('mapa'); }));
   $('ranking2').querySelectorAll('.item').forEach(el => el.addEventListener('click', () => { localidadSel = localidadSel === el.dataset.loc ? null : el.dataset.loc; pagina = 0; pintarTodo(); }));
 }
@@ -2124,7 +2255,7 @@ function pintarMapa(){
     const col = cls.some(c => c === 'ELEGIBLE') ? COLOR.v : cls.some(c => c.endsWith('_BORDE')) ? COLOR.a : cls.every(c => c === 'NO_ELEGIBLE' || c === 'NO_APLICA') ? COLOR.g : COLOR.r;
     const aprox = ds.every(d => d.geo.ubicacion_aproximada);
     const html = `<div style="font:12.5px Public Sans,sans-serif;max-width:300px"><b>${esc(loc(ds[0]))}</b>${aprox ? '' : ' · ' + esc(mz(ds[0]))}<br>` +
-      (aprox ? `<span style="color:#8a5a12">Ubicación aproximada: centro de la localidad. ${ds.length > 1 ? 'Estas resoluciones no traen' : 'La resolución no trae'} número de cuenta para ubicar la parcela.</span><br>` : '') +
+      (aprox ? `<span style="color:var(--ambar)">Ubicación aproximada: centro de la localidad. ${ds.length > 1 ? 'Estas resoluciones no traen' : 'La resolución no trae'} número de cuenta para ubicar la parcela.</span><br>` : '') +
       '<div style="margin-top:4px;display:flex;flex-direction:column;gap:5px">' + rs.map(r => { const d = r.derivado;
         return `<div><a href="#" data-abrir="${esc(r.hash)}" style="font-weight:700">${esc(d.expediente || 'sin número')}</a> — ${esc(d.rogante_principal || '')} — ${esc(cl(d).replace(/_/g, ' ').toLowerCase())}` +
           (SERVIDOR && !WEB ? ` · <a href="/api/documento?id=${encodeURIComponent(r.hash)}" target="_blank" rel="noopener">ver PDF</a>` : '') + '</div>'; }).join('') +
