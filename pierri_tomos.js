@@ -163,18 +163,18 @@
       const st = Number(api);
       if (st === 401) return { texto: 'la clave de API no es válida', grave: true };
       if (st === 402 || (st === 400 && /credit balance|billing/i.test(m))) return { texto: 'la cuenta de Anthropic no tiene crédito', grave: true };
-      if (st === 403) return { texto: 'la clave no tiene permiso para usar el modelo', grave: true };
+      if (st === 403) return { texto: 'la clave no tiene permiso para usar la IA', grave: true };
       if (st === 429) return { texto: 'demasiados pedidos seguidos; reintentar en unos minutos', grave: false };
       if (st === 529) return { texto: 'Anthropic está sobrecargado; probá en unos minutos', grave: false };
       if (st >= 500) return { texto: 'Anthropic tuvo una falla de su lado; probá en unos minutos', grave: false };
-      if (st === 413) return { texto: 'el PDF de esa resolución es demasiado grande para mandarlo al modelo', grave: false, documento: true };
+      if (st === 413) return { texto: 'el PDF de esa resolución es demasiado grande para mandarlo a la IA', grave: false, documento: true };
       if (st === 400) return { texto: 'la API rechazó el PDF de esa resolución: puede estar dañado o ser demasiado grande', grave: false, documento: true };
     }
     if (/invalid x-api-key|API key is invalid|authentication_error/i.test(m)) return { texto: 'la clave de API no es válida', grave: true };
     if (/credit balance|billing/i.test(m)) return { texto: 'la cuenta de Anthropic no tiene crédito', grave: true };
-    if (/no devolvió JSON/i.test(m)) return { texto: 'el modelo contestó pero no pudo leerla', grave: false, documento: true };
+    if (/no devolvió JSON/i.test(m)) return { texto: 'la IA contestó, pero no pudo leerla', grave: false, documento: true };
     if (/fetch failed|ENOTFOUND|ECONN|network|No hay conexión|error de red/i.test(m)) return { texto: 'no hay conexión a internet', grave: false };
-    return { texto: 'el modelo no respondió (' + m.slice(0, 120) + ')', grave: false };
+    return { texto: 'la IA no respondió (' + m.slice(0, 120) + ')', grave: false };
   }
   function fusionar(deTexto, delModelo) {
     const e = JSON.parse(JSON.stringify(delModelo));

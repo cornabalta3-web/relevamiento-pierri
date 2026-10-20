@@ -64,15 +64,24 @@
   const LECTOR = { expediente: canonExpediente, fecha_ingreso: fechaCelda, resolucion_fecha: fechaCelda, antiguedad: numero, cuenta: cuentaDe, dni: dniDe,
     resolucion_numero: v => { const s = texto(v, 20); return s && /\d/.test(s) ? s.replace(/^0+(?=\d)/, '') : null; } };
 
-  function filasSIA(matriz) {
+  function filasSIA(matriz, opciones) {
     const filas = matriz || [];
+    const corrida = (opciones && opciones.fecha1904) ? v => fechaCelda(typeof v === 'number' ? v + 1462 : v) : fechaCelda;
+    const lector = Object.assign({}, LECTOR, { fecha_ingreso: corrida, resolucion_fecha: corrida });
     const norm = v => P.normalizarTexto(v == null ? '' : v);
     let cab = -1;
     for (let i = 0; i < Math.min(filas.length, 20) && cab < 0; i++) {
       const t = (filas[i] || []).map(norm);
       if (OBLIGATORIOS.every(k => CAMPOS[k].some(n => t.includes(n)))) cab = i;
     }
-    if (cab < 0) throw new Error('no reconozco la planilla: se esperan las columnas de número de expediente (NRO_EXP_SUAC), fecha de ingreso (FECHA_INGRESO) y antigüedad (ANTIGUEDAD), como en la planilla de trámites del SIA de la UEST');
+    if (cab < 0) {
+      const arriba = filas.slice(0, 20).flatMap(f => (f || []).filter(v => v != null && String(v).trim()));
+      const nombre = { expediente: 'número de expediente (NRO_EXP_SUAC)', fecha_ingreso: 'fecha de ingreso (FECHA_INGRESO)', antiguedad: 'antigüedad (ANTIGUEDAD)' };
+      const faltan = OBLIGATORIOS.filter(k => !arriba.some(v => CAMPOS[k].includes(norm(v)))).map(k => nombre[k]);
+      const parecidos = [...new Set(arriba.map(v => String(v).trim().slice(0, 40)).filter(v => /EXP|INGRESO|ANTIG/.test(norm(v))))].slice(0, 8);
+      throw new Error('no reconozco la planilla: en las primeras 20 filas no hay una fila con los títulos de número de expediente (NRO_EXP_SUAC), fecha de ingreso (FECHA_INGRESO) y antigüedad (ANTIGUEDAD), como en la planilla de trámites del SIA de la UEST'
+        + (arriba.length ? `. No encontré: ${faltan.join(', ') || 'los tres en una misma fila'}` + (parecidos.length ? `. Títulos parecidos: ${parecidos.map(v => '«' + v + '»').join(', ')}` : '') : '. Las primeras 20 filas están vacías'));
+    }
     const titulos = filas[cab].map(norm);
     const cols = {};
     for (const [campo, nombres] of Object.entries(CAMPOS)) cols[campo] = nombres.flatMap(n => titulos.flatMap((t, j) => t === n ? [j] : []));
@@ -83,7 +92,7 @@
       total++;
       const fila = {};
       for (const [campo, js] of Object.entries(cols)) {
-        const leer = LECTOR[campo] || texto;
+        const leer = lector[campo] || texto;
         let valor = null;
         for (const j of js) { valor = leer(f[j]); if (valor != null) break; }
         fila[campo] = valor;
