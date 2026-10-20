@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-ltY4sMfT9EMwzQeLt3O4UftK+1TB13N5qm+1s6E2MUY=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-4eh1bIkhAN2wSEOfhplX5Dt4Xn7LT+/OhhMvJQf5uAE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://idecor-ws.mapascordoba.gob.ar https://api.anthropic.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-IUUbjOWIZ8pI/XfrFOg0WElAyFcwesuJZfCHauBvtqI=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-SSeIeju87Xv86X7Vpps4fzy9S2MpsvgKCb61suHy77A='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://idecor-ws.mapascordoba.gob.ar https://api.anthropic.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -111,7 +111,7 @@ button.chip.a.on{border-color:#c9911e;background:var(--ambar2);color:var(--ambar
 .panel{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--r);display:flex;flex-direction:column;min-width:0}
 .panel .cabp{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--fondo)}
 .panel .cabp h2{font-size:16px;font-weight:700}
-.panel .cabp .sub{font-size:12px;color:var(--texto2)}
+.panel .cabp .sub{font-size:12px;color:var(--texto2);overflow-wrap:anywhere;min-width:0}
 .panel .cuerpo{padding:14px 18px;display:flex;flex-direction:column;gap:12px}
 .dos{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px}
 @media (max-width:980px){.dos{grid-template-columns:1fr!important}}
@@ -122,11 +122,15 @@ button.chip.a.on{border-color:#c9911e;background:var(--ambar2);color:var(--ambar
 .zona span{color:var(--texto2);font-size:13.5px}
 .fila-carga{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--fondo);font-size:13px;flex-wrap:wrap}
 .tag{display:inline-block;font-size:11.5px;font-weight:600;border-radius:6px;padding:3px 8px;white-space:nowrap}
+.tag.p-est{background:transparent;border:1px dashed var(--texto3);color:var(--texto2);padding:2px 7px}
 .mini{font-size:12px;color:var(--texto2)}
 .origen{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--texto2)}
 .origen b{color:var(--texto);font-weight:600}
 .msg{padding:10px 12px;border-radius:var(--r2);background:var(--azul2);color:var(--acento);font-size:13.5px}
 .msg.err{background:var(--rojo2);color:var(--rojo)}
+#aviso{position:sticky;top:8px;z-index:850}
+#aviso .msg{margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;justify-content:space-between;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.cerrar-aviso{background:transparent;border:0;color:inherit;font-size:20px;line-height:1;padding:0 4px;cursor:pointer;min-height:0}
 
 .controles{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .controles label{font-size:12.5px;color:var(--texto2);display:block;margin-bottom:4px}
@@ -144,7 +148,7 @@ td.exp{white-space:nowrap;font-weight:600}
 .pag{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 18px;font-size:12px;color:var(--texto2);border-top:1px solid var(--fondo)}
 .detalle{background:var(--suave)}
 .detalle dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;margin:0;font-size:13px}
-.detalle dt{color:var(--texto2)} .detalle dd{margin:0}
+.detalle dt{color:var(--texto2)} .detalle dd{margin:0;overflow-wrap:anywhere;min-width:0}
 .detalle details{margin-top:10px;font-size:12.5px} .detalle pre{font-size:11.5px;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow:auto;background:var(--blanco);padding:10px;border:1px solid var(--linea);border-radius:var(--r2)}
 .vacio{color:var(--texto2);font-size:13.5px;padding:18px;text-align:center}
 .revision{margin-top:12px;padding:12px;border:1px solid var(--linea);border-radius:var(--r2);background:var(--blanco);display:flex;flex-direction:column;gap:8px}
@@ -162,7 +166,9 @@ button.boton-ver{cursor:pointer}
 .visor-cuerpo{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px;background:var(--fondo)}
 .visor-cuerpo canvas{width:100%;height:auto;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 @media (max-width:900px){.visor{width:100vw}}
-@media (min-width:901px){body.con-visor main{margin-right:min(46vw,780px)}}
+@media (min-width:901px){body.con-visor main{margin-right:min(46vw,780px)}
+  /* Con el PDF al costado la tabla queda angosta: sin las columnas secundarias, la ficha y "Guardar revisión" entran a la vista */
+  body.con-visor #v-expedientes .col-sec{display:none} body.con-visor #v-expedientes .tag{white-space:normal}}
 .clicable{cursor:pointer;transition:box-shadow .12s,border-color .12s}
 tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
 .clicable:hover{border-color:var(--acento);box-shadow:0 1px 6px rgba(22,67,110,.14)}
@@ -173,12 +179,14 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
 .ranking .barra{height:10px;background:var(--fondo);border-radius:99px;overflow:hidden}
 .ranking .barra i{display:block;height:100%;background:var(--verde);border-radius:99px}
 .ranking .cifra{text-align:right;font-weight:700}
-#mapa{height:560px;border-radius:var(--r);border:1px solid var(--linea);background:var(--suave)}
+#mapa,#mapaInv{position:relative;z-index:0} #mapa{height:560px;border-radius:var(--r);border:1px solid var(--linea);background:var(--suave)}
 .leyenda{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--texto2)}
 .punto{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
-@media (max-width:760px){.app{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:12px}.logo{padding:4px 10px;width:100%}nav .pie{display:none}main{padding:16px}.cab h1{font-size:22px}#mapa{height:380px}.col-sec{display:none}}
+@media (max-width:760px){.app{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:12px}.logo{padding:4px 10px;width:100%}nav .pie{width:100%;padding:6px 10px 0}nav .pie:last-child{display:none}main{padding:16px}.cab h1{font-size:22px}#mapa{height:380px}.col-sec{display:none}}
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--blanco);color:var(--texto)}
 .leaflet-container a.leaflet-popup-close-button{color:var(--texto2)}
+.leaflet-popup-content a{color:var(--acento)}
+@media (max-width:760px){#filas td,#recientes td{white-space:normal}#filas .tag,#recientes .tag{white-space:normal}.detalle dl{grid-template-columns:1fr}.detalle dd{overflow-wrap:anywhere;margin-bottom:6px}}
 .tema{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 10px;font-size:12px;border-radius:6px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;min-height:34px}
 .tema:hover{background:rgba(255,255,255,.1)}
 /* ¿Está cumpliendo? — la cadena del relevamiento y tres preguntas: avance, calidad, resultado */
@@ -190,7 +198,7 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
 .embudo .paso small{font-size:11.5px;color:var(--texto2)}
 .embudo .paso.prota{background:var(--verde2)} .embudo .paso.prota .v{font-size:46px;color:var(--verde)}
 .embudo .paso:not(:last-child)::after{content:"›";position:absolute;right:-6px;top:50%;transform:translateY(-50%);color:var(--texto3);font-size:20px;z-index:1}
-.cumple{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.cumple{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:14px}
 .cumple .panel{margin:0}
 .cumple .cuerpo{gap:9px}
 .fila-m{display:flex;justify-content:space-between;gap:10px;font-size:13px;border-bottom:1px solid var(--linea);padding-bottom:6px}
@@ -201,11 +209,11 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
 </style>
 <style>
 .ing-fondo{position:fixed;inset:0;background:var(--marca);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px}
-.ing-caja{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(420px,94vw);padding:28px 30px}
-.ing-caja h2{font-family:Manrope,sans-serif;font-size:22px;font-weight:800;color:var(--marca);margin:0 0 4px}
+.ing-caja{background:var(--blanco);color:var(--texto);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(420px,94vw);padding:28px 30px}
+.ing-caja h2{font-family:Manrope,sans-serif;font-size:22px;font-weight:800;color:var(--acento);margin:0 0 4px}
 .ing-caja p.sub{margin:0 0 18px;font-size:13px;color:var(--texto2)}
 .ing-caja label{display:block;font-size:12.5px;color:var(--texto2);margin:10px 0 4px}
-.ing-caja input{width:100%;border:1px solid var(--linea2);border-radius:8px;padding:10px 12px;font:14px "Public Sans",sans-serif}
+.ing-caja input{width:100%;border:1px solid var(--linea2);border-radius:8px;padding:10px 12px;font:14px "Public Sans",sans-serif;background:var(--blanco);color:var(--texto)}
 .ing-caja button{width:100%;margin-top:16px;padding:11px}
 .ing-error{background:var(--rojo2);color:var(--rojo);border-radius:8px;padding:9px 12px;font-size:13px;margin-top:12px}
 .usuario-pie{font-size:12px;line-height:1.5}
@@ -274,7 +282,7 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
     <input id="filePdf" type="file" accept="application/pdf,.pdf" multiple class="oculto">
     <input id="carpetaPdf" type="file" webkitdirectory multiple class="oculto">
     <input id="file" type="file" accept=".jsonl,.json,application/json" class="oculto">
-    <div class="panel oculto" id="progreso"><div class="cabp"><h2>Últimas cargas</h2><span class="sub" id="progresoSub"></span></div><div class="mini oculto" id="progresoWeb" style="margin:10px 18px 0"></div><div class="msg oculto" id="balanceCarga" style="margin:12px 18px 0"></div><div class="acciones oculto" id="pendienteWeb" style="margin:10px 18px 0"><button id="btnGuardarPendiente">Guardar lo pendiente</button><span class="mini">Hay PDF leídos que todavía no se guardaron en GitHub.</span></div><div class="cuerpo" id="progresoCuerpo" style="gap:0"></div></div>
+    <div class="panel oculto" id="progreso"><div class="cabp"><h2>Últimas cargas</h2><span class="sub" id="progresoSub"></span></div><div class="mini oculto" id="progresoWeb" style="margin:10px 18px 0"></div><div class="msg oculto" id="balanceCarga" style="margin:12px 18px 0"></div><div class="acciones oculto" id="pendienteWeb" style="margin:10px 18px 0"><button id="btnGuardarPendiente">Guardar lo pendiente</button><span class="mini">Hay lectura que todavía no se guardó en GitHub (PDF leídos o lo leído con el modelo).</span></div><div class="cuerpo" id="progresoCuerpo" style="gap:0"></div></div>
     <div class="origen" id="origen"></div>
     <div class="panel oculto" id="panelArchivos"><div class="cabp"><h2>Qué aportó cada archivo</h2><span class="sub" id="subArchivos"></span></div>
       <div class="cuerpo" style="gap:6px"><div class="acciones" id="filtroArchivos">
@@ -288,6 +296,14 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
     <div class="cab"><div><h1>Inventario de la Unidad Ejecutora</h1><p>El CSV de expedientes digitalizados: qué existe, cuáles tienen la resolución escaneada y dónde está cada lote según Catastro, antes de leer un solo PDF.</p></div>
       <div class="acciones"><button id="btnInventario">Cargar inventario (.csv)</button><button id="btnUbicarInv" class="sec">Ubicar cuentas en Catastro</button></div></div>
     <input id="fileInventario" type="file" accept=".csv,text/csv" class="oculto">
+    <div class="panel oculto" id="panelSIA"><div class="cabp"><h2>Planilla de trámites de la UEST (SIA)</h2><span class="sub" id="siaSub"></span></div>
+      <div class="cuerpo">
+        <p class="mini" style="margin:0">La planilla que exporta el sistema de la UEST, una fila por expediente. Con la fecha de ingreso del trámite y la antigüedad que se declaró al iniciarlo se <b>estima</b> desde cuándo posee cada uno, sin abrir el PDF. Es una estimación: la resolución puede fijar otra antigüedad. Cuando se lee la resolución de un expediente, manda la lectura, y la planilla sirve para medir cuánto acierta.</p>
+        <div class="acciones"><button id="btnSIA">Cargar planilla de trámites (.xlsx)</button><button id="btnSIAUbicar" class="sec">Ubicar las parcelas en Catastro</button><button id="btnSIALista" class="sec">Bajar la lista para pedir los PDF</button></div>
+        <input id="fileSIA" type="file" accept=".xlsx,.xls" class="oculto">
+        <div id="siaProgreso" class="mini"></div>
+        <div class="tarjetas" id="siaTarjetas"></div>
+      </div></div>
     <div class="tarjetas" id="invTarjetas"></div>
     <div id="invProgreso" class="mini"></div>
     <div class="dos" style="grid-template-columns:minmax(0,1fr) 380px">
@@ -342,7 +358,7 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
           </div>
           <div class="gf">
             <span class="rotulo">Lectura</span>
-            <div class="acciones"><button class="chip" data-f="POR_TEXTO">Por texto</button><button class="chip" data-f="POR_MODELO">Revisadas por el modelo</button><button class="chip a" data-f="INCOMPLETA">No se pudieron leer</button></div>
+            <div class="acciones"><button class="chip" data-f="LEIDAS">Leídas del PDF</button><button class="chip" data-f="POR_TEXTO">Por texto</button><button class="chip" data-f="POR_MODELO">Revisadas por el modelo</button><button class="chip a" data-f="INCOMPLETA">No se pudieron leer</button><button class="chip" data-f="POR_PLANILLA">Estimadas con la planilla</button></div>
           </div>
           <div class="gf sin-linea">
             <span class="rotulo">Control manual</span>
@@ -353,7 +369,7 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
           <div class="grupo"><label for="fDep">Departamento</label><select id="fDep"><option value="">Todos</option></select></div>
           <div class="grupo"><label for="fLoc">Localidad</label><select id="fLoc"><option value="">Todas</option></select></div>
           <div class="grupo"><label for="fSec">Sección / barrio</label><select id="fSec"><option value="">Todas</option></select></div>
-          <div class="grupo"><label for="fInsc">Registro</label><select id="fInsc"><option value="">Cualquiera</option><option value="INSCRIPTA">Inscripta</option><option value="TRABADA">Provisoria u observada</option><option value="NO_FIGURA_EN_PADRON">No inscripta</option><option value="AMBIGUO">Ambigua</option><option value="SIN">Sin cruzar</option></select></div>
+          <div class="grupo"><label for="fInsc">Registro</label><select id="fInsc"><option value="">Cualquiera</option><option value="INSCRIPTA">Inscripta</option><option value="TRABADA">Provisoria u observada</option><option value="NO_FIGURA_EN_PADRON">No figura en el Padrón</option><option value="AMBIGUO">Ambigua</option><option value="SIN">Sin cruzar</option></select></div>
           <div class="grupo"><label for="fAnioD">Resolución desde</label><select id="fAnioD"><option value="">—</option></select></div>
           <div class="grupo"><label for="fAnioH">hasta</label><select id="fAnioH"><option value="">—</option></select></div>
           <button id="fLimpiar" class="sec">Limpiar filtros</button>
@@ -379,7 +395,7 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
     <div class="dos" style="grid-template-columns:minmax(0,1fr) 320px">
       <div class="panel"><div class="cuerpo">
         <div id="mapa"></div>
-        <div class="leyenda"><span><i class="punto f-v"></i>Elegible</span><span><i class="punto f-a"></i>Borde</span><span><i class="punto f-g"></i>No elegible</span><span><i class="punto f-r"></i>Revisar / sin fecha</span><span><i class="punto" style="background:transparent;border:2px dashed #5b6675;width:11px;height:11px"></i>Ubicación aproximada (por localidad)</span><span style="margin-left:6px">Departamentos sombreados según elegibles; se apagan desde el control de capas.</span></div>
+        <div class="leyenda"><span><i class="punto f-v"></i>Elegible</span><span><i class="punto f-a"></i>Borde</span><span><i class="punto f-g"></i>No elegible</span><span><i class="punto f-r"></i>Revisar / sin fecha</span><span id="leyendaEst" class="oculto"><i class="punto" style="background:rgba(29,107,69,.35);border:1.5px solid #1d6b45;width:11px;height:11px"></i>Claro: estimado con la planilla</span><span><i class="punto" style="background:transparent;border:2px dashed #5b6675;width:11px;height:11px"></i>Ubicación aproximada (por localidad)</span><span style="margin-left:6px">Departamentos sombreados según elegibles; se apagan desde el control de capas.</span></div>
         <p class="mini" style="margin:0">El punto es la parcela madre según Catastro (la del titular registral). Al acercar se dibujan los límites oficiales; con "Satélite" se ve la construcción. Los filtros de Expedientes también aplican acá.</p>
       </div></div>
       <div class="panel"><div class="cabp"><h2>Agrupado</h2><div class="acciones" id="agrupar2"><button class="chip" data-g="departamento">Dpto.</button><button class="chip on" data-g="localidad">Localidad</button><button class="chip" data-g="seccion">Sección</button></div></div><div class="cuerpo ranking" id="ranking2"></div></div>
@@ -393,7 +409,7 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
     <div class="tarjetas" id="padronTarjetas"></div>
     <div class="panel"><div class="cabp"><h2>Qué significa cada estado</h2></div><div class="cuerpo mini" style="gap:6px">
       <div><b>Inscripta</b>: la anotación existe y es definitiva. <b>Provisoria / Observada</b>: la anotación quedó trabada; hay que destrabarla antes de escriturar.</div>
-      <div><b>No inscripta</b>: la resolución fue dictada pero el Registro no tiene la anotación. Resolución sin inscripción.</div>
+      <div><b>No figura en el Padrón</b>: el nombre no aparece en el Padrón cargado. Puede ser una resolución que no se inscribió o el mismo nombre escrito de otra forma: el cruce es por nombre, así que se confirma a mano.</div>
       <div><b>Ambiguo</b>: el nombre aparece más de una vez, o el año del diario no cierra con el de la resolución. Se resuelve a mano.</div>
     </div></div>
   </section>
@@ -1018,11 +1034,14 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
     return true;
   }
   function clasificar(d) {
-    if (!d || !d.tipo_documento) return 'NO_APLICA';
+    if (!d) return 'NO_APLICA';
     if (TIPOS_NO_EVALUABLES.includes(d.tipo_documento)) return 'NO_APLICA';
-    if (d.revisar && d.elegibilidad.estado === 'SIN_DATO') return 'REVISAR';
-    if (d.elegibilidad.estado === 'ELEGIBLE') return d.elegibilidad.borde ? 'ELEGIBLE_BORDE' : 'ELEGIBLE';
-    if (d.elegibilidad.estado === 'NO_ELEGIBLE') return d.elegibilidad.borde ? 'NO_ELEGIBLE_BORDE' : 'NO_ELEGIBLE';
+    const e = d.elegibilidad || {};
+    // Sin tipo es que no se pudo leer: no se sabe qué ordena. No se la da por "no aplica": queda para revisar.
+    if (!d.tipo_documento && e.estado !== 'ELEGIBLE' && e.estado !== 'NO_ELEGIBLE') return 'REVISAR';
+    if (d.revisar && e.estado === 'SIN_DATO') return 'REVISAR';
+    if (e.estado === 'ELEGIBLE') return e.borde ? 'ELEGIBLE_BORDE' : 'ELEGIBLE';
+    if (e.estado === 'NO_ELEGIBLE') return e.borde ? 'NO_ELEGIBLE_BORDE' : 'NO_ELEGIBLE';
     return 'SIN_DATO';
   }
   const COLUMNAS_PLANILLA = ['expediente', 'clasificacion', 'posee_desde', 'precision', 'criterio_antiguedad', 'rogante', 'dni', 'cuil', 'cantidad_rogantes',
@@ -1361,9 +1380,10 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
 <script>window.DEPARTAMENTOS = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"c": "18", "n": "JUÁREZ CELMAN"}, "geometry": {"type": "Polygon", "coordinates": [[[-63.8901, -33.1994], [-63.8853, -33.6432], [-64.0392, -33.6431], [-64.0359, -33.8328], [-63.2285, -33.8305], [-63.0816, -33.2727], [-63.2184, -33.2470], [-63.2043, -33.1942], [-63.2152, -33.1920], [-63.1909, -33.1006], [-63.3003, -33.0814], [-63.3166, -33.1432], [-63.3378, -33.1393], [-63.3394, -33.1453], [-63.4813, -33.1189], [-63.4586, -33.0332], [-63.3930, -33.0458], [-63.3453, -32.8613], [-63.4047, -32.8501], [-63.4208, -32.9098], [-63.5244, -32.8720], [-63.5131, -32.8293], [-63.7215, -32.7906], [-63.6999, -32.7097], [-63.9074, -32.7003], [-63.9773, -32.7376], [-64.0223, -32.9027], [-64.0375, -32.8997], [-64.0426, -32.9107], [-64.0368, -32.9187], [-64.0464, -32.9253], [-64.0293, -32.9305], [-64.0480, -33.0018], [-64.0638, -33.0005], [-64.0751, -33.0462], [-64.0420, -33.0437], [-63.9765, -33.0542], [-63.9920, -33.1113], [-64.0488, -33.1096], [-64.0479, -33.1926], [-64.0382, -33.1976], [-64.0332, -33.1871], [-64.0268, -33.1924], [-64.0228, -33.1796], [-64.0077, -33.1893], [-64.0008, -33.1847], [-63.9957, -33.1962], [-63.9709, -33.1971], [-63.9707, -33.1912], [-63.9658, -33.1979], [-63.9623, -33.1909], [-63.9554, -33.2016], [-63.9513, -33.1910], [-63.9443, -33.1914], [-63.9262, -33.2006], [-63.9269, -33.2069], [-63.9190, -33.1988], [-63.9064, -33.2052], [-63.9037, -33.1928], [-63.8999, -33.2003], [-63.8901, -33.1994]]]}}, {"type": "Feature", "properties": {"c": "22", "n": "PTE. ROQUE SAENZ PEÑA"}, "geometry": {"type": "Polygon", "coordinates": [[[-63.3914, -34.3867], [-62.8895, -34.3860], [-62.8556, -34.3512], [-62.5438, -33.9433], [-63.2247, -33.8152], [-63.2285, -33.8305], [-64.0348, -33.8328], [-64.0317, -34.1742], [-64.0531, -34.1805], [-64.0767, -34.1790], [-64.0882, -34.1986], [-64.1601, -34.2084], [-64.2085, -34.2391], [-64.1655, -34.2573], [-64.1621, -34.3704], [-63.8349, -34.3642], [-63.8298, -34.5454], [-63.6111, -34.5410], [-63.6108, -34.5494], [-63.5888, -34.5495], [-63.5015, -34.5448], [-63.5024, -34.5210], [-63.3922, -34.5292], [-63.3914, -34.3867]]]}}, {"type": "Feature", "properties": {"c": "34", "n": "TOTORAL"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.2047, -30.5896], [-64.1829, -30.6531], [-64.1525, -30.6876], [-64.1174, -30.7502], [-64.1134, -30.7611], [-64.1270, -30.7586], [-64.1267, -30.7662], [-64.1177, -30.7682], [-64.1135, -30.7797], [-64.1045, -30.7801], [-64.1015, -30.7998], [-64.1425, -30.7834], [-64.1731, -30.7954], [-64.2173, -30.7902], [-64.2340, -30.7970], [-64.2388, -30.8092], [-64.2620, -30.8127], [-64.2630, -30.8070], [-64.2752, -30.8039], [-64.2969, -30.8086], [-64.3279, -30.8026], [-64.3265, -30.7982], [-64.3367, -30.8015], [-64.3543, -30.7864], [-64.4281, -30.7729], [-64.4254, -30.7784], [-64.4385, -30.7948], [-64.4471, -30.8334], [-64.4470, -30.8557], [-64.4378, -30.8686], [-64.4371, -30.8981], [-64.4432, -30.9004], [-64.4387, -30.9137], [-64.3908, -30.9126], [-64.3851, -30.9172], [-64.3770, -30.9089], [-64.3508, -30.9246], [-64.3442, -30.9382], [-64.3312, -30.9336], [-64.3184, -30.9398], [-64.3067, -30.9335], [-64.3000, -30.9452], [-64.2923, -30.9410], [-64.2924, -30.9512], [-64.2872, -30.9481], [-64.2820, -30.9578], [-64.2569, -30.9585], [-64.2588, -30.9628], [-64.2417, -30.9687], [-64.2290, -30.9674], [-64.2260, -30.9599], [-64.2056, -30.9607], [-64.1792, -30.9762], [-64.1717, -30.9689], [-64.1605, -30.9725], [-64.1516, -30.9667], [-64.1367, -30.9744], [-64.1350, -30.9682], [-64.0868, -30.9689], [-64.0393, -30.9601], [-64.0096, -30.9421], [-63.9906, -30.9437], [-63.9911, -30.9181], [-63.8879, -30.9529], [-63.8957, -31.0187], [-63.8201, -31.0180], [-63.8201, -30.9715], [-63.7642, -30.9713], [-63.7644, -30.9277], [-63.7282, -30.9343], [-63.7139, -30.8700], [-63.7094, -30.8710], [-63.6980, -30.8299], [-63.6623, -30.6670], [-63.6130, -30.6756], [-63.6117, -30.6697], [-63.5985, -30.6721], [-63.5650, -30.5340], [-63.6043, -30.5261], [-63.6154, -30.5719], [-63.6474, -30.5672], [-63.7957, -30.5691], [-63.8018, -30.5616], [-63.8023, -30.5102], [-63.8455, -30.5108], [-63.8471, -30.4165], [-63.9635, -30.4149], [-63.9792, -30.4586], [-63.9941, -30.4553], [-63.9972, -30.4796], [-64.0055, -30.4832], [-64.0557, -30.4768], [-64.0833, -30.4656], [-64.1392, -30.4722], [-64.1867, -30.4694], [-64.1927, -30.4644], [-64.2982, -30.4637], [-64.2707, -30.4882], [-64.2290, -30.5461], [-64.2090, -30.5910], [-64.2047, -30.5896]]]}}, {"type": "Feature", "properties": {"c": "23", "n": "PUNILLA"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.4959, -31.4687], [-64.4915, -31.4416], [-64.4783, -31.4307], [-64.4800, -31.4202], [-64.4480, -31.4210], [-64.4421, -31.4333], [-64.4266, -31.4155], [-64.4357, -31.3277], [-64.4302, -31.2716], [-64.4167, -31.2493], [-64.4148, -31.1738], [-64.4325, -31.1387], [-64.4294, -31.1257], [-64.4492, -31.0605], [-64.4296, -30.9725], [-64.4389, -30.9506], [-64.4345, -30.9288], [-64.4432, -30.9004], [-64.4371, -30.8981], [-64.4369, -30.8791], [-64.4470, -30.8557], [-64.4471, -30.8334], [-64.4385, -30.7948], [-64.4253, -30.7775], [-64.4572, -30.7709], [-64.5140, -30.7714], [-64.5148, -30.7030], [-64.5442, -30.7038], [-64.5446, -30.6906], [-64.6243, -30.6901], [-64.6242, -30.7628], [-64.6197, -30.7712], [-64.6409, -30.8017], [-64.6709, -30.8287], [-64.6648, -30.8466], [-64.6543, -30.8465], [-64.6446, -30.8562], [-64.6421, -30.8873], [-64.6540, -30.8910], [-64.6481, -30.9222], [-64.6745, -30.9219], [-64.6745, -30.9436], [-64.6894, -30.9468], [-64.6909, -30.9426], [-64.6998, -30.9494], [-64.6962, -30.9599], [-64.6817, -30.9594], [-64.6761, -30.9718], [-64.6734, -30.9897], [-64.6867, -31.0187], [-64.6743, -31.0212], [-64.6611, -31.0092], [-64.6524, -31.0093], [-64.6419, -31.0172], [-64.6401, -31.0277], [-64.6465, -31.0358], [-64.6430, -31.0458], [-64.6756, -31.0670], [-64.6732, -31.0882], [-64.6789, -31.0949], [-64.6710, -31.1077], [-64.6811, -31.1313], [-64.6775, -31.1372], [-64.7040, -31.1787], [-64.6976, -31.1990], [-64.6977, -31.2075], [-64.7035, -31.2084], [-64.6962, -31.2239], [-64.7075, -31.2352], [-64.7111, -31.2618], [-64.7005, -31.2776], [-64.7211, -31.2890], [-64.7491, -31.3542], [-64.7477, -31.3634], [-64.7508, -31.3707], [-64.7534, -31.3662], [-64.7563, -31.3741], [-64.7594, -31.3706], [-64.7786, -31.3799], [-64.7823, -31.3980], [-64.7910, -31.4037], [-64.8065, -31.4038], [-64.8014, -31.4159], [-64.7610, -31.4172], [-64.7613, -31.4265], [-64.7929, -31.4246], [-64.7884, -31.4934], [-64.7809, -31.5071], [-64.7513, -31.5161], [-64.7724, -31.5601], [-64.7288, -31.6737], [-64.6935, -31.6705], [-64.6907, -31.6784], [-64.6776, -31.6759], [-64.6745, -31.6898], [-64.6644, -31.6923], [-64.6487, -31.6921], [-64.6491, -31.6821], [-64.6399, -31.6783], [-64.6351, -31.6824], [-64.6395, -31.6901], [-64.6329, -31.6946], [-64.6202, -31.6871], [-64.6098, -31.6963], [-64.6003, -31.6935], [-64.5980, -31.7095], [-64.5878, -31.6991], [-64.5831, -31.7069], [-64.5715, -31.7059], [-64.5592, -31.6981], [-64.5610, -31.6936], [-64.5528, -31.6935], [-64.5548, -31.6876], [-64.5421, -31.6897], [-64.5452, -31.6578], [-64.5378, -31.6480], [-64.5444, -31.6081], [-64.5400, -31.6032], [-64.5519, -31.5859], [-64.5492, -31.5532], [-64.5210, -31.5200], [-64.5152, -31.4926], [-64.4959, -31.4687]]]}}, {"type": "Feature", "properties": {"c": "32", "n": "SOBREMONTE"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.2746, -29.4987], [-64.4893, -29.5271], [-64.4921, -29.8207], [-64.4051, -29.8276], [-64.4101, -29.9300], [-64.2106, -29.9780], [-64.1736, -30.0630], [-64.0526, -30.0876], [-64.0556, -30.0833], [-64.0446, -30.0666], [-64.0182, -30.0701], [-64.0081, -30.0620], [-63.9936, -30.0634], [-63.9817, -30.0836], [-63.9625, -30.0831], [-63.9597, -30.0764], [-63.9466, -30.0850], [-63.9356, -30.0824], [-63.9445, -30.0272], [-63.9140, -29.9925], [-63.9073, -29.9741], [-63.8873, -29.9564], [-63.8912, -29.9379], [-63.8857, -29.9087], [-63.8594, -29.8831], [-63.8349, -29.8768], [-63.8363, -29.8649], [-63.8184, -29.8421], [-63.8060, -29.7939], [-63.7913, -29.7950], [-63.7653, -29.7060], [-63.7922, -29.7042], [-63.7914, -29.6625], [-63.7792, -29.6393], [-63.7484, -29.6521], [-63.7494, -29.6314], [-63.7599, -29.6198], [-63.7959, -29.6148], [-63.7944, -29.6040], [-63.7837, -29.5973], [-63.7836, -29.5838], [-63.8114, -29.5789], [-63.8410, -29.5793], [-63.8738, -29.6307], [-63.9623, -29.6235], [-63.9763, -29.5893], [-63.9814, -29.5508], [-64.2746, -29.4987]]]}}, {"type": "Feature", "properties": {"c": "24", "n": "RÍO CUARTO"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.2458, -32.3082], [-64.2456, -32.3901], [-64.3219, -32.3763], [-64.3249, -32.3988], [-64.4260, -32.3798], [-64.4391, -32.4012], [-64.4455, -32.4610], [-64.4590, -32.4815], [-64.4875, -32.4765], [-64.5267, -32.6176], [-64.5389, -32.6265], [-64.5759, -32.6314], [-64.5944, -32.6168], [-64.6631, -32.6320], [-64.6814, -32.6287], [-64.6843, -32.6204], [-64.7276, -32.6172], [-64.7264, -32.6131], [-64.7447, -32.6059], [-64.9000, -32.5770], [-64.9150, -32.6049], [-64.9396, -32.6214], [-64.9207, -32.6425], [-64.9261, -32.6657], [-64.9108, -32.6792], [-64.9108, -32.6876], [-64.9458, -32.7173], [-64.9423, -32.7683], [-64.9753, -32.8153], [-64.9830, -32.8540], [-64.9784, -32.8903], [-64.9919, -32.8899], [-64.9868, -32.9137], [-64.9900, -32.9341], [-65.0109, -32.9565], [-65.0243, -32.9894], [-65.0120, -33.0284], [-65.0263, -33.0394], [-65.0343, -33.0645], [-65.0312, -33.0725], [-65.0540, -33.0985], [-65.0528, -33.1158], [-65.0402, -33.1336], [-65.0588, -33.1333], [-65.0851, -33.1439], [-65.1120, -33.1762], [-65.1429, -33.1972], [-65.1110, -33.9559], [-65.1034, -33.9601], [-65.1043, -33.9714], [-65.0881, -33.9765], [-65.0755, -33.9893], [-65.0635, -33.9794], [-65.0578, -33.9907], [-65.0635, -33.9933], [-65.0614, -34.0062], [-65.0441, -34.0029], [-65.0235, -34.0082], [-64.9973, -34.0373], [-64.9802, -34.0312], [-64.9567, -34.0402], [-64.9331, -34.0403], [-64.9262, -34.0469], [-64.9126, -34.0423], [-64.8938, -34.0539], [-64.8694, -34.0518], [-64.8590, -34.0674], [-64.8512, -34.0559], [-64.8221, -34.0593], [-64.8183, -34.0659], [-64.8144, -34.0607], [-64.8058, -34.0839], [-64.7914, -34.0834], [-64.7871, -34.0940], [-64.7812, -34.0875], [-64.7723, -34.0912], [-64.7597, -34.0838], [-64.7594, -34.0932], [-64.7424, -34.0959], [-64.7337, -34.1088], [-64.7116, -34.1124], [-64.7058, -34.1279], [-64.6939, -34.1247], [-64.6978, -34.1171], [-64.6871, -34.1157], [-64.6817, -34.1238], [-64.6449, -34.1423], [-64.6443, -34.1499], [-64.6533, -34.1547], [-64.6338, -34.1655], [-64.6233, -34.1607], [-64.6218, -34.1703], [-64.6134, -34.1658], [-64.5933, -34.1729], [-64.5782, -34.1708], [-64.5659, -34.1834], [-64.5554, -34.1780], [-64.5476, -34.1914], [-64.5354, -34.1919], [-64.5208, -34.1820], [-64.5088, -34.1931], [-64.4919, -34.1907], [-64.4727, -34.1972], [-64.4667, -34.2105], [-64.4252, -34.2055], [-64.4193, -34.2189], [-64.4105, -34.2223], [-64.4057, -34.2204], [-64.4109, -34.2171], [-64.4080, -34.2122], [-64.3983, -34.2067], [-64.3878, -34.2167], [-64.3416, -34.2130], [-64.3176, -34.2263], [-64.2943, -34.2139], [-64.2779, -34.2310], [-64.2542, -34.2272], [-64.2514, -34.2375], [-64.2117, -34.2391], [-64.1601, -34.2084], [-64.0882, -34.1986], [-64.0767, -34.1790], [-64.0531, -34.1805], [-64.0317, -34.1742], [-64.0392, -33.6431], [-63.8853, -33.6432], [-63.8901, -33.1994], [-63.8999, -33.2003], [-63.9037, -33.1928], [-63.9064, -33.2052], [-63.9190, -33.1988], [-63.9269, -33.2069], [-63.9262, -33.2006], [-63.9443, -33.1914], [-63.9513, -33.1910], [-63.9554, -33.2016], [-63.9623, -33.1909], [-63.9658, -33.1979], [-63.9707, -33.1912], [-63.9709, -33.1971], [-63.9957, -33.1962], [-64.0008, -33.1847], [-64.0077, -33.1893], [-64.0228, -33.1796], [-64.0268, -33.1924], [-64.0332, -33.1871], [-64.0382, -33.1976], [-64.0479, -33.1926], [-64.0488, -33.1096], [-63.9920, -33.1113], [-63.9765, -33.0542], [-64.0420, -33.0437], [-64.0751, -33.0462], [-64.0638, -33.0005], [-64.0480, -33.0018], [-64.0293, -32.9305], [-64.0464, -32.9253], [-64.0368, -32.9187], [-64.0426, -32.9107], [-64.0375, -32.8997], [-64.0223, -32.9027], [-63.9734, -32.7232], [-64.0440, -32.7503], [-63.9781, -32.4945], [-63.9779, -32.4755], [-63.9441, -32.4587], [-63.9203, -32.3745], [-63.9886, -32.3608], [-63.9819, -32.3294], [-63.9862, -32.3276], [-64.0437, -32.3244], [-64.0894, -32.3081], [-64.1890, -32.3028], [-64.2458, -32.3082]]]}}, {"type": "Feature", "properties": {"c": "21", "n": "POCHO"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.8994, -31.2768], [-65.7706, -31.2614], [-65.7697, -31.7433], [-65.6118, -31.7455], [-65.6155, -31.7583], [-65.5022, -31.7593], [-65.4845, -31.6910], [-65.4701, -31.6910], [-65.4692, -31.6198], [-65.3992, -31.6201], [-65.3994, -31.6490], [-65.2734, -31.6498], [-65.2612, -31.6736], [-65.2368, -31.6754], [-65.2355, -31.6210], [-65.2520, -31.6207], [-65.2507, -31.5670], [-65.1770, -31.5662], [-65.1769, -31.5603], [-65.1665, -31.5595], [-65.1664, -31.4908], [-65.1820, -31.4903], [-65.1719, -31.4533], [-65.1334, -31.4506], [-65.1260, -31.4363], [-65.0665, -31.4135], [-64.9955, -31.4052], [-64.9859, -31.3989], [-64.9240, -31.4131], [-64.9094, -31.3993], [-64.9133, -31.3776], [-64.8997, -31.3460], [-64.9060, -31.3108], [-64.8994, -31.2768]]]}}, {"type": "Feature", "properties": {"c": "17", "n": "ISCHILÍN"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.2982, -30.4637], [-64.2971, -30.4340], [-64.2837, -30.3887], [-64.3748, -30.3785], [-64.3853, -30.3627], [-64.3862, -30.3402], [-64.3788, -30.2905], [-64.3677, -30.2908], [-64.3565, -30.1974], [-64.2832, -30.2018], [-64.2698, -30.1160], [-64.2987, -30.1140], [-64.2961, -30.0863], [-64.9893, -30.0150], [-64.9963, -30.1798], [-65.0040, -30.2261], [-65.0018, -30.4185], [-65.0652, -30.4186], [-65.0334, -30.4750], [-64.8752, -30.6342], [-64.7148, -30.6341], [-64.7147, -30.6899], [-64.5446, -30.6906], [-64.5442, -30.7038], [-64.5148, -30.7030], [-64.5140, -30.7714], [-64.4572, -30.7709], [-64.4253, -30.7775], [-64.4286, -30.7731], [-64.4157, -30.7715], [-64.3789, -30.7854], [-64.3503, -30.7879], [-64.3367, -30.8015], [-64.3265, -30.7982], [-64.3279, -30.8026], [-64.2969, -30.8086], [-64.2752, -30.8039], [-64.2630, -30.8070], [-64.2620, -30.8127], [-64.2388, -30.8092], [-64.2340, -30.7970], [-64.2173, -30.7902], [-64.1731, -30.7954], [-64.1425, -30.7834], [-64.1015, -30.7998], [-64.1045, -30.7801], [-64.1135, -30.7797], [-64.1177, -30.7682], [-64.1267, -30.7662], [-64.1270, -30.7586], [-64.1134, -30.7611], [-64.1174, -30.7502], [-64.1525, -30.6876], [-64.1851, -30.6492], [-64.2059, -30.5981], [-64.2016, -30.5968], [-64.2290, -30.5461], [-64.2707, -30.4882], [-64.2982, -30.4637]]]}}, {"type": "Feature", "properties": {"c": "16", "n": "GRAL. SAN MARTÍN"}, "geometry": {"type": "Polygon", "coordinates": [[[-63.5470, -32.8232], [-63.5131, -32.8293], [-63.5244, -32.8720], [-63.4208, -32.9098], [-63.4047, -32.8501], [-63.3453, -32.8613], [-63.3930, -33.0458], [-63.4586, -33.0332], [-63.4813, -33.1189], [-63.3394, -33.1453], [-63.3378, -33.1393], [-63.3166, -33.1432], [-63.3003, -33.0814], [-63.1801, -33.1024], [-63.1317, -32.9190], [-63.1097, -32.9231], [-63.0906, -32.8502], [-63.0558, -32.8570], [-63.0550, -32.8296], [-63.0548, -32.8197], [-63.1033, -32.8110], [-63.0588, -32.6328], [-63.0646, -32.6266], [-63.1180, -32.6160], [-63.1011, -32.5479], [-63.0810, -32.5258], [-63.0897, -32.5128], [-63.1178, -32.5135], [-63.1203, -32.5069], [-63.1265, -32.5125], [-63.1284, -32.5053], [-63.1465, -32.5060], [-63.1444, -32.5009], [-63.1575, -32.4923], [-63.1633, -32.4722], [-63.1264, -32.4223], [-63.0976, -32.4383], [-63.0923, -32.4179], [-63.0664, -32.4266], [-63.0578, -32.3932], [-63.0675, -32.3958], [-63.0665, -32.3839], [-63.0534, -32.3763], [-63.0204, -32.3820], [-63.0174, -32.3702], [-62.9273, -32.3914], [-62.8614, -32.1605], [-62.8781, -32.1571], [-62.8511, -32.0605], [-62.9290, -32.0463], [-62.9541, -32.0481], [-62.9511, -32.0364], [-63.0062, -32.0366], [-63.0063, -32.0214], [-63.1159, -32.0009], [-63.1859, -32.0959], [-63.2013, -32.0482], [-63.2989, -32.0683], [-63.3197, -32.0799], [-63.3399, -32.0782], [-63.3586, -32.0879], [-63.4072, -32.0843], [-63.4254, -32.0993], [-63.4477, -32.1037], [-63.3712, -32.1910], [-63.4593, -32.2474], [-63.5161, -32.2223], [-63.5258, -32.2582], [-63.5427, -32.2619], [-63.5724, -32.3788], [-63.4988, -32.3928], [-63.5813, -32.7031], [-63.5602, -32.7071], [-63.5767, -32.7693], [-63.5470, -32.8232]]]}}, {"type": "Feature", "properties": {"c": "30", "n": "SAN JUSTO"}, "geometry": {"type": "Polygon", "coordinates": [[[-62.1819, -32.0637], [-62.1670, -31.9871], [-62.1884, -31.9224], [-62.2228, -31.8844], [-62.2255, -31.8382], [-62.2176, -31.7407], [-62.2413, -31.7005], [-62.1230, -31.6058], [-61.8432, -30.7474], [-62.1297, -30.4815], [-62.1484, -30.3977], [-62.3214, -30.3678], [-62.3285, -30.5771], [-62.3352, -30.5797], [-62.3736, -30.5645], [-62.4285, -30.5544], [-62.4447, -30.5685], [-62.5143, -30.5641], [-62.5539, -30.5480], [-62.5574, -30.5437], [-62.5451, -30.5441], [-62.5565, -30.5258], [-62.5920, -30.5337], [-62.6291, -30.5325], [-62.6514, -30.5116], [-62.6831, -30.5287], [-62.7043, -30.5488], [-62.7025, -30.5590], [-62.6797, -30.5672], [-62.6779, -30.5834], [-62.6852, -30.5926], [-62.7724, -30.6021], [-62.8537, -30.6306], [-62.8846, -30.6352], [-62.8903, -30.6381], [-62.8729, -30.6591], [-62.8766, -30.6620], [-62.9123, -30.6587], [-62.9144, -30.6398], [-62.9300, -30.6555], [-62.9266, -30.6649], [-62.9516, -30.6748], [-62.9373, -30.6835], [-62.9636, -30.6873], [-62.9858, -30.6773], [-62.9846, -30.6831], [-63.0002, -30.6811], [-63.0112, -30.6869], [-63.0008, -30.6955], [-63.0300, -30.6953], [-63.0339, -30.7057], [-63.0428, -30.7081], [-63.0397, -30.7129], [-63.0312, -30.7039], [-63.0165, -30.7040], [-63.0140, -30.7136], [-63.0054, -30.7084], [-62.9945, -30.7167], [-62.9794, -30.7165], [-62.9712, -30.7072], [-62.9576, -30.7209], [-62.9536, -30.7161], [-62.9353, -30.7185], [-62.9220, -30.7305], [-62.9285, -30.7449], [-62.9224, -30.7498], [-62.9294, -30.7522], [-62.9100, -30.7684], [-62.9057, -30.7857], [-62.8859, -30.7989], [-62.8422, -30.8050], [-62.8437, -30.8207], [-62.8307, -30.8264], [-62.8292, -30.8415], [-62.8152, -30.8507], [-62.8340, -30.9325], [-62.9337, -30.9674], [-62.9406, -30.9955], [-62.9334, -30.9970], [-62.9551, -31.0797], [-63.0099, -31.0718], [-63.0125, -31.0822], [-63.0225, -31.0799], [-63.0275, -31.0989], [-63.0324, -31.0980], [-63.0403, -31.1315], [-63.1196, -31.1172], [-63.1312, -31.1633], [-63.1539, -31.1594], [-63.1716, -31.2270], [-63.1646, -31.2284], [-63.1775, -31.2834], [-63.2310, -31.2735], [-63.2297, -31.2678], [-63.2459, -31.2648], [-63.2631, -31.3339], [-63.2598, -31.4645], [-63.2298, -31.4723], [-63.2034, -31.4590], [-63.2041, -31.4648], [-63.1862, -31.4692], [-63.2065, -31.5525], [-63.1872, -31.5471], [-63.1886, -31.5530], [-63.1816, -31.5530], [-63.1841, -31.5633], [-63.1638, -31.5635], [-63.1672, -31.5774], [-63.1533, -31.5885], [-63.1601, -31.6162], [-63.1497, -31.6112], [-63.1526, -31.6229], [-63.1113, -31.6227], [-63.1116, -31.6652], [-63.0530, -31.6657], [-63.0524, -31.6924], [-63.0353, -31.6923], [-63.0355, -31.7234], [-63.0147, -31.7234], [-63.0097, -31.7999], [-62.9829, -31.7988], [-62.9824, -31.8335], [-62.9686, -31.8361], [-62.9639, -31.8674], [-62.9495, -31.8674], [-62.9494, -31.9197], [-62.9383, -31.9198], [-62.9258, -31.9310], [-62.8998, -31.9659], [-62.8817, -31.9661], [-62.8810, -32.0128], [-62.8694, -32.0130], [-62.8692, -32.0057], [-62.8378, -32.0083], [-62.6356, -32.0472], [-62.6193, -31.9832], [-62.5289, -31.9988], [-62.5208, -31.9672], [-62.3162, -32.0043], [-62.3246, -32.0389], [-62.1819, -32.0637]]]}}, {"type": "Feature", "properties": {"c": "26", "n": "RÍO SECO"}, "geometry": {"type": "Polygon", "coordinates": [[[-62.6291, -30.0455], [-62.6404, -30.0511], [-62.6496, -30.0471], [-62.6556, -30.0553], [-62.6651, -30.0482], [-62.6756, -30.0352], [-62.6551, -30.0076], [-62.6626, -29.9976], [-62.6967, -29.9923], [-62.6943, -29.9832], [-62.7155, -29.9573], [-62.7157, -29.9492], [-62.7362, -29.9384], [-62.7464, -29.9185], [-62.7661, -29.9162], [-62.7743, -29.9036], [-62.7881, -29.8973], [-62.8199, -29.9036], [-62.8252, -29.8756], [-62.8378, -29.8725], [-62.8391, -29.8647], [-62.8300, -29.8415], [-62.8074, -29.8338], [-63.4597, -29.7564], [-63.4598, -29.7251], [-63.4798, -29.7252], [-63.4653, -29.6643], [-63.5138, -29.6631], [-63.5296, -29.6569], [-63.5697, -29.6641], [-63.5838, -29.6578], [-63.6057, -29.6613], [-63.6376, -29.6552], [-63.6402, -29.6624], [-63.7114, -29.6610], [-63.7206, -29.6662], [-63.7792, -29.6393], [-63.7920, -29.6650], [-63.7922, -29.7042], [-63.7653, -29.7060], [-63.7913, -29.7950], [-63.8060, -29.7939], [-63.8184, -29.8421], [-63.8363, -29.8649], [-63.8349, -29.8768], [-63.8594, -29.8831], [-63.8857, -29.9087], [-63.8912, -29.9379], [-63.8873, -29.9564], [-63.9073, -29.9741], [-63.9140, -29.9925], [-63.9455, -30.0352], [-63.9362, -30.0643], [-63.9381, -30.0917], [-63.9295, -30.0987], [-63.9100, -30.0935], [-63.9040, -30.1016], [-63.8877, -30.0968], [-63.8858, -30.1075], [-63.8584, -30.1247], [-63.6992, -30.1479], [-63.4937, -30.1886], [-63.4925, -30.2721], [-63.3809, -30.2704], [-63.3809, -30.3214], [-63.3484, -30.3236], [-63.3254, -30.2304], [-62.5269, -30.3784], [-62.5504, -30.4701], [-62.3250, -30.5115], [-62.3214, -30.3678], [-62.1484, -30.3977], [-62.1741, -30.2819], [-62.5653, -30.2880], [-62.5803, -30.2680], [-62.5864, -30.2414], [-62.5816, -30.2356], [-62.5889, -30.2268], [-62.5829, -30.2194], [-62.5856, -30.2071], [-62.5742, -30.1939], [-62.5957, -30.1643], [-62.5667, -30.1216], [-62.5602, -30.1016], [-62.5648, -30.0876], [-62.5539, -30.0625], [-62.5681, -30.0561], [-62.5893, -30.0637], [-62.5965, -30.0493], [-62.6069, -30.0458], [-62.6182, -30.0529], [-62.6291, -30.0455]]]}}, {"type": "Feature", "properties": {"c": "27", "n": "RÍO SEGUNDO"}, "geometry": {"type": "Polygon", "coordinates": [[[-63.6463, -31.4873], [-63.6710, -31.4954], [-63.6807, -31.4929], [-63.6806, -31.5167], [-63.6908, -31.5222], [-63.7352, -31.5157], [-63.7578, -31.5247], [-63.8299, -31.5262], [-63.8982, -31.5429], [-63.9543, -31.5353], [-63.9341, -31.5582], [-64.0166, -31.6203], [-63.9852, -31.6511], [-64.0146, -31.6560], [-64.0297, -31.6810], [-64.0272, -31.7686], [-64.0104, -31.7498], [-63.9821, -31.7460], [-63.9477, -31.7528], [-63.9468, -31.8744], [-63.9180, -31.8746], [-63.9189, -31.9869], [-63.6997, -31.9883], [-63.6996, -32.0354], [-63.6778, -32.0350], [-63.6776, -31.9990], [-63.6588, -32.0207], [-63.5700, -31.9642], [-63.5549, -31.9813], [-63.4243, -31.9839], [-63.4217, -31.9741], [-63.3962, -31.9706], [-63.4000, -31.9820], [-63.3703, -31.9780], [-63.3674, -31.9664], [-63.3481, -31.9638], [-63.3425, -31.9417], [-63.3132, -31.9335], [-63.2670, -31.9358], [-63.2444, -31.9248], [-63.2108, -32.0099], [-63.1826, -32.0013], [-63.1256, -31.9473], [-63.1114, -31.9589], [-63.0834, -31.9522], [-63.0970, -32.0054], [-63.0063, -32.0214], [-63.0062, -32.0366], [-62.9511, -32.0364], [-62.9541, -32.0481], [-62.9290, -32.0463], [-62.8511, -32.0605], [-62.8385, -32.0113], [-62.8692, -32.0057], [-62.8694, -32.0130], [-62.8810, -32.0128], [-62.8817, -31.9661], [-62.8998, -31.9659], [-62.9258, -31.9310], [-62.9383, -31.9198], [-62.9494, -31.9197], [-62.9495, -31.8674], [-62.9639, -31.8674], [-62.9686, -31.8361], [-62.9824, -31.8335], [-62.9829, -31.7988], [-63.0097, -31.7999], [-63.0147, -31.7234], [-63.0355, -31.7234], [-63.0353, -31.6923], [-63.0524, -31.6924], [-63.0530, -31.6657], [-63.1116, -31.6652], [-63.1113, -31.6227], [-63.1526, -31.6229], [-63.1497, -31.6112], [-63.1601, -31.6162], [-63.1533, -31.5885], [-63.1672, -31.5774], [-63.1638, -31.5635], [-63.1841, -31.5633], [-63.1816, -31.5530], [-63.1886, -31.5530], [-63.1872, -31.5471], [-63.2065, -31.5525], [-63.1862, -31.4692], [-63.2041, -31.4648], [-63.2034, -31.4590], [-63.2298, -31.4723], [-63.2597, -31.4646], [-63.2631, -31.3339], [-63.3656, -31.3150], [-63.3584, -31.3676], [-63.3862, -31.3676], [-63.4145, -31.3781], [-63.4496, -31.3753], [-63.4545, -31.3842], [-63.4856, -31.3906], [-63.4895, -31.4023], [-63.5306, -31.4032], [-63.5305, -31.4137], [-63.5474, -31.4140], [-63.5473, -31.4230], [-63.5580, -31.4342], [-63.5579, -31.4579], [-63.5722, -31.4699], [-63.6189, -31.4940], [-63.6463, -31.4873]]]}}, {"type": "Feature", "properties": {"c": "20", "n": "MINAS"}, "geometry": {"type": "Polygon", "coordinates": [[[-65.1574, -30.8772], [-65.1828, -30.8704], [-65.2546, -30.8839], [-65.3350, -30.8824], [-65.3481, -30.8462], [-65.3430, -30.7702], [-65.3490, -30.7571], [-65.3470, -30.7378], [-65.3733, -30.7040], [-65.3734, -30.6931], [-65.5990, -30.6568], [-65.7710, -31.0434], [-65.7706, -31.2614], [-64.8994, -31.2768], [-64.8977, -31.2481], [-64.9053, -31.2213], [-64.9209, -31.2114], [-64.9238, -31.1935], [-64.9402, -31.1670], [-64.9887, -31.1375], [-65.0188, -31.1056], [-65.0407, -31.0972], [-65.1061, -31.0439], [-65.1194, -31.0211], [-65.1096, -31.0015], [-65.1219, -30.9936], [-65.1172, -30.9897], [-65.1325, -30.9781], [-65.1378, -30.9599], [-65.1523, -30.9468], [-65.1574, -30.8772]]]}}, {"type": "Feature", "properties": {"c": "36", "n": "UNIÓN"}, "geometry": {"type": "Polygon", "coordinates": [[[-62.4832, -32.6980], [-62.4910, -32.6955], [-62.4863, -32.6791], [-62.4562, -32.6846], [-62.3905, -32.4381], [-62.3544, -32.4446], [-62.3471, -32.4148], [-62.2660, -32.4290], [-62.2450, -32.3290], [-62.2990, -32.3195], [-62.2946, -32.3013], [-62.3759, -32.2874], [-62.3393, -32.1368], [-62.3065, -32.1420], [-62.2824, -32.0465], [-62.3246, -32.0389], [-62.3162, -32.0043], [-62.5208, -31.9672], [-62.5289, -31.9988], [-62.6193, -31.9832], [-62.6356, -32.0472], [-62.8378, -32.0083], [-62.8781, -32.1571], [-62.8614, -32.1605], [-62.9273, -32.3914], [-63.0174, -32.3702], [-63.0204, -32.3820], [-63.0534, -32.3763], [-63.0665, -32.3839], [-63.0675, -32.3958], [-63.0578, -32.3932], [-63.0664, -32.4266], [-63.0923, -32.4179], [-63.0976, -32.4383], [-63.1264, -32.4223], [-63.1633, -32.4722], [-63.1575, -32.4923], [-63.1444, -32.5009], [-63.1465, -32.5060], [-63.1284, -32.5053], [-63.1265, -32.5125], [-63.1203, -32.5069], [-63.1178, -32.5135], [-63.0897, -32.5128], [-63.0810, -32.5258], [-63.1011, -32.5479], [-63.1180, -32.6160], [-63.0646, -32.6266], [-63.0588, -32.6328], [-63.1033, -32.8110], [-63.0548, -32.8197], [-63.0558, -32.8570], [-63.0906, -32.8502], [-63.1097, -32.9231], [-63.1317, -32.9190], [-63.1801, -33.1024], [-63.1909, -33.1006], [-63.2152, -33.1920], [-63.2043, -33.1942], [-63.2184, -33.2470], [-63.0816, -33.2727], [-63.2247, -33.8152], [-63.1414, -33.8346], [-63.1397, -33.8279], [-63.0836, -33.8382], [-63.0849, -33.8455], [-62.8051, -33.8959], [-62.7766, -33.7793], [-62.7533, -33.7834], [-62.6456, -33.3585], [-62.6033, -33.3013], [-62.6884, -33.2856], [-62.5748, -33.2115], [-62.5208, -33.1275], [-62.6252, -33.1079], [-62.5306, -33.0434], [-62.5078, -32.9527], [-62.5428, -32.9467], [-62.5159, -32.8370], [-62.4511, -32.8482], [-62.4873, -32.7643], [-62.4926, -32.7891], [-62.5038, -32.7821], [-62.4832, -32.6980]]]}}, {"type": "Feature", "properties": {"c": "19", "n": "MARCOS JUAREZ"}, "geometry": {"type": "Polygon", "coordinates": [[[-62.4832, -32.6980], [-62.5038, -32.7821], [-62.4926, -32.7891], [-62.4873, -32.7643], [-62.4511, -32.8482], [-62.5159, -32.8370], [-62.5428, -32.9467], [-62.5078, -32.9527], [-62.5306, -33.0434], [-62.6252, -33.1079], [-62.5208, -33.1275], [-62.5748, -33.2115], [-62.6884, -33.2856], [-62.6033, -33.3013], [-62.6456, -33.3585], [-62.7533, -33.7834], [-62.7766, -33.7793], [-62.8051, -33.8959], [-62.5438, -33.9433], [-61.9334, -33.1343], [-61.8819, -33.0993], [-61.8613, -33.0684], [-61.7876, -33.0061], [-61.7909, -32.9584], [-61.7717, -32.9015], [-61.7923, -32.8770], [-61.7778, -32.8308], [-61.7961, -32.7735], [-61.8106, -32.7592], [-61.8280, -32.7548], [-61.8580, -32.6948], [-61.9078, -32.6960], [-61.9467, -32.6783], [-61.9463, -32.6511], [-61.8901, -32.6147], [-61.8916, -32.5905], [-61.9211, -32.5941], [-61.9263, -32.5833], [-61.9021, -32.5688], [-61.9051, -32.5524], [-61.9235, -32.5516], [-61.9309, -32.5446], [-61.9298, -32.5370], [-61.9133, -32.5265], [-61.9207, -32.5061], [-61.9144, -32.4949], [-61.9438, -32.4392], [-61.9839, -32.3937], [-62.0117, -32.3468], [-62.0373, -32.2635], [-62.1278, -32.2087], [-62.1785, -32.1590], [-62.1963, -32.1146], [-62.1819, -32.0637], [-62.2824, -32.0465], [-62.3065, -32.1420], [-62.3393, -32.1368], [-62.3759, -32.2874], [-62.2946, -32.3013], [-62.2990, -32.3195], [-62.2450, -32.3290], [-62.2660, -32.4290], [-62.3471, -32.4148], [-62.3544, -32.4446], [-62.3905, -32.4381], [-62.4562, -32.6846], [-62.4863, -32.6791], [-62.4910, -32.6955], [-62.4832, -32.6980]]]}}, {"type": "Feature", "properties": {"c": "14", "n": "CRUZ DEL EJE"}, "geometry": {"type": "Polygon", "coordinates": [[[-65.5990, -30.6568], [-65.3734, -30.6931], [-65.3733, -30.7040], [-65.3470, -30.7378], [-65.3490, -30.7571], [-65.3430, -30.7702], [-65.3481, -30.8462], [-65.3350, -30.8824], [-65.2546, -30.8839], [-65.1828, -30.8704], [-65.1581, -30.8742], [-65.1523, -30.9468], [-65.1378, -30.9599], [-65.1325, -30.9781], [-65.1172, -30.9897], [-65.1219, -30.9936], [-65.1096, -31.0015], [-65.1194, -31.0211], [-65.1061, -31.0439], [-65.0407, -31.0972], [-65.0188, -31.1056], [-64.9887, -31.1375], [-64.9402, -31.1670], [-64.9238, -31.1935], [-64.9209, -31.2114], [-64.9053, -31.2213], [-64.8977, -31.2481], [-64.8973, -31.2821], [-64.9060, -31.3108], [-64.8997, -31.3460], [-64.9133, -31.3776], [-64.9094, -31.3993], [-64.9233, -31.4123], [-64.8808, -31.4152], [-64.8316, -31.4090], [-64.8316, -31.4179], [-64.7609, -31.4262], [-64.7611, -31.4171], [-64.8014, -31.4159], [-64.8065, -31.4038], [-64.7910, -31.4037], [-64.7823, -31.3980], [-64.7786, -31.3799], [-64.7594, -31.3706], [-64.7563, -31.3741], [-64.7534, -31.3662], [-64.7508, -31.3707], [-64.7491, -31.3542], [-64.7211, -31.2890], [-64.7005, -31.2776], [-64.7111, -31.2618], [-64.7075, -31.2352], [-64.6962, -31.2239], [-64.7035, -31.2084], [-64.6977, -31.2075], [-64.6976, -31.1990], [-64.7040, -31.1787], [-64.6775, -31.1372], [-64.6811, -31.1313], [-64.6710, -31.1077], [-64.6789, -31.0949], [-64.6732, -31.0882], [-64.6756, -31.0670], [-64.6430, -31.0458], [-64.6465, -31.0358], [-64.6401, -31.0277], [-64.6419, -31.0172], [-64.6524, -31.0093], [-64.6611, -31.0092], [-64.6743, -31.0212], [-64.6867, -31.0187], [-64.6734, -30.9897], [-64.6761, -30.9718], [-64.6817, -30.9594], [-64.6962, -30.9599], [-64.6998, -30.9494], [-64.6909, -30.9426], [-64.6894, -30.9468], [-64.6745, -30.9436], [-64.6745, -30.9219], [-64.6481, -30.9222], [-64.6540, -30.8910], [-64.6421, -30.8873], [-64.6446, -30.8562], [-64.6543, -30.8465], [-64.6648, -30.8466], [-64.6709, -30.8287], [-64.6409, -30.8017], [-64.6197, -30.7712], [-64.6242, -30.7628], [-64.6243, -30.6901], [-64.7147, -30.6899], [-64.7148, -30.6341], [-64.8752, -30.6342], [-65.0334, -30.4750], [-65.0652, -30.4186], [-65.0018, -30.4185], [-65.0040, -30.2261], [-64.9963, -30.1798], [-64.9874, -29.9634], [-65.1193, -30.0757], [-65.3982, -30.1251], [-65.5192, -30.4763], [-65.5990, -30.6568]]]}}, {"type": "Feature", "properties": {"c": "29", "n": "SAN JAVIER"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.9288, -31.9092], [-64.9543, -31.8959], [-64.9956, -31.8599], [-65.0189, -31.8711], [-65.0187, -31.8785], [-65.0332, -31.8701], [-65.0449, -31.8720], [-65.0525, -31.8823], [-65.0587, -31.8791], [-65.0604, -31.8858], [-65.0754, -31.8875], [-65.0919, -31.9080], [-65.1057, -31.9077], [-65.1056, -31.9157], [-65.1142, -31.9119], [-65.1444, -31.9256], [-65.1739, -31.9258], [-65.1812, -31.9400], [-65.1921, -31.9401], [-65.2041, -31.9307], [-65.2104, -31.9423], [-65.2519, -31.9484], [-65.3522, -31.9206], [-65.3526, -31.9042], [-65.5505, -31.9072], [-65.5504, -31.8962], [-65.6058, -31.8954], [-65.6063, -31.9080], [-65.3162, -32.0400], [-65.3093, -32.0538], [-65.2942, -32.0571], [-65.2530, -32.0896], [-65.2445, -32.0894], [-65.2349, -32.1106], [-65.2389, -32.1115], [-65.2341, -32.1169], [-65.2425, -32.1202], [-65.2306, -32.1479], [-65.2337, -32.1548], [-65.2243, -32.1680], [-65.2319, -32.2092], [-65.2100, -32.2349], [-65.2127, -32.2588], [-65.2074, -32.2613], [-65.2192, -32.2797], [-65.2078, -32.3034], [-65.2111, -32.3265], [-64.9966, -32.3141], [-64.9773, -32.3214], [-64.9607, -32.3163], [-64.9538, -32.3073], [-64.9613, -32.2819], [-64.9535, -32.2634], [-64.9603, -32.2534], [-64.9515, -32.2375], [-64.9622, -32.2268], [-64.9494, -32.1553], [-64.9553, -32.1433], [-64.9335, -32.0477], [-64.9427, -32.0158], [-64.9350, -31.9683], [-64.9403, -31.9614], [-64.9322, -31.9473], [-64.9365, -31.9371], [-64.9288, -31.9092]]]}}, {"type": "Feature", "properties": {"c": "35", "n": "TULUMBA"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.4893, -29.5271], [-64.9498, -29.5895], [-64.8978, -29.8868], [-64.9874, -29.9634], [-64.9893, -30.0150], [-64.2961, -30.0863], [-64.2987, -30.1140], [-64.2698, -30.1160], [-64.2832, -30.2018], [-64.3565, -30.1974], [-64.3677, -30.2908], [-64.3788, -30.2905], [-64.3862, -30.3402], [-64.3853, -30.3627], [-64.3748, -30.3785], [-64.2837, -30.3887], [-64.2971, -30.4340], [-64.2982, -30.4637], [-64.1927, -30.4644], [-64.1867, -30.4694], [-64.1392, -30.4722], [-64.0833, -30.4656], [-64.0557, -30.4768], [-64.0055, -30.4832], [-63.9972, -30.4796], [-63.9941, -30.4553], [-63.9792, -30.4586], [-63.9635, -30.4149], [-63.8471, -30.4165], [-63.8455, -30.5108], [-63.8023, -30.5102], [-63.8018, -30.5616], [-63.7957, -30.5691], [-63.6474, -30.5672], [-63.6154, -30.5719], [-63.6043, -30.5261], [-63.3569, -30.5758], [-63.3650, -30.6094], [-63.2075, -30.6390], [-63.2136, -30.6620], [-63.0254, -30.6967], [-63.0012, -30.6957], [-63.0112, -30.6869], [-63.0002, -30.6811], [-62.9846, -30.6831], [-62.9858, -30.6773], [-62.9636, -30.6873], [-62.9373, -30.6835], [-62.9516, -30.6748], [-62.9266, -30.6649], [-62.9300, -30.6555], [-62.9144, -30.6398], [-62.9123, -30.6587], [-62.8766, -30.6620], [-62.8729, -30.6591], [-62.8903, -30.6381], [-62.8846, -30.6352], [-62.8537, -30.6306], [-62.7724, -30.6021], [-62.6852, -30.5926], [-62.6779, -30.5834], [-62.6797, -30.5672], [-62.7025, -30.5590], [-62.7043, -30.5488], [-62.6831, -30.5287], [-62.6514, -30.5116], [-62.6291, -30.5325], [-62.5920, -30.5337], [-62.5565, -30.5258], [-62.5451, -30.5441], [-62.5574, -30.5437], [-62.5539, -30.5480], [-62.5143, -30.5641], [-62.4447, -30.5685], [-62.4285, -30.5544], [-62.3736, -30.5645], [-62.3352, -30.5797], [-62.3285, -30.5771], [-62.3250, -30.5115], [-62.5504, -30.4701], [-62.5269, -30.3784], [-63.3254, -30.2304], [-63.3484, -30.3236], [-63.3809, -30.3214], [-63.3809, -30.2704], [-63.4925, -30.2721], [-63.4937, -30.1886], [-63.6992, -30.1479], [-63.8584, -30.1247], [-63.8858, -30.1075], [-63.8868, -30.0972], [-63.9040, -30.1016], [-63.9100, -30.0935], [-63.9251, -30.0937], [-63.9303, -30.0986], [-63.9381, -30.0917], [-63.9345, -30.0856], [-63.9516, -30.0838], [-63.9535, -30.0770], [-63.9817, -30.0836], [-63.9867, -30.0783], [-63.9825, -30.0745], [-63.9959, -30.0627], [-64.0085, -30.0621], [-64.0182, -30.0701], [-64.0446, -30.0666], [-64.0556, -30.0833], [-64.0526, -30.0876], [-64.1736, -30.0630], [-64.2106, -29.9780], [-64.4101, -29.9300], [-64.4051, -29.8276], [-64.4921, -29.8207], [-64.4893, -29.5271]]]}}, {"type": "Feature", "properties": {"c": "31", "n": "SANTA MARÍA"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.4292, -31.3629], [-64.4280, -31.4209], [-64.4455, -31.4336], [-64.4480, -31.4210], [-64.4800, -31.4202], [-64.4783, -31.4307], [-64.4915, -31.4416], [-64.4959, -31.4687], [-64.5152, -31.4926], [-64.5210, -31.5200], [-64.5492, -31.5532], [-64.5519, -31.5859], [-64.5400, -31.6032], [-64.5444, -31.6081], [-64.5378, -31.6480], [-64.5452, -31.6578], [-64.5421, -31.6897], [-64.5548, -31.6876], [-64.5528, -31.6935], [-64.5610, -31.6936], [-64.5592, -31.6981], [-64.5715, -31.7059], [-64.5831, -31.7069], [-64.5878, -31.6991], [-64.5980, -31.7095], [-64.6003, -31.6935], [-64.6098, -31.6963], [-64.6202, -31.6871], [-64.6329, -31.6946], [-64.6395, -31.6901], [-64.6351, -31.6824], [-64.6399, -31.6783], [-64.6491, -31.6821], [-64.6487, -31.6921], [-64.6644, -31.6923], [-64.6745, -31.6898], [-64.6776, -31.6759], [-64.7173, -31.6713], [-64.7126, -31.7012], [-64.7275, -31.7137], [-64.7268, -31.7353], [-64.7508, -31.7472], [-64.7599, -31.7598], [-64.7636, -31.7944], [-64.7835, -31.8266], [-64.8873, -31.8280], [-64.8847, -31.8467], [-64.9288, -31.9092], [-64.8949, -31.9069], [-64.8345, -31.8652], [-64.7604, -31.8665], [-64.7327, -31.8862], [-64.7326, -31.8784], [-64.7128, -31.8885], [-64.7030, -31.8816], [-64.6954, -31.8874], [-64.6914, -31.8803], [-64.6887, -31.8868], [-64.6752, -31.8828], [-64.6775, -31.8945], [-64.6655, -31.8892], [-64.6535, -31.8955], [-64.6503, -31.8898], [-64.6402, -31.8924], [-64.6392, -31.8846], [-64.6299, -31.8899], [-64.6342, -31.8969], [-64.6268, -31.8988], [-64.6170, -31.8909], [-64.6091, -31.8966], [-64.6063, -31.8852], [-64.5906, -31.8861], [-64.5821, -31.8784], [-64.5781, -31.8835], [-64.5609, -31.8782], [-64.5491, -31.8823], [-64.5439, -31.8744], [-64.5525, -31.8701], [-64.5500, -31.8635], [-64.5427, -31.8652], [-64.5315, -31.8494], [-64.5274, -31.8520], [-64.5321, -31.8453], [-64.5285, -31.8293], [-64.5205, -31.8179], [-64.5068, -31.8210], [-64.5041, -31.8166], [-64.5060, -31.8284], [-64.4989, -31.8311], [-64.4949, -31.8228], [-64.4914, -31.8310], [-64.4972, -31.8335], [-64.4899, -31.8398], [-64.4986, -31.8438], [-64.4847, -31.8513], [-64.4756, -31.8372], [-64.4595, -31.8525], [-64.4481, -31.8475], [-64.4454, -31.8383], [-64.4321, -31.8399], [-64.4366, -31.8469], [-64.4260, -31.8571], [-64.4159, -31.8479], [-64.4098, -31.8509], [-64.4137, -31.8434], [-64.4049, -31.8373], [-64.3967, -31.8454], [-64.3848, -31.8465], [-64.3780, -31.8452], [-64.3801, -31.8392], [-64.3111, -31.8419], [-64.3139, -31.8539], [-64.2880, -31.8536], [-64.2882, -31.9499], [-64.2747, -31.9449], [-64.2742, -31.9126], [-64.2234, -31.9124], [-64.2237, -31.9359], [-64.2414, -32.0044], [-64.0845, -32.0046], [-64.0841, -31.9505], [-63.9737, -31.9517], [-63.9744, -31.9980], [-63.9192, -32.0098], [-63.9180, -31.8746], [-63.9468, -31.8744], [-63.9477, -31.7528], [-63.9821, -31.7460], [-64.0104, -31.7498], [-64.0272, -31.7686], [-64.0297, -31.6810], [-64.0146, -31.6560], [-63.9852, -31.6511], [-64.0166, -31.6203], [-63.9341, -31.5582], [-63.9567, -31.5364], [-63.9486, -31.4544], [-63.9521, -31.4396], [-63.9696, -31.4430], [-63.9735, -31.4518], [-63.9845, -31.4443], [-64.0022, -31.4470], [-64.0067, -31.4379], [-64.0196, -31.4379], [-64.0252, -31.4284], [-64.0427, -31.4340], [-64.0573, -31.4192], [-64.0573, -31.5249], [-64.3097, -31.5249], [-64.3097, -31.3632], [-64.3155, -31.3584], [-64.3510, -31.3713], [-64.4224, -31.3555], [-64.4179, -31.3669], [-64.4292, -31.3629]]]}}, {"type": "Feature", "properties": {"c": "15", "n": "GENERAL ROCA"}, "geometry": {"type": "Polygon", "coordinates": [[[-65.1090, -35.0155], [-63.3857, -35.0020], [-63.3822, -34.8186], [-63.3922, -34.5292], [-63.5024, -34.5210], [-63.5015, -34.5448], [-63.5888, -34.5495], [-63.6108, -34.5494], [-63.6111, -34.5410], [-63.8298, -34.5454], [-63.8349, -34.3642], [-64.1621, -34.3704], [-64.1655, -34.2573], [-64.2085, -34.2391], [-64.2514, -34.2375], [-64.2542, -34.2272], [-64.2779, -34.2310], [-64.2943, -34.2139], [-64.3176, -34.2263], [-64.3416, -34.2130], [-64.3878, -34.2167], [-64.3983, -34.2067], [-64.4080, -34.2122], [-64.4109, -34.2171], [-64.4057, -34.2204], [-64.4105, -34.2223], [-64.4193, -34.2189], [-64.4252, -34.2055], [-64.4667, -34.2105], [-64.4727, -34.1972], [-64.4919, -34.1907], [-64.5088, -34.1931], [-64.5208, -34.1820], [-64.5354, -34.1919], [-64.5476, -34.1914], [-64.5554, -34.1780], [-64.5659, -34.1834], [-64.5782, -34.1708], [-64.5933, -34.1729], [-64.6134, -34.1658], [-64.6218, -34.1703], [-64.6233, -34.1607], [-64.6338, -34.1655], [-64.6533, -34.1547], [-64.6443, -34.1499], [-64.6449, -34.1423], [-64.6817, -34.1238], [-64.6871, -34.1157], [-64.6978, -34.1171], [-64.6939, -34.1247], [-64.7058, -34.1279], [-64.7116, -34.1124], [-64.7337, -34.1088], [-64.7424, -34.0959], [-64.7594, -34.0932], [-64.7597, -34.0838], [-64.7723, -34.0912], [-64.7812, -34.0875], [-64.7871, -34.0940], [-64.7914, -34.0834], [-64.8058, -34.0839], [-64.8144, -34.0607], [-64.8183, -34.0659], [-64.8221, -34.0593], [-64.8512, -34.0559], [-64.8590, -34.0674], [-64.8694, -34.0518], [-64.8938, -34.0539], [-64.9126, -34.0423], [-64.9262, -34.0469], [-64.9331, -34.0403], [-64.9567, -34.0402], [-64.9802, -34.0312], [-64.9973, -34.0373], [-65.0235, -34.0082], [-65.0441, -34.0029], [-65.0614, -34.0062], [-65.0635, -33.9933], [-65.0578, -33.9907], [-65.0625, -33.9802], [-65.0762, -33.9889], [-65.0881, -33.9765], [-65.1043, -33.9714], [-65.1034, -33.9601], [-65.1110, -33.9559], [-65.1090, -35.0155]]]}}, {"type": "Feature", "properties": {"c": "12", "n": "CALAMUCHITA"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.6311, -31.8908], [-64.6392, -31.8846], [-64.6409, -31.8926], [-64.6503, -31.8898], [-64.6535, -31.8955], [-64.6655, -31.8892], [-64.6772, -31.8946], [-64.6768, -31.8820], [-64.6887, -31.8868], [-64.6921, -31.8805], [-64.6963, -31.8875], [-64.7112, -31.8828], [-64.7137, -31.8884], [-64.7303, -31.8786], [-64.7303, -31.8852], [-64.7370, -31.8851], [-64.7604, -31.8665], [-64.8345, -31.8652], [-64.8949, -31.9069], [-64.9288, -31.9092], [-64.9365, -31.9371], [-64.9322, -31.9473], [-64.9403, -31.9614], [-64.9350, -31.9683], [-64.9427, -32.0158], [-64.9335, -32.0477], [-64.9553, -32.1433], [-64.9494, -32.1553], [-64.9622, -32.2268], [-64.9515, -32.2375], [-64.9603, -32.2534], [-64.9535, -32.2634], [-64.9613, -32.2819], [-64.9588, -32.2939], [-64.9340, -32.3352], [-64.9292, -32.3810], [-64.9366, -32.3975], [-64.9322, -32.4121], [-64.9488, -32.4445], [-64.9373, -32.4716], [-64.9469, -32.5167], [-64.9284, -32.5635], [-64.9154, -32.5650], [-64.9000, -32.5770], [-64.7447, -32.6059], [-64.7264, -32.6131], [-64.7276, -32.6172], [-64.6843, -32.6204], [-64.6814, -32.6287], [-64.6631, -32.6320], [-64.5944, -32.6168], [-64.5784, -32.6307], [-64.5502, -32.6308], [-64.5267, -32.6176], [-64.4875, -32.4765], [-64.4590, -32.4815], [-64.4485, -32.4669], [-64.4391, -32.4012], [-64.4260, -32.3798], [-64.3249, -32.3988], [-64.3219, -32.3763], [-64.2456, -32.3901], [-64.2456, -32.3269], [-64.2708, -32.3225], [-64.2691, -32.3159], [-64.2812, -32.3136], [-64.2834, -32.3201], [-64.2934, -32.3182], [-64.2938, -32.2049], [-64.3074, -32.1818], [-64.2846, -32.1643], [-64.2743, -32.1461], [-64.2774, -32.1406], [-64.2237, -31.9359], [-64.2234, -31.9124], [-64.2742, -31.9126], [-64.2747, -31.9449], [-64.2882, -31.9499], [-64.2880, -31.8536], [-64.3139, -31.8539], [-64.3111, -31.8419], [-64.3801, -31.8392], [-64.3780, -31.8452], [-64.3848, -31.8465], [-64.3967, -31.8454], [-64.4049, -31.8373], [-64.4137, -31.8434], [-64.4098, -31.8509], [-64.4159, -31.8479], [-64.4260, -31.8571], [-64.4366, -31.8469], [-64.4321, -31.8399], [-64.4454, -31.8383], [-64.4481, -31.8475], [-64.4595, -31.8525], [-64.4756, -31.8372], [-64.4847, -31.8513], [-64.4986, -31.8438], [-64.4899, -31.8398], [-64.4972, -31.8335], [-64.4914, -31.8310], [-64.4949, -31.8228], [-64.4989, -31.8311], [-64.5060, -31.8284], [-64.5041, -31.8166], [-64.5068, -31.8210], [-64.5205, -31.8179], [-64.5285, -31.8293], [-64.5321, -31.8453], [-64.5274, -31.8520], [-64.5315, -31.8494], [-64.5427, -31.8652], [-64.5500, -31.8635], [-64.5525, -31.8701], [-64.5439, -31.8744], [-64.5491, -31.8823], [-64.5609, -31.8782], [-64.5781, -31.8835], [-64.5821, -31.8784], [-64.5906, -31.8861], [-64.6063, -31.8852], [-64.6084, -31.8964], [-64.6175, -31.8909], [-64.6268, -31.8988], [-64.6351, -31.8963], [-64.6311, -31.8908]]]}}, {"type": "Feature", "properties": {"c": "33", "n": "TERCERO ARRIBA"}, "geometry": {"type": "Polygon", "coordinates": [[[-63.6997, -31.9883], [-63.9189, -31.9869], [-63.9192, -32.0098], [-63.9744, -31.9980], [-63.9737, -31.9517], [-64.0841, -31.9505], [-64.0845, -32.0046], [-64.2414, -32.0044], [-64.2774, -32.1406], [-64.2743, -32.1461], [-64.2846, -32.1643], [-64.3074, -32.1810], [-64.2938, -32.2049], [-64.2934, -32.3182], [-64.2834, -32.3201], [-64.2812, -32.3136], [-64.2691, -32.3159], [-64.2708, -32.3225], [-64.2456, -32.3269], [-64.2458, -32.3082], [-64.1890, -32.3028], [-64.0894, -32.3081], [-64.0437, -32.3244], [-63.9862, -32.3276], [-63.9819, -32.3294], [-63.9886, -32.3608], [-63.9203, -32.3745], [-63.9441, -32.4587], [-63.9779, -32.4755], [-63.9781, -32.4945], [-64.0440, -32.7503], [-63.9734, -32.7232], [-63.9773, -32.7376], [-63.9074, -32.7003], [-63.6999, -32.7097], [-63.7215, -32.7906], [-63.5502, -32.8226], [-63.5767, -32.7693], [-63.5602, -32.7071], [-63.5813, -32.7031], [-63.4988, -32.3928], [-63.5724, -32.3788], [-63.5427, -32.2619], [-63.5258, -32.2582], [-63.5161, -32.2223], [-63.4593, -32.2474], [-63.3712, -32.1910], [-63.4477, -32.1037], [-63.4254, -32.0993], [-63.4072, -32.0843], [-63.3586, -32.0879], [-63.3399, -32.0782], [-63.3197, -32.0799], [-63.2989, -32.0683], [-63.2013, -32.0482], [-63.1859, -32.0959], [-63.1159, -32.0009], [-63.0970, -32.0054], [-63.0834, -31.9522], [-63.1114, -31.9589], [-63.1256, -31.9473], [-63.1826, -32.0013], [-63.2108, -32.0099], [-63.2444, -31.9248], [-63.2670, -31.9358], [-63.3132, -31.9335], [-63.3425, -31.9417], [-63.3481, -31.9638], [-63.3674, -31.9664], [-63.3703, -31.9780], [-63.4000, -31.9820], [-63.3962, -31.9706], [-63.4217, -31.9741], [-63.4243, -31.9839], [-63.5549, -31.9813], [-63.5700, -31.9642], [-63.6588, -32.0207], [-63.6776, -31.9990], [-63.6778, -32.0350], [-63.6996, -32.0354], [-63.6997, -31.9883]]]}}, {"type": "Feature", "properties": {"c": "25", "n": "RÍO PRIMERO"}, "geometry": {"type": "Polygon", "coordinates": [[[-63.0300, -30.6953], [-63.2136, -30.6620], [-63.2075, -30.6390], [-63.3650, -30.6094], [-63.3569, -30.5758], [-63.5650, -30.5340], [-63.5985, -30.6721], [-63.6117, -30.6697], [-63.6130, -30.6756], [-63.6623, -30.6670], [-63.6980, -30.8299], [-63.7094, -30.8710], [-63.7139, -30.8700], [-63.7282, -30.9343], [-63.7644, -30.9277], [-63.7642, -30.9713], [-63.8201, -30.9715], [-63.8232, -31.0733], [-63.8394, -31.0697], [-63.8309, -31.0934], [-63.8445, -31.1119], [-63.8644, -31.1119], [-63.8660, -31.2260], [-63.8951, -31.2311], [-63.8950, -31.2457], [-63.9224, -31.2459], [-63.9221, -31.2740], [-63.9508, -31.2739], [-63.9507, -31.3206], [-63.9647, -31.3206], [-63.9646, -31.3443], [-63.9752, -31.3456], [-63.9752, -31.3521], [-63.9641, -31.3495], [-63.9694, -31.3584], [-63.9667, -31.3756], [-63.9532, -31.3657], [-63.9547, -31.4452], [-63.9487, -31.4442], [-63.9486, -31.4544], [-63.9543, -31.5353], [-63.8982, -31.5429], [-63.8299, -31.5262], [-63.7578, -31.5247], [-63.7352, -31.5157], [-63.6908, -31.5222], [-63.6806, -31.5167], [-63.6807, -31.4929], [-63.6710, -31.4954], [-63.6463, -31.4863], [-63.6189, -31.4940], [-63.5722, -31.4699], [-63.5579, -31.4579], [-63.5580, -31.4342], [-63.5473, -31.4230], [-63.5474, -31.4140], [-63.5305, -31.4137], [-63.5306, -31.4032], [-63.4895, -31.4023], [-63.4856, -31.3906], [-63.4545, -31.3842], [-63.4496, -31.3753], [-63.4145, -31.3781], [-63.3862, -31.3676], [-63.3584, -31.3676], [-63.3656, -31.3150], [-63.2602, -31.3343], [-63.2459, -31.2648], [-63.2297, -31.2678], [-63.2310, -31.2735], [-63.1775, -31.2834], [-63.1646, -31.2284], [-63.1716, -31.2270], [-63.1539, -31.1594], [-63.1312, -31.1633], [-63.1196, -31.1172], [-63.0403, -31.1315], [-63.0324, -31.0980], [-63.0275, -31.0989], [-63.0225, -31.0799], [-63.0125, -31.0822], [-63.0099, -31.0718], [-62.9551, -31.0797], [-62.9334, -30.9970], [-62.9406, -30.9955], [-62.9337, -30.9674], [-62.8340, -30.9325], [-62.8152, -30.8507], [-62.8292, -30.8415], [-62.8307, -30.8264], [-62.8437, -30.8207], [-62.8422, -30.8050], [-62.8859, -30.7989], [-62.9057, -30.7857], [-62.9100, -30.7684], [-62.9294, -30.7522], [-62.9224, -30.7498], [-62.9285, -30.7449], [-62.9220, -30.7305], [-62.9324, -30.7199], [-62.9536, -30.7161], [-62.9576, -30.7209], [-62.9712, -30.7072], [-62.9794, -30.7165], [-62.9950, -30.7167], [-63.0054, -30.7084], [-63.0136, -30.7137], [-63.0141, -30.7050], [-63.0261, -30.7033], [-63.0409, -30.7126], [-63.0428, -30.7081], [-63.0339, -30.7057], [-63.0300, -30.6953]]]}}, {"type": "Feature", "properties": {"c": "13", "n": "COLÓN"}, "geometry": {"type": "Polygon", "coordinates": [[[-64.0561, -31.4198], [-64.0427, -31.4340], [-64.0252, -31.4284], [-64.0196, -31.4379], [-64.0067, -31.4379], [-64.0022, -31.4470], [-63.9845, -31.4443], [-63.9735, -31.4518], [-63.9696, -31.4430], [-63.9521, -31.4396], [-63.9532, -31.3657], [-63.9667, -31.3756], [-63.9694, -31.3584], [-63.9641, -31.3495], [-63.9752, -31.3521], [-63.9752, -31.3456], [-63.9646, -31.3443], [-63.9647, -31.3206], [-63.9507, -31.3206], [-63.9508, -31.2739], [-63.9221, -31.2740], [-63.9224, -31.2459], [-63.8950, -31.2457], [-63.8951, -31.2311], [-63.8660, -31.2260], [-63.8644, -31.1119], [-63.8445, -31.1119], [-63.8309, -31.0934], [-63.8394, -31.0697], [-63.8232, -31.0733], [-63.8231, -31.0181], [-63.8957, -31.0187], [-63.8879, -30.9529], [-63.9911, -30.9181], [-63.9906, -30.9437], [-64.0096, -30.9421], [-64.0393, -30.9601], [-64.0868, -30.9689], [-64.1350, -30.9682], [-64.1367, -30.9744], [-64.1516, -30.9667], [-64.1605, -30.9725], [-64.1717, -30.9689], [-64.1792, -30.9762], [-64.2056, -30.9607], [-64.2260, -30.9599], [-64.2290, -30.9674], [-64.2417, -30.9687], [-64.2588, -30.9628], [-64.2569, -30.9585], [-64.2820, -30.9578], [-64.2872, -30.9481], [-64.2924, -30.9512], [-64.2923, -30.9410], [-64.3000, -30.9452], [-64.3067, -30.9335], [-64.3184, -30.9398], [-64.3312, -30.9336], [-64.3442, -30.9382], [-64.3508, -30.9246], [-64.3770, -30.9089], [-64.3851, -30.9172], [-64.3908, -30.9126], [-64.4387, -30.9137], [-64.4343, -30.9336], [-64.4389, -30.9506], [-64.4296, -30.9725], [-64.4492, -31.0605], [-64.4294, -31.1257], [-64.4325, -31.1387], [-64.4147, -31.1755], [-64.4167, -31.2493], [-64.4302, -31.2716], [-64.4344, -31.3063], [-64.4321, -31.3732], [-64.4264, -31.3614], [-64.4179, -31.3669], [-64.4237, -31.3590], [-64.4198, -31.3552], [-64.3510, -31.3713], [-64.3155, -31.3584], [-64.3097, -31.3632], [-64.3097, -31.3085], [-64.0573, -31.3085], [-64.0561, -31.4198]]]}}, {"type": "Feature", "properties": {"c": "11", "n": "CAPITAL"}, "geometry": {"type": "MultiPolygon", "coordinates": [[[[-64.3097, -31.3085], [-64.0573, -31.3085], [-64.0573, -31.5249], [-64.3097, -31.5249], [-64.3097, -31.3085]]], [[[-64.3043, -31.3082], [-64.3045, -31.3077], [-64.3043, -31.3077], [-64.3043, -31.3082]]]]}}, {"type": "Feature", "properties": {"c": "28", "n": "SAN ALBERTO"}, "geometry": {"type": "Polygon", "coordinates": [[[-65.1769, -31.5603], [-65.1770, -31.5662], [-65.2507, -31.5670], [-65.2520, -31.6207], [-65.2355, -31.6210], [-65.2368, -31.6754], [-65.2612, -31.6736], [-65.2734, -31.6498], [-65.3994, -31.6490], [-65.3992, -31.6201], [-65.4692, -31.6198], [-65.4701, -31.6910], [-65.4845, -31.6910], [-65.5022, -31.7593], [-65.6155, -31.7583], [-65.6118, -31.7455], [-65.7697, -31.7433], [-65.7699, -31.8884], [-65.6274, -31.8982], [-65.6063, -31.9080], [-65.6058, -31.8954], [-65.5504, -31.8962], [-65.5505, -31.9072], [-65.3526, -31.9042], [-65.3522, -31.9206], [-65.2519, -31.9484], [-65.2104, -31.9423], [-65.2041, -31.9307], [-65.1921, -31.9401], [-65.1812, -31.9400], [-65.1739, -31.9258], [-65.1444, -31.9256], [-65.1142, -31.9119], [-65.1056, -31.9157], [-65.1057, -31.9077], [-65.0919, -31.9080], [-65.0754, -31.8875], [-65.0604, -31.8858], [-65.0587, -31.8791], [-65.0525, -31.8823], [-65.0449, -31.8720], [-65.0332, -31.8701], [-65.0187, -31.8785], [-65.0189, -31.8711], [-64.9956, -31.8599], [-64.9543, -31.8959], [-64.9288, -31.9092], [-64.8847, -31.8467], [-64.8873, -31.8280], [-64.7835, -31.8266], [-64.7636, -31.7944], [-64.7599, -31.7598], [-64.7508, -31.7472], [-64.7268, -31.7353], [-64.7275, -31.7137], [-64.7126, -31.7012], [-64.7167, -31.6736], [-64.7288, -31.6737], [-64.7724, -31.5601], [-64.7513, -31.5161], [-64.7837, -31.5046], [-64.7929, -31.4246], [-64.8011, -31.4245], [-64.8024, -31.4183], [-64.8316, -31.4179], [-64.8316, -31.4090], [-64.8463, -31.4138], [-64.9240, -31.4131], [-64.9863, -31.3990], [-64.9955, -31.4052], [-65.0665, -31.4135], [-65.1260, -31.4363], [-65.1334, -31.4506], [-65.1719, -31.4533], [-65.1820, -31.4903], [-65.1664, -31.4908], [-65.1665, -31.5595], [-65.1769, -31.5603]]]}}]};</script>
 <script>window.PIERRI_WEB_REPO = {"owner":"cornabalta3-web","repo":"relevamiento-pierri","rama":"main"};</script>
 <script src="pierri_texto.js?v=lbkppphnbjfm"></script>
-<script src="pierri_tomos.js?v=ffdgpbmpgalk"></script>
+<script src="pierri_tomos.js?v=bnlfihngjhhp"></script>
 <script src="pierri_base.js?v=jdiefpgcmkfp"></script>
-<script src="pierri_web.js?v=fjdjpekdoicb"></script>
+<script src="pierri_sia.js?v=emmkcbpfemjf"></script>
+<script src="pierri_web.js?v=nbalcgkfpdpm"></script>
 <script>
 (function(){
 'use strict';
@@ -1396,12 +1416,16 @@ $('btnTema').addEventListener('click', () => {
 });
 pintarBotonTema();
 let mapaInv = null, capaInv = null, capaDep = null, capaDepMapa = null;
+/** ¿Este perfil puede cargar? Sin usuarios (kit viejo, modo archivo) se puede todo. */
+const puedeCargar = () => !YO || !YO.permisos || !!YO.permisos.cargar;
 function ir(v){
   if(!VISTAS.includes(v)) v = 'cargar';
+  if(v === 'cargar' && !puedeCargar()) v = 'resumen';   // quien solo consulta no tiene nada que hacer en la carga
   VISTAS.forEach(x => $('v-' + x).classList.toggle('oculto', x !== v));
   document.querySelectorAll('nav a.item').forEach(a => a.classList.toggle('on', a.dataset.vista === v));
   // Abierto con doble clic (file://) algunos navegadores no dejan tocar la dirección: no debe cortar la navegación.
   try { if(location.hash !== '#' + v) history.replaceState(null, '', '#' + v); } catch(e) { /* sin historial */ }
+  if(v !== 'expedientes' && !$('visor').classList.contains('oculto')) cerrarVisor();   // el PDF va con la ficha
   if(v === 'mapa'){ if(!mapa) iniciarMapa(); setTimeout(() => { mapa.invalidateSize(); pintarMapa(); }, 60); }
   if(v === 'inventario' && SERVIDOR){ cargarInventarioVista(); }
   window.scrollTo(0, 0);
@@ -1411,10 +1435,12 @@ document.querySelectorAll('[data-ir]').forEach(b => b.addEventListener('click', 
 window.addEventListener('hashchange', () => ir(location.hash.slice(1)));
 
 async function api(ruta, opciones){ if(WEB) return window.PIERRI_WEB.api(ruta, opciones); const r = await fetch(ruta, opciones); const j = await r.json().catch(() => ({})); if(!r.ok || j.error) throw new Error(j.error || ('respuesta ' + r.status)); return j; }
-async function cargarDesdeServidor(){
-  const d = await api('/api/datos');
+async function cargarDesdeServidor(volverATraer){
+  // En la web lo descifrado queda en la pestaña; "Volver a traer los datos" lo pide de nuevo (lo que cargaron otros).
+  const d = await api(WEB && volverATraer === true ? '/api/web/recargar' : '/api/datos');
   registros = (d.registros || []).filter(r => r && r.derivado && !r.repetido_de);
   resumenSrv = d.resumen || {};
+  if(resumenSrv.aviso_datos) avisar(resumenSrv.aviso_datos, true);
   const res = resumenSrv;
   $('origen').innerHTML = `<span><b>${Number(res.archivos) || 0}</b> archivos cargados</span><span><b>${Number(res.resoluciones) || 0}</b> resoluciones válidas</span><span>${Number(res.repetidas) || 0} repetidas · ${Number(res.incompletas) || 0} incompletas · ${Number(res.errores) || 0} con error</span><span>tokens ${Number(res.tokens || 0).toLocaleString('es-AR')}</span>`;
   $('subApp').textContent = d.config && d.config.key ? `clave cargada (${d.config.key}) · ${d.config.modelo}` : 'sin clave: se lee solo por texto';
@@ -1437,7 +1463,7 @@ function pintarArchivos(){
   const lista = infoArchivos.filter(a => filtroArch === 'todos' || (filtroArch === 'suman' ? a.suma.length : filtroArch === 'repetidos' ? (!a.suma.length && a.repetidas.length) : (!a.suma.length && !a.repetidas.length)));
   $('tablaArchivos').innerHTML = lista.map(a => {
     const partes = [];
-    if(a.suma.length) partes.push(`<span class="tag p-v">suma ${esc(a.suma.join(', '))}</span>`);
+    if(a.suma.length) partes.push(`<span class="tag p-v">suma ${esc(a.suma.map(e => e === '?' ? 'una resolución sin número de expediente legible' : e).join(', '))}</span>`);
     for(const x of a.repetidas) partes.push(`<span class="tag p-g">${esc(x.expediente)} ya estaba</span> <span class="mini">se conserva la de ${esc(x.queda)}</span>`);
     if(!a.resoluciones) partes.push(`<span class="tag p-r">no se encontró ninguna resolución adentro</span> <span class="mini">${a.paginas} página(s): puede ser solo el cuerpo del expediente</span>`);
     for(const e of a.errores) partes.push(`<span class="tag p-r">error</span> <span class="mini">${esc(e)}</span>`);
@@ -1452,17 +1478,22 @@ async function subirPDFs(archivos){
   avisoModelo = null;
   const lista = Array.from(archivos).filter(f => /\.pdf$/i.test(f.name));
   if(!lista.length){ avisar('Solo se cargan archivos PDF.', true); return; }
+  // Sin el permiso de GitHub no se puede guardar nada: se avisa antes de leer, no después de miles de archivos.
+  if(WEB && YO && !YO.web_token){ avisar('Falta el permiso de GitHub para guardar: cargalo en Configuración, "Permiso de GitHub". No se leyó ningún archivo.', true); return; }
   cargando = true;
-  try{ await subirPDFsAhora(lista); } finally { cargando = false; }
+  try{ await subirPDFsAhora(lista); }
+  catch(err){ avisar('La carga se cortó: ' + err.message, true); }
+  finally { cargando = false; }
 }
 async function subirPDFsAhora(lista){
-  let cortada = null;
+  let cortada = null, sinPermiso = null;
   $('progreso').classList.remove('oculto');
   const cuerpo = $('progresoCuerpo');
   $('progresoSub').textContent = `procesando ${lista.length} archivo(s)…`;
   let n = 0;
   const B = { yaEstaban: 0, nuevos: 0, sinResolucion: 0, errores: 0, resoluciones: 0 };
-  const visiblesAntes = registros.length, repetidasAntes = (resumenSrv && resumenSrv.repetidas) || 0;
+  const leidasAhora = () => registros.filter(r => !deLaPlanilla(r)).length;   // la planilla se achica cuando llega la lectura
+  const visiblesAntes = leidasAhora(), repetidasAntes = (resumenSrv && resumenSrv.repetidas) || 0;
   for(const f of lista){
     const fila = document.createElement('div'); fila.className = 'fila-carga';
     fila.innerHTML = `<span>${esc(f.name)}</span><span class="mini">leyendo…</span>`; cuerpo.prepend(fila);
@@ -1483,11 +1514,16 @@ async function subirPDFsAhora(lista){
         (r.sueltas && r.sueltas.length ? ` <span class="mini">${r.sueltas.length} página(s) sin asignar</span>` : '');
       if(r.falla_modelo) avisoModelo = r.falla_modelo;
       if(r.sin_guardar){ fila.lastElementChild.insertAdjacentHTML('beforeend', ' <span class="tag p-a">leído, sin guardar todavía</span>'); cortada = r.sin_guardar; }
-    }catch(err){ fila.lastElementChild.innerHTML = `<span class="tag p-r">error</span> <span class="mini">${esc(err.message)}</span>`; }
+    }catch(err){
+      fila.lastElementChild.innerHTML = `<span class="tag p-r">error</span> <span class="mini">${esc(err.message)}</span>`; B.errores++;
+      // Un error de permiso es el mismo para todos los archivos: se corta y se avisa una sola vez.
+      if(/Tu perfil .* no puede|Tenés que ingresar|Falta el permiso de GitHub|no acepta el token|token no tiene permiso/i.test(err.message)){ n++; sinPermiso = err.message; break; }
+    }
     n++; $('progresoSub').textContent = `${n} de ${lista.length}`;
     if(cortada) break;   // si GitHub no guarda, no se sigue leyendo: lo leído espera en la pestaña
   }
-  $('progresoSub').textContent = `${n} archivo(s) cargados`;
+  if(sinPermiso){ $('progresoSub').textContent = `se detuvo en ${n} de ${lista.length}`; avisar('No se pudo cargar: ' + sinPermiso, true); return; }
+  $('progresoSub').textContent = B.errores ? `${n} archivo(s) procesados, ${B.errores} con error` : `${n} archivo(s) cargados`;
   if(cortada){
     $('progresoSub').textContent = `se detuvo en ${n} de ${lista.length}: sin guardar`;
     $('pendienteWeb').classList.remove('oculto');
@@ -1496,7 +1532,7 @@ async function subirPDFsAhora(lista){
   }
   if(WEB) await guardarPendienteWeb();
   await cargarDesdeServidor();
-  const sumadas = registros.length - visiblesAntes, mismoExp = Math.max(0, ((resumenSrv && resumenSrv.repetidas) || 0) - repetidasAntes);
+  const sumadas = leidasAhora() - visiblesAntes, mismoExp = Math.max(0, ((resumenSrv && resumenSrv.repetidas) || 0) - repetidasAntes);
   const partes = [`<b>${lista.length}</b> archivo(s)`];
   if(B.nuevos) partes.push(`${B.nuevos} leídos`);
   if(B.yaEstaban) partes.push(`${B.yaEstaban} ya estaban cargados (mismo archivo)`);
@@ -1507,7 +1543,10 @@ async function subirPDFsAhora(lista){
   $('balanceCarga').innerHTML = partes.join(' · ') + '<br>' + res.join(' · ');
   $('balanceCarga').classList.remove('oculto');
   if(!$('panelArchivos').classList.contains('oculto')) verArchivos();
-  if(avisoModelo) avisar(`Atención: ${avisoModelo}. Las resoluciones que no se pudieron leer por texto quedaron guardadas como "no se pudieron leer". Corregí la clave en Configuración y después tocá "Completar incompletas con el modelo".`, true);
+  const atencion = [];
+  if(avisoModelo) atencion.push(`${avisoModelo}. Las resoluciones que no se pudieron leer por texto quedaron guardadas como "no se pudieron leer". Corregí la clave en Configuración y después tocá "Completar incompletas con el modelo".`);
+  if(WEB && window.PIERRI_WEB.catastroCaido && window.PIERRI_WEB.catastroCaido()) atencion.push('Catastro no respondió: las resoluciones de esta carga quedan sin ubicar en su parcela (se ubican por la localidad). Tocá "Reintentar Catastro" en Localidades y mapa.');
+  if(atencion.length) avisar('Atención: ' + atencion.join(' '), true);
 }
 
 const zona = $('cargar');
@@ -1531,7 +1570,7 @@ if(WEB){
     if(await guardarPendienteWeb()) avisar('Listo: lo pendiente quedó guardado en GitHub.');
     await cargarDesdeServidor(); });
   // Cómo va lo largo (leer, subir, esperar a GitHub): una línea en el panel de la carga.
-  window.addEventListener('pierri-web-progreso', e => { const t = String(e.detail || ''); $('progresoWeb').textContent = t; $('progresoWeb').classList.toggle('oculto', !t); });
+  window.addEventListener('pierri-web-progreso', e => { const t = String(e.detail || ''); $('progresoWeb').textContent = t; $('progresoWeb').classList.toggle('oculto', !t); $('siaProgreso').textContent = t; });
 }
 /** Versión web: en la carga entran los PDF (se leen en esta computadora y se guardan cifrados) o el JSON del kit, solo. */
 function cargarWeb(archivos){
@@ -1551,7 +1590,7 @@ async function guardarPendienteWeb(){
 async function importarWeb(f){
   if(!f) return;
   avisar('Cifrando y guardando en el repositorio…');
-  try{ const r = await api('/api/web/importar?nombre=' + encodeURIComponent(f.name), { method: 'POST', body: f }); avisar(`Listo: ${r.resoluciones} resoluciones guardadas. Los demás usuarios las ven en unos minutos.`); await cargarDesdeServidor(); ir('resumen'); }
+  try{ const r = await api('/api/web/importar?nombre=' + encodeURIComponent(f.name), { method: 'POST', body: f }); avisar(`Listo: ${r.resoluciones} resoluciones guardadas. Los demás lo ven al tocar "Volver a traer los datos" (abajo en el menú) o al volver a ingresar; GitHub puede tardar unos minutos en publicarlo.`); await cargarDesdeServidor(); ir('resumen'); }
   catch(err){ avisar('No se pudo guardar: ' + err.message, true); }
 }
 $('file').addEventListener('change', e => { if(e.target.files[0]) cargarArchivo(e.target.files[0]); e.target.value=''; });
@@ -1611,10 +1650,11 @@ if(WEB){
     if(textos.length) setTimeout(() => errorIngreso(textos.join(' ') + ' Volvé a ingresar.'), 300);
   }catch(e){}
   $('btnToken').addEventListener('click', async () => {
-    try{ await api('/api/web/token', { method: 'POST', body: JSON.stringify({ token: $('tokenWeb').value }) }); $('tokenWeb').value = ''; $('subToken').textContent = 'cargado en esta computadora'; avisar('Permiso de GitHub guardado en esta computadora.'); }
+    try{ await api('/api/web/token', { method: 'POST', body: JSON.stringify({ token: $('tokenWeb').value }) }); $('tokenWeb').value = ''; $('subToken').textContent = 'cargado en esta computadora'; if(YO) YO.web_token = true;
+      await cargarDesdeServidor(true).catch(() => {}); avisar('Permiso de GitHub guardado en esta computadora.'); }
     catch(err){ avisar(err.message, true); }
   });
-  $('btnOlvidarToken').addEventListener('click', async () => { await api('/api/web/token', { method: 'DELETE' }); $('subToken').textContent = 'falta: sin él no se pueden guardar cambios'; avisar('Esta computadora ya no guarda el permiso de GitHub.'); });
+  $('btnOlvidarToken').addEventListener('click', async () => { await api('/api/web/token', { method: 'DELETE' }); if(YO) YO.web_token = false; $('subToken').textContent = 'falta: sin él no se pueden guardar cambios'; avisar('Esta computadora ya no guarda el permiso de GitHub.'); });
 }
 if(WEB) $('btnInicial').addEventListener('click', async () => {
   errorIngreso('');
@@ -1627,18 +1667,23 @@ if(WEB) $('btnInicial').addEventListener('click', async () => {
 function errorIngreso(t){ const e = $('ingError'); e.textContent = t; e.classList.toggle('oculto', !t); }
 function aplicarPerfil(){
   $('pieUsuario').classList.remove('oculto');
-  $('pieUsuario').innerHTML = `<b>${esc(YO.nombre || YO.usuario)}</b>${esc(YO.rol_nombre)}<br><button id="btnSalir">Cerrar sesión</button>`;
+  $('pieUsuario').innerHTML = `<b>${esc(YO.nombre || YO.usuario)}</b>${esc(YO.rol_nombre)}<br><button id="btnSalir">Cerrar sesión</button>${WEB ? ' <button id="btnTraer" title="Trae lo que guardaron los demás desde que entraste">Volver a traer los datos</button>' : ''}`;
+  if(WEB) $('btnTraer').addEventListener('click', async () => {
+    if(cargando || window.PIERRI_WEB.ocupado()){ avisar('Esperá a que termine lo que está en curso.', true); return; }
+    const b = $('btnTraer'); b.disabled = true;
+    try{ await cargarDesdeServidor(true); if(!resumenSrv.aviso_datos) avisar('Datos actualizados.'); }catch(err){ avisar('No se pudieron traer los datos: ' + err.message, true); } b.disabled = false; });
   $('btnSalir').addEventListener('click', async () => {
     if(WEB && window.PIERRI_WEB.ocupado()){ avisar('Esperá a que termine la carga que está en curso antes de cerrar la sesión.', true); return; }
-    if(WEB && window.PIERRI_WEB.pendientes() && !(await guardarPendienteWeb()) && !confirm('Hay PDF leídos que no se pudieron guardar en GitHub. Si salís, se pierde esa lectura (los PDF siguen en tu computadora). ¿Salir igual?')) return;
+    if(WEB && window.PIERRI_WEB.pendientes() && !(await guardarPendienteWeb()) && !confirm('Hay lectura que no se pudo guardar en GitHub (PDF leídos o lo leído con el modelo). Si salís, se pierde (los PDF siguen en tu computadora). ¿Salir igual?')) return;
     try{ await api('/api/logout', { method: 'POST' }); }catch(e){} location.reload(); });
   // Los botones que el perfil no puede usar se ocultan; el servidor igual los rechaza.
   const puede = YO.permisos || {};
-  [['btnPadron', 'cargar'], ['btnInventario', 'cargar'], ['btnUbicarInv', 'cargar'], ['btnCatastro', 'cargar'], ['btnCompletar', 'cargar'],
+  [['btnPadron', 'cargar'], ['btnInventario', 'cargar'], ['btnUbicarInv', 'cargar'], ['btnCatastro', 'cargar'], ['btnCompletar', 'cargar'], ['btnSIA', 'cargar'], ['btnSIAUbicar', 'cargar'],
    ['btnReleer', 'cargar'], ['btnVaciar', 'administrar'], ['btnGuardarConfig', 'administrar']].forEach(([id, p]) => {
     const b = $(id); if(b && !puede[p]) b.classList.add('sin-permiso');
   });
-  if(!puede.cargar){ const c = document.querySelector('nav a.item[data-vista="cargar"]'); if(c) c.classList.add('sin-permiso'); }
+  if(!puede.cargar){ const c = document.querySelector('nav a.item[data-vista="cargar"]'); if(c) c.classList.add('sin-permiso');
+    document.querySelectorAll('[data-ir="cargar"]').forEach(b => b.classList.add('sin-permiso')); }
   document.querySelectorAll('.solo-admin').forEach(e => e.classList.toggle('oculto', !puede.administrar));
   if(WEB_VIEJA) avisar('El navegador tiene guardada una versión anterior del programa. Apretá Ctrl+F5 para recargar la página completa.', true);
   if(WEB){
@@ -1649,6 +1694,7 @@ function aplicarPerfil(){
     $('textoApp').innerHTML = 'Sin clave se lee solo por texto, gratis. El modelo se usa <b>solo cuando tocás "Completar incompletas con el modelo"</b>, y solo para las que el texto no resolvió y tienen su PDF guardado: antes de empezar te dice cuántas son. La clave queda guardada solo en esta computadora, cifrada con tu contraseña; no va al repositorio.';
     $('cargarSub').textContent = 'Se leen en esta computadora y se guardan cifrados en el repositorio, junto con el PDF original para poder verlo. Los ven todos los usuarios. Un archivo cargado dos veces se ignora. También entra acá el JSON que baja "Guardar JSON" en el kit.';
     $('panelToken').classList.toggle('oculto', !puede.administrar);
+    $('panelSIA').classList.remove('oculto');   // la planilla de trámites se carga solo en la web
     $('subToken').textContent = YO.web_token ? 'cargado en esta computadora' : 'falta: sin él no se pueden guardar cambios';
     const optAdmin = document.querySelector('#nuRol option[value="admin"]'); if(optAdmin) optAdmin.remove();
     const aviso = document.querySelector('#panelUsuarios p.mini'); if(aviso) aviso.textContent = 'En la versión web la contraseña la definís vos: pasásela a la persona por un medio seguro. Para cambiarla, "nueva contraseña". Desactivar a alguien cambia la llave de los datos: su contraseña deja de servir.';
@@ -1689,42 +1735,90 @@ async function pintarUsuarios(lista){
     <td class="mini"><a href="#" data-activo="${esc(u.usuario)}" data-valor="${u.activo ? 0 : 1}">${u.activo ? 'desactivar' : 'activar'}</a> · <a href="#" data-clave="${esc(u.usuario)}">nueva contraseña</a></td></tr>`).join('');
 }
 async function usuariosAccion(cuerpo){
-  try{ const r = await api('/api/usuarios', { method: 'POST', body: JSON.stringify(cuerpo) }); pintarUsuarios(r.usuarios); avisar(WEB ? 'Listo. GitHub tarda unos minutos en publicarlo: recién ahí vale para la persona.' : 'Listo.'); }
-  catch(err){ avisar(err.message, true); if(WEB) api('/api/usuarios').then(r => pintarUsuarios(r.usuarios)).catch(() => {}); }
+  try{ const r = await api('/api/usuarios', { method: 'POST', body: JSON.stringify(cuerpo) }); pintarUsuarios(r.usuarios); avisar(WEB ? 'Listo. GitHub tarda unos minutos en publicarlo: recién ahí vale para la persona.' : 'Listo.'); return true; }
+  catch(err){ avisar(err.message, true); if(WEB) api('/api/usuarios').then(r => pintarUsuarios(r.usuarios)).catch(() => {}); return false; }
 }
 if(SERVIDOR){
   $('btnPadron').addEventListener('click', () => $('filePadron').click());
   $('filePadron').addEventListener('change', async e => { const f = e.target.files[0]; if(!f) return; e.target.value = '';
-    try{ const r = await api('/api/padron?nombre=' + encodeURIComponent(f.name), { method: 'POST', body: f }); avisar(`Padrón cargado: ${r.filas} filas. Cruce: ${r.cruce.cruzados} cruzadas, ${r.cruce.ambiguos} ambiguas, ${r.cruce.no_figuran} no inscriptas, ${r.cruce.sin_nombre} sin nombre.`); await cargarDesdeServidor(); }
+    try{ const r = await api('/api/padron?nombre=' + encodeURIComponent(f.name), { method: 'POST', body: f }); avisar(`Padrón cargado: ${r.filas} filas. Cruce: ${r.cruce.cruzados} cruzadas, ${r.cruce.ambiguos} ambiguas, ${r.cruce.no_figuran} no figuran en el Padrón, ${r.cruce.sin_nombre} sin nombre.`); await cargarDesdeServidor(); }
     catch(err){ avisar('No se pudo cargar el Padrón: ' + err.message, true); } });
   $('btnCompletar').addEventListener('click', async () => {
     if(WEB){
       if(cargando || window.PIERRI_WEB.ocupado()){ avisar('Esperá a que termine la carga que está en curso.', true); return; }
-      const inc = registros.filter(r => r.fuente === 'texto_incompleto' && !r.error), conPdf = inc.filter(r => r.pdf_web).length;
-      if(!conPdf){ avisar(inc.length ? `Hay ${inc.length} sin leer del todo, pero ninguna tiene su PDF guardado en la web: subí esos PDF en Cargar.` : 'No hay resoluciones sin leer del todo.'); return; }
-      if(!confirm(`Se van a leer con el modelo ${conPdf} resolución(es) que el texto no resolvió${inc.length > conPdf ? ` (otras ${inc.length - conPdf} no tienen el PDF guardado y quedan como están)` : ''}. Esto gasta tokens de tu clave de Anthropic. ¿Seguir?`)) return;
+      const inc = registros.filter(r => r.fuente === 'texto_incompleto' && !r.error);
+      // Las que el modelo ya no pudo leer en esta sesión no se vuelven a mandar; lo leído sin guardar se guarda sin volver a pagarlo.
+      const salteadas = inc.filter(r => r.pdf_web && window.PIERRI_WEB.modeloSalteada(r.hash)).length, pend = window.PIERRI_WEB.modeloSinGuardar(), sinGuardar = pend.resoluciones;
+      const conPdf = inc.filter(r => r.pdf_web).length - salteadas - sinGuardar;
+      if((sinGuardar || pend.tokens) && conPdf <= 0){ /* solo falta guardar lo ya leído o cobrado: no se cobra nada */ }
+      else if(!conPdf){ avisar(salteadas ? `Las ${salteadas} que quedan sin leer ya se probaron con el modelo en esta sesión y no las pudo leer: se vuelven a intentar al volver a ingresar.` : inc.length ? `Hay ${inc.length} sin leer del todo, pero ninguna tiene su PDF guardado en la web: subí esos PDF en "Filtro Ley Pierri" (la carga de PDF, en el menú).` : 'No hay resoluciones sin leer del todo.'); return; }
+      else if(!confirm(`Se van a leer con el modelo ${conPdf} resolución(es) que el texto no resolvió${sinGuardar ? ` (antes se ${sinGuardar === 1 ? 'guarda 1 ya leída, sin volver a cobrarla' : `guardan ${sinGuardar} ya leídas, sin volver a cobrarlas`})` : ''}${salteadas ? `; ${salteadas === 1 ? 'otra ya no se pudo leer en esta sesión y se saltea' : `otras ${salteadas} ya no se pudieron leer en esta sesión y se saltean`}` : ''}. Esto gasta tokens de tu clave de Anthropic. ¿Seguir?`)) return;
     }
     const b = $('btnCompletar'); b.disabled = true;
-    let hechas = 0, tokens = 0, vueltas = 0;
+    let hechas = 0, tokens = 0, noLeidas = 0, vueltas = 0; const motivos = new Set();
     try{
       while(vueltas++ < 400){
         b.textContent = `Leyendo con el modelo… (${hechas} listas)`;
         const r = await api('/api/completar?maximo=5', { method: 'POST' });
         if(r.motivo === 'sin clave'){ avisar('Falta cargar la clave de API y guardarla. Sin clave no se pueden leer las que el texto no resolvió.', true); break; }
-        hechas += r.completadas; tokens += r.tokens || 0;
-        if(r.fallas && r.fallas.length && !r.completadas){ avisar('La lectura con el modelo está fallando: ' + r.fallas[0], true); break; }
-        if(!r.pendientes){ avisar(`Listo: ${hechas} resolución(es) completadas (${tokens.toLocaleString('es-AR')} tokens).` + (r.sin_pdf ? ` Otras ${r.sin_pdf} no tienen el PDF guardado en la web.` : '')); break; }
-        if(!r.completadas){ avisar(`Quedan ${r.pendientes} que no se pudieron completar.`, true); break; }
+        hechas += r.completadas || 0; tokens += r.tokens || 0; noLeidas += r.no_leidas || 0; (r.fallas || []).forEach(m => motivos.add(m));
+        const gasto = `${tokens.toLocaleString('es-AR')} tokens`;
+        // El kit no saltea las que no puede leer: si no completó ninguna, se corta para no pagar lo mismo otra vez.
+        if(r.corte || (!WEB && r.fallas && r.fallas.length && !r.completadas)){
+          const otros = [...motivos].filter(m => m !== r.corte);
+          avisar('La lectura con el modelo se cortó: ' + (r.corte || r.fallas[0]) + '.' + (hechas ? ` Antes se ${hechas === 1 ? 'completó 1' : 'completaron ' + hechas} (${gasto}).` : '')
+            + (noLeidas ? ` ${noLeidas === 1 ? 'Una no se pudo leer' : noLeidas + ' no se pudieron leer'}: ${otros.join('; ')}.` : ''), true); break; }
+        if(WEB ? !r.por_probar : !r.pendientes){
+          avisar(`Listo: ${hechas} resolución(es) completadas (${gasto}).` + (noLeidas ? ` ${noLeidas === 1 ? 'Una no se pudo leer' : noLeidas + ' no se pudieron leer'}: ${[...motivos].join('; ')}. Quedan sin leer por ahora: las que GitHub todavía no publicó se vuelven a probar solas en unos minutos; las demás, al volver a ingresar.` : '')
+            + (r.sin_pdf ? ` Otras ${r.sin_pdf} no tienen el PDF guardado en la web.` : ''), !!noLeidas);
+          break;
+        }
+        if(!WEB && !r.completadas){ avisar(`Quedan ${r.pendientes} que no se pudieron completar.`, true); break; }
       }
       await cargarDesdeServidor();
-    }catch(err){ avisar('Error: ' + err.message, true); }
+    }catch(err){
+      avisar('Error: ' + err.message, true);
+      // Lo leído (o cobrado) que GitHub no guardó: el botón "Guardar lo pendiente" también lo guarda.
+      if(WEB && window.PIERRI_WEB.pendientes()){ $('progreso').classList.remove('oculto'); $('pendienteWeb').classList.remove('oculto'); }
+    }
     b.disabled = false; b.textContent = 'Completar incompletas con el modelo'; });
-  $('btnCatastro').addEventListener('click', async () => { try{ const r = await api('/api/catastro', { method: 'POST' }); avisar(`Catastro: ${r.ubicadas} ubicadas nuevas.`); await cargarDesdeServidor(); }catch(err){ avisar('Catastro: ' + err.message, true); } });
-  $('btnRecargar').addEventListener('click', cargarDesdeServidor);
+  /** Consulta Catastro de a tandas hasta terminar: cada tanda queda guardada, así que si se corta, se vuelve a tocar y sigue. */
+  async function ubicarEnCatastro(boton){
+    const rotulo = boton.textContent; boton.disabled = true;
+    let ubicadas = 0, consultadas = 0, fallas = null;
+    try{
+      for(let vuelta = 0; vuelta < 200; vuelta++){
+        const r = await api('/api/catastro?maximo=2000', { method: 'POST' });
+        ubicadas += r.ubicadas || 0; consultadas += r.consultadas || 0; fallas = r.fallas || null;   // vale lo de la última tanda: las fallas se reintentan en la siguiente
+        if(!r.pendientes || !r.consultadas) break;
+        boton.textContent = `Catastro: ${consultadas.toLocaleString('es-AR')} consultadas, faltan ${r.pendientes.toLocaleString('es-AR')}…`;
+      }
+      avisar((consultadas ? `Catastro: ${consultadas.toLocaleString('es-AR')} cuentas consultadas, ${ubicadas.toLocaleString('es-AR')} parcelas encontradas.` : `Catastro: ${ubicadas} ubicadas nuevas.`)
+        + (fallas ? ` Ojo: ${fallas}. Volvé a tocar más tarde y se consultan esas.` : ''), !!fallas);
+      await cargarDesdeServidor();
+    }catch(err){
+      avisar('Catastro: ' + err.message + (consultadas ? ' Lo consultado hasta acá quedó guardado: volvé a tocar y sigue donde quedó.' : ''), true);
+      if(consultadas) await cargarDesdeServidor().catch(() => {});
+    }
+    boton.textContent = rotulo; boton.disabled = false;
+  }
+  $('btnCatastro').addEventListener('click', () => ubicarEnCatastro($('btnCatastro')));
+  $('btnSIAUbicar').addEventListener('click', () => ubicarEnCatastro($('btnSIAUbicar')));
+  $('btnSIA').addEventListener('click', () => $('fileSIA').click());
+  $('fileSIA').addEventListener('change', async e => { const f = e.target.files[0]; if(!f) return; e.target.value = '';
+    if(cargando || (WEB && window.PIERRI_WEB.ocupado())){ avisar('Esperá a que termine la carga que está en curso.', true); return; }
+    const b = $('btnSIA'); b.disabled = true;
+    try{ const r = await api('/api/web/sia?nombre=' + encodeURIComponent(f.name), { method: 'POST', body: f });
+      avisar(`Planilla cargada: ${r.expedientes.toLocaleString('es-AR')} expedientes${r.descartadas ? ` (${r.descartadas} filas sin número de expediente válido quedaron afuera)` : ''}. Ya están en Expedientes, el mapa y el Resumen, con la posesión estimada.`);
+      await cargarDesdeServidor(); }
+    catch(err){ avisar('No se pudo cargar la planilla: ' + err.message, true); }
+    b.disabled = false; });
+  $('btnRecargar').addEventListener('click', () => cargarDesdeServidor(true).catch(err => avisar('No se pudieron traer los datos: ' + err.message, true)));
   $('btnArchivos').addEventListener('click', () => verArchivos().catch(err => avisar('Error: ' + err.message, true)));
   $('btnCrearUsuario').addEventListener('click', async () => {
-    await usuariosAccion({ accion: 'crear', usuario: $('nuUsuario').value, nombre: $('nuNombre').value, rol: $('nuRol').value, clave: $('nuClave').value });
-    $('nuUsuario').value = ''; $('nuNombre').value = ''; $('nuClave').value = '';
+    // Si hubo un error (contraseña corta, usuario repetido) los datos quedan para corregirlos, no se borran.
+    if(await usuariosAccion({ accion: 'crear', usuario: $('nuUsuario').value, nombre: $('nuNombre').value, rol: $('nuRol').value, clave: $('nuClave').value })){
+      $('nuUsuario').value = ''; $('nuNombre').value = ''; $('nuClave').value = ''; }
   });
   $('tablaUsuarios').addEventListener('change', e => { const sel = e.target.closest('[data-rol]'); if(sel) usuariosAccion({ accion: 'rol', usuario: sel.dataset.rol, rol: sel.value }); });
   $('tablaUsuarios').addEventListener('click', e => {
@@ -1782,7 +1876,7 @@ if(SERVIDOR){
     else avisar('Configuración guardada.');
     await cargarDesdeServidor(); }catch(err){ avisar('Error: ' + err.message, true); } });
   ['regla','corte','margen'].forEach(id => $(id).addEventListener('change', async () => { try{ await api('/api/config', { method: 'POST', body: JSON.stringify({ regla: $('regla').value, fechaCorte: $('corte').value, margenBordeMeses: $('margen').value }) }); await cargarDesdeServidor(); }catch(err){ avisar('Error: ' + err.message, true); } }));
-  $('expCsv').addEventListener('click', () => { if(WEB) descargar('\ufeff' + P.aCSV(vista), 'planilla_ley_pierri.csv', 'text/csv;charset=utf-8'); else location.href = '/api/planilla.csv'; });
+  $('expCsv').addEventListener('click', () => { if(WEB) descargar('\ufeff' + planillaExcel(vista), 'planilla_ley_pierri.csv', 'text/csv;charset=utf-8'); else location.href = '/api/planilla.csv'; });
   window.__arrancar = () => arrancarConSesion().then(ok => {
     if(!ok) return;                                   // hay que ingresar primero
     cargarDesdeServidor().then(() => ir(location.hash.slice(1) || (registros.length ? 'resumen' : 'cargar'))).catch(err => { avisar((WEB ? 'No se pudieron abrir los datos: ' : 'No se pudo conectar con pierri.js: ') + err.message, true); ir('cargar'); });
@@ -1798,7 +1892,7 @@ if(SERVIDOR){
   // sino para poder explicar por qué no se puede, en vez de mostrarlos en gris sin motivo.
   $('file').accept = '.jsonl,.json,application/json,.pdf,application/pdf';
   ['regla','corte','margen'].forEach(id => $(id).addEventListener('change', recalcularLocal));
-  $('expCsv').addEventListener('click', () => descargar('\ufeff' + P.aCSV(vista), 'planilla_ley_pierri.csv', 'text/csv;charset=utf-8'));
+  $('expCsv').addEventListener('click', () => descargar('\ufeff' + planillaExcel(vista), 'planilla_ley_pierri.csv', 'text/csv;charset=utf-8'));
   ir(location.hash.slice(1) || 'cargar');
 }
 
@@ -1810,12 +1904,17 @@ function recalcularLocal(){
   pintarTodo();
 }
 const cl = d => P.clasificar(d);
-const loc = d => (d.geo && (d.geo.localidad_catastro || d.geo.localidad)) ? P.normalizarTexto(d.geo.localidad_catastro || d.geo.localidad).replace(/ EST .*$/, '') : '(SIN LOCALIDAD)';
+// La localidad se calcula una vez por expediente: con la planilla son decenas de miles y se pide en cada dibujo.
+const LOCALIDAD = new WeakMap();
+const loc = d => { let v = LOCALIDAD.get(d); if(v === undefined){ v = (d.geo && (d.geo.localidad_catastro || d.geo.localidad)) ? P.normalizarTexto(d.geo.localidad_catastro || d.geo.localidad).replace(/ EST .*$/, '') : '(SIN LOCALIDAD)'; LOCALIDAD.set(d, v); } return v; };
 const mz = d => { const c = d.geo && d.geo.catastro; return c && c.manzana ? `${c.circunscripcion}-${c.seccion}-${c.manzana}` : (d.geo && d.geo.manzana ? 'mz ' + d.geo.manzana : ''); };
 const dep = d => (d.geo && d.geo.dep_nombre) || '(SIN DEPARTAMENTO)';
 /** Sección catastral: es la división interna de la planta urbana, lo más parecido a "barrio" que da Catastro. */
 const sec = d => { const c = d.geo && d.geo.catastro; return c && c.seccion ? `${loc(d)} · secc. ${c.circunscripcion}-${c.seccion}` : null; };
 const claveGrupo = d => agrupacion === 'departamento' ? dep(d) : agrupacion === 'seccion' ? (sec(d) || '(SIN SECCIÓN)') : loc(d);
+/** Lo que ordena la inscripción o la estima la planilla de la UEST: entra en los desplegables, el ranking y el mapa. */
+const evaluable = d => d.tipo_documento === 'RESOLUCION_INSCRIPCION' || d.tipo_documento === 'PLANILLA_UEST';
+const deLaPlanilla = r => r.fuente === 'planilla';
 const estadoInsc = d => { const i = d.inscripcion; if(!i) return 'SIN'; if(i.estado === 'PROVISORIA' || i.estado === 'OBSERVADA') return 'TRABADA'; if(i.estado === 'SIN_NOMBRE_PARA_CRUZAR') return 'SIN'; return i.estado; };
 
 /**
@@ -1823,7 +1922,7 @@ const estadoInsc = d => { const i = d.inscripcion; if(!i) return 'SIN'; if(i.est
  * (por ejemplo: elegibles + no se pudieron leer + sin revisar). Tocar de nuevo un filtro activo lo apaga.
  */
 const GRUPO_DE = { TODOS: 'elig', ELEGIBLE: 'elig', NO_ELEGIBLE: 'elig', SIN_DATO: 'elig',
-  POR_TEXTO: 'lect', POR_MODELO: 'lect', INCOMPLETA: 'lect',
+  POR_TEXTO: 'lect', POR_MODELO: 'lect', INCOMPLETA: 'lect', LEIDAS: 'lect', POR_PLANILLA: 'lect',
   REVISADA: 'ctrl', SIN_REVISAR: 'ctrl', REVISAR: 'ctrl', SIN_UBICAR: 'ctrl' };
 const F = { elig: 'TODOS', lect: null, ctrl: null };
 function marcarChips(){
@@ -1844,7 +1943,7 @@ function poblarFiltros(){
     sel.innerHTML = `<option value="">${etiqueta}</option>` + valores.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
     if(valores.includes(previo)) sel.value = previo;
   };
-  const R = registros.map(r => r.derivado).filter(d => d.tipo_documento === 'RESOLUCION_INSCRIPCION');
+  const R = registros.map(r => r.derivado).filter(evaluable);
   opciones('fDep', [...new Set(R.map(dep))].sort(), 'Todos');
   const depSel = $('fDep').value;
   opciones('fLoc', [...new Set(R.filter(d => !depSel || dep(d) === depSel).map(loc))].sort(), 'Todas');
@@ -1864,6 +1963,8 @@ function pasa(r, ignorarLoc){
   if(F.lect === 'INCOMPLETA' && r.fuente !== 'texto_incompleto') return false;
   if(F.lect === 'POR_TEXTO' && r.fuente !== 'texto') return false;
   if(F.lect === 'POR_MODELO' && r.fuente !== 'modelo') return false;
+  if(F.lect === 'LEIDAS' && r.fuente === 'planilla') return false;
+  if(F.lect === 'POR_PLANILLA' && r.fuente !== 'planilla') return false;
   if(F.ctrl === 'REVISAR' && !d.revisar) return false;
   if(F.ctrl === 'REVISADA' && !(d.revision && d.revision.revisado)) return false;
   if(F.ctrl === 'SIN_REVISAR' && d.revision && d.revision.revisado) return false;
@@ -1884,7 +1985,7 @@ function pasa(r, ignorarLoc){
 /** Lista legible de los filtros que están ocultando resoluciones, para que nunca pase desapercibido. */
 function filtrosActivos(){
   const nombres = { ELEGIBLE: 'elegibles', NO_ELEGIBLE: 'no elegibles', SIN_DATO: 'sin fecha', POR_TEXTO: 'leídas por texto',
-    POR_MODELO: 'revisadas por el modelo', INCOMPLETA: 'no se pudieron leer', REVISADA: 'revisadas', SIN_REVISAR: 'sin revisar',
+    POR_MODELO: 'revisadas por el modelo', INCOMPLETA: 'no se pudieron leer', LEIDAS: 'leídas del PDF', POR_PLANILLA: 'estimadas con la planilla', REVISADA: 'revisadas', SIN_REVISAR: 'sin revisar',
     REVISAR: 'a revisar', SIN_UBICAR: 'sin ubicar' };
   const a = [];
   if(F.elig !== 'TODOS') a.push(nombres[F.elig]);
@@ -1905,7 +2006,9 @@ function limpiarFiltros(){
   $('buscar').value = ''; localidadSel = null; F.elig = 'TODOS'; F.lect = null; F.ctrl = null; marcarChips();
   pagina = 0; pintarTodo();
 }
-function pintarTodo(){ poblarFiltros(); vista = registros.filter(r => pasa(r)); pintarMetricas(); pintarRecientes(); pintarTabla(); pintarRanking(); pintarPadron(); if(!$('v-mapa').classList.contains('oculto')) pintarMapa(); pintarPie(); }
+function pintarTodo(){ poblarFiltros(); vista = registros.filter(r => pasa(r)); pintarMetricas(); pintarRecientes(); pintarTabla(); pintarRanking(); pintarPadron(); pintarPlanilla(); if(!$('v-mapa').classList.contains('oculto')) pintarMapa(); pintarPie(); }
+/** "21/09/2026 18:42", siempre con reloj de 24 horas (sin él, Chrome pone la tarde como "02:17" sin a. m. ni p. m.). */
+function fechaHora(iso){ const f = new Date(iso); return isNaN(f) ? '—' : f.toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }); }
 /** "21/09 18:42", o "hoy 18:42" si es de hoy. */
 function fechaCarga(iso){
   if(!iso) return '—'; const f = new Date(iso); if(isNaN(f)) return '—';
@@ -1914,18 +2017,22 @@ function fechaCarga(iso){
 }
 /** Las últimas resoluciones cargadas, la más nueva arriba. Cada fila abre su ficha. */
 function pintarRecientes(){
-  const lista = registros.slice().sort((a, b) => String(b.cargado_en || '').localeCompare(String(a.cargado_en || ''))).slice(0, 8);
-  $('subRecientes').textContent = registros.length ? `las ${lista.length} más recientes de ${registros.length}` : '';
+  const leidas = registros.filter(r => !deLaPlanilla(r));
+  const lista = leidas.sort((a, b) => String(b.cargado_en || '').localeCompare(String(a.cargado_en || ''))).slice(0, 8);
+  $('subRecientes').textContent = leidas.length ? `las ${lista.length} más recientes de ${leidas.length}` : '';
   $('recientes').innerHTML = lista.map(r => { const d = r.derivado;
     return `<tr class="clicable" data-abrir="${esc(r.hash)}" title="Abrir el expediente"><td class="mini" style="white-space:nowrap">${esc(fechaCarga(r.cargado_en))}</td>` +
       `<td class="exp">${esc(d.expediente || '—')}</td><td>${esc(d.rogante_principal || '—')}</td><td class="col-sec">${esc(loc(d))}</td><td>${tagDe(cl(d))}${tagInsc(d)}</td></tr>`; }).join('')
     || '<tr><td colspan="5" class="vacio">Todavía no hay resoluciones cargadas.</td></tr>';
 }
-$('verRecientes').addEventListener('click', () => { limpiarFiltros(); orden = { k: 'cargado', asc: false }; pagina = 0; pintarTabla(); ir('expedientes'); });
-function pintarPie(){ $('pie').innerHTML = registros.length ? `${WEB ? 'versión web' : SERVIDOR ? 'pierri.db' : esc(origenNombre || 'archivo')} · ${registros.length} resoluciones` + (resumenSrv.padron && resumenSrv.padron.filas ? `<br>Padrón: ${resumenSrv.padron.filas} filas` : '') : 'sin datos cargados'; }
+// Las últimas cargadas son resoluciones leídas: la lista que abre deja afuera lo estimado con la planilla.
+$('verRecientes').addEventListener('click', () => { limpiarFiltros(); if(registros.some(deLaPlanilla)){ F.lect = 'LEIDAS'; marcarChips(); }
+  orden = { k: 'cargado', asc: false }; pagina = 0; pintarTodo(); ir('expedientes'); });
+function pintarPie(){ const np = registros.filter(deLaPlanilla).length; $('pie').innerHTML = registros.length ? `${WEB ? 'versión web' : SERVIDOR ? 'pierri.db' : esc(origenNombre || 'archivo')} · ${registros.length - np} resoluciones` + (np ? ` · ${np} de la planilla` : '') + (resumenSrv.padron && resumenSrv.padron.filas ? `<br>Padrón: ${Number(resumenSrv.padron.filas) || 0} filas` : '') : 'sin datos cargados'; }
 /** ¿Está cumpliendo? La cadena del relevamiento y tres paneles. Siempre sobre todo lo cargado, sin los filtros de Expedientes. */
 function pintarCumple(){
-  const V = registros.filter(r => r && r.derivado && !r.repetido_de && !r.error), R = V.map(r => r.derivado);
+  // La cadena es la de lo leído: los expedientes estimados con la planilla de la UEST van aparte (Inventario).
+  const V = registros.filter(r => r && r.derivado && !r.repetido_de && !r.error && !deLaPlanilla(r)), R = V.map(r => r.derivado);
   const n = f => R.filter(f).length, nr = f => V.filter(f).length, inv = (resumenSrv && resumenSrv.inventario) || {};
   const f = x => x == null || isNaN(x) ? '—' : Number(x).toLocaleString('es-AR'), pc = (a, b) => b ? Math.round(a / b * 100) : 0;
   const rev = d => !!(d.revision && d.revision.revisado), corr = d => rev(d) && !!(d.revision.posee_desde || d.revision.tipo_documento);
@@ -1937,15 +2044,16 @@ function pintarCumple(){
   const esc_ = Number(inv.con_resolucion) || null, leidasInv = inv.cargado ? (Number(inv.leidas) || 0) : null;
   const texto = nr(r => r.fuente === 'texto'), modelo = nr(r => r.fuente === 'modelo'), noLeidas = nr(r => r.fuente === 'texto_incompleto'), tot = texto + modelo + noLeidas;
   const insAnt = n(d => cl(d) === 'ELEGIBLE' && ins(d) === 'INSCRIPTA'), noInsAnt = n(d => cl(d) === 'ELEGIBLE' && ins(d) === 'NO_FIGURA_EN_PADRON');
+  const trabAnt = n(d => cl(d) === 'ELEGIBLE' && (ins(d) === 'PROVISORIA' || ins(d) === 'OBSERVADA'));
   const sinCruce = n(d => cl(d) === 'ELEGIBLE' && (!ins(d) || ins(d) === 'AMBIGUO' || ins(d) === 'SIN_NOMBRE_PARA_CRUZAR'));
   const confirmadas = n(d => cl(d) === 'ELEGIBLE' && rev(d) && ins(d) === 'INSCRIPTA');
   const cfg = config(), corte = cfg.regla === 'CORTE_FIJO' ? (cfg.fechaCorte || '2006-01-01').split('-').reverse().join('/') : 'plazo móvil de 10 años';
   $('cumpleEmbudo').innerHTML = `
-    <div class="paso"><span class="r">Escaneadas por la UEST</span><span class="v c-m">${f(esc_)}</span><small>${esc_ ? 'con resolución, según el inventario' : 'cargá el inventario de la UEST'}</small></div>
-    <div class="paso"><span class="r">Leídas</span><span class="v c-m">${f(leidasInv != null ? leidasInv : V.length)}</span><small>${esc_ && leidasInv != null ? `${pc(leidasInv, esc_)} % del inventario` : `${f(V.length)} resoluciones`}</small></div>
+    <div class="paso"><span class="r">Escaneadas por la UEST</span><span class="v c-m">${f(esc_)}</span><small>${esc_ ? 'con resolución, según el inventario' : puedeCargar() ? 'cargá el inventario de la UEST' : 'sin inventario cargado'}</small></div>
+    <div class="paso"><span class="r">Leídas</span><span class="v c-m">${f(V.length)}</span><small>${esc_ && leidasInv != null ? `${f(leidasInv)} de las ${f(esc_)} del inventario (${pc(leidasInv, esc_)} %)` : 'resoluciones'}</small></div>
     <div class="paso"><span class="r">Evaluables</span><span class="v">${f(ev)}</span><small>${f(noEval)} no ordenan la inscripción</small></div>
     <div class="paso prota"><span class="r">Posesión anterior al corte</span><span class="v">${f(anteriores)}</span><small>${bordeDentro ? `+${f(bordeDentro)} en el borde · ` : ''}corte: ${esc(corte)}</small></div>
-    <div class="paso"><span class="r">De esas, inscriptas</span><span class="v c-m">${hayPadron ? f(insAnt) : '—'}</span><small>${hayPadron ? `${f(noInsAnt)} no inscriptas · ${f(sinCruce)} sin cruzar` : 'cargá el Padrón del Registro'}</small></div>
+    <div class="paso"><span class="r">De esas, inscriptas</span><span class="v c-m">${hayPadron ? f(insAnt) : '—'}</span><small>${hayPadron ? `${trabAnt ? f(trabAnt) + ' observadas o provisorias · ' : ''}${f(noInsAnt)} no figuran · ${f(sinCruce)} sin cruzar` : (puedeCargar() ? 'cargá el Padrón del Registro' : 'sin Padrón cargado')}</small></div>
     <div class="paso"><span class="r">Confirmadas</span><span class="v">${f(confirmadas)}</span><small>anteriores, inscriptas y revisadas a mano</small></div>`;
   $('cumplePaneles').innerHTML = `
     <div class="panel"><div class="cabp"><h2>Avance</h2><span class="sub">¿cuánto se leyó?</span></div><div class="cuerpo">
@@ -1968,6 +2076,20 @@ function pintarCumple(){
       <div class="fila-m"><span>Posteriores al corte</span><b>${f(posteriores)}</b></div>
       <div class="fila-m"><span>Sin fecha de posesión</span><b class="c-r">${f(sinFecha)}</b></div>
       <div class="fila-m"><span>No evaluables (trámite, cédula, desestima)</span><b class="c-g">${f(noEval)}</b></div></div></div>`;
+  // La planilla de la UEST, aparte: es una estimación, no una lectura.
+  const pl = (resumenSrv && resumenSrv.planilla) || {};
+  if(pl.cargada){
+    const E = registros.filter(deLaPlanilla).map(r => r.derivado), k = x => E.filter(d => cl(d) === x).length;
+    const ant = k('ELEGIBLE') + k('ELEGIBLE_BORDE'), pos = k('NO_ELEGIBLE') + k('NO_ELEGIBLE_BORDE'), bor = k('ELEGIBLE_BORDE') + k('NO_ELEGIBLE_BORDE'), sinA = k('SIN_DATO'), v = pl.validacion || {};
+    $('cumplePaneles').insertAdjacentHTML('beforeend', `
+    <div class="panel"><div class="cabp"><h2>Planilla de la UEST</h2><span class="sub">estimado, sin la resolución leída</span></div><div class="cuerpo">
+      <div class="apilada" role="img" aria-label="estimados anteriores, posteriores y sin dato"><div style="width:${pc(ant, E.length)}%;background:var(--verde);opacity:.55"></div><div style="width:${pc(pos, E.length)}%;background:var(--barra-no)"></div><div style="width:${pc(sinA, E.length)}%;background:var(--barra-sin)"></div></div>
+      <div class="fila-m"><span>Expedientes sin la resolución leída</span><b>${f(E.length)}</b></div>
+      <div class="fila-m"><span>Anteriores al corte (estimado)</span><b class="c-v">${f(ant)}</b></div>
+      <div class="fila-m"><span>Posteriores al corte (estimado)</span><b>${f(pos)}</b></div>
+      <div class="fila-m"><span>En el borde · sin antigüedad usable</span><b>${f(bor)} · ${f(sinA)}</b></div>
+      <div class="fila-m"><span>¿Cuánto acierta contra lo leído?</span><b>${v.comparadas >= 30 ? pc(v.coinciden, v.comparadas) + ' %' : v.comparadas ? `${f(v.coinciden)} de ${f(v.comparadas)}` : '—'}</b></div></div></div>`);
+  }
 }
 /** La fecha de posesión con la precisión que realmente tiene: día/mes/año, mes/año, o solo el año. */
 function fechaPosesion(d){
@@ -1975,12 +2097,16 @@ function fechaPosesion(d){
   const [a, m, di] = String(d.posee_desde).split('-'), p = d.posee_desde_precision;
   return p === 'anio' ? `${a} (año aprox.)` : p === 'mes' ? `${m}/${a}` : `${di}/${m}/${a}`;
 }
-const CRITERIOS = { DECLARADA_ROGANTE: 'declarada por el rogante', SURGE_DOCUMENTAL: 'surge de la documental', SURGE_EXPEDIENTE: 'surge del expediente', CORREGIDA_A_MANO: 'corregida a mano', OTRO: 'otro criterio' };
+const CRITERIOS = { PLANILLA_UEST: 'estimada con la planilla de la UEST: fecha de ingreso menos la antigüedad declarada al iniciar el trámite', DECLARADA_ROGANTE: 'declarada por el rogante', SURGE_DOCUMENTAL: 'surge de la documental', SURGE_EXPEDIENTE: 'surge del expediente', CORREGIDA_A_MANO: 'corregida a mano', OTRO: 'otro criterio' };
 const VEREDICTOS = { ELEGIBLE: 'Posesión anterior al corte', ELEGIBLE_BORDE: 'Anterior al corte, en el borde', NO_ELEGIBLE: 'Posesión posterior al corte', NO_ELEGIBLE_BORDE: 'Posterior al corte, en el borde', SIN_DATO: 'Sin fecha de posesión', REVISAR: 'Sin fecha de posesión: revisar', NO_APLICA: 'No ordena la inscripción' };
 function pintarMetricas(){
   pintarCumple();
-  const R = registros.map(r => r.derivado);
-  const c = k => R.filter(d => cl(d) === k).length;
+  const R = registros.map(r => r.derivado), RL = registros.filter(r => !deLaPlanilla(r)).map(r => r.derivado), nPlan = R.length - RL.length;
+  const elegPlan = registros.filter(r => deLaPlanilla(r) && cl(r.derivado).startsWith('ELEGIBLE')).length;
+  // Las cifras son de lo leído. Lo estimado con la planilla se cuenta aparte y se dice aparte.
+  const porClase = {}; for(const d of RL){ const k = cl(d); porClase[k] = (porClase[k] || 0) + 1; }
+  const c = k => porClase[k] || 0;
+  const DP = registros.filter(deLaPlanilla).map(r => r.derivado), nPlanEval = DP.filter(d => cl(d) !== 'SIN_DATO').length;
   const eleg = c('ELEGIBLE') + c('ELEGIBLE_BORDE'), no = c('NO_ELEGIBLE') + c('NO_ELEGIBLE_BORDE');
   const sin = c('SIN_DATO') + c('REVISAR');
   // El total son las resoluciones que se pudieron evaluar (inscripciones y ampliatorias o rectificatorias que declaran
@@ -1989,13 +2115,17 @@ function pintarMetricas(){
   const pct = x => n ? Math.round(x / n * 100) : 0;
   const cfg = config();
   const alt = cfg.regla === 'CORTE_FIJO' ? { regla: 'PLAZO_MOVIL', anosPlazoMovil: 10 } : { regla: 'CORTE_FIJO', fechaCorte: '2006-01-01' };
-  const elegAlt = R.filter(d => cl(d) !== 'NO_APLICA' && P.evaluarElegibilidad(d.posee_desde ? P.parseFecha(d.posee_desde) : null, alt).estado === 'ELEGIBLE').length;
+  // El límite del otro criterio se calcula una vez; después alcanza con comparar la fecha de cada uno (como evaluarElegibilidad).
+  const limAlt = P.parseFecha(P.evaluarElegibilidad(null, alt).fechaLimite);
+  const entraAlt = d => { const pd = d.posee_desde ? P.parseFecha(d.posee_desde) : null; return !!pd && (alt.regla === 'PLAZO_MOVIL' ? pd <= limAlt : pd < limAlt); };
+  const elegAlt = RL.filter(d => cl(d) !== 'NO_APLICA' && entraAlt(d)).length, elegAltPlan = DP.filter(entraAlt).length;
   // Una sola cifra manda: cuántos entran en la ley. El resto queda subordinado.
   $('protagonista').innerHTML = !n
     ? `<span class="rot">Entran en la Ley Pierri</span><div class="cifra c-g">—</div><span class="mini">Todavía no hay resoluciones cargadas.</span>`
     : `<span class="rot">Entran en la Ley Pierri</span>
        <div style="display:flex;align-items:baseline;gap:12px"><span class="cifra">${eleg}</span><span class="de">de ${n} evaluadas</span></div>
-       ${noAplica ? `<span class="mini">Se leyeron ${R.length} documentos: ${noAplica} no aplican porque no ordenan la inscripción (resoluciones de trámite, cédulas, desestimatorias).</span>` : ''}
+       ${noAplica ? `<span class="mini">Se leyeron ${RL.length} documentos: ${noAplica} no aplican porque no ordenan la inscripción (resoluciones de trámite, cédulas, desestimatorias).</span>` : ''}
+       ${nPlan ? `<span class="mini">Además, <b>${elegPlan} estimadas con la planilla de la UEST</b> (de ${nPlanEval} expedientes de la planilla sin la resolución leída): es lo que se declaró al iniciar el trámite, no lo que fijó la resolución.</span>` : ''}
        <div class="barra"><div style="width:${pct(eleg)}%;background:var(--verde)"></div><div style="width:${pct(no)}%;background:var(--barra-no)"></div><div style="width:${pct(sin)}%;background:var(--barra-sin)"></div></div>
        <div class="leyenda2"><span><i class="cuadro" style="background:var(--verde)"></i>${pct(eleg)} % elegibles</span><span><i class="cuadro" style="background:var(--barra-no)"></i>${no} no elegibles</span>${sin ? `<span><i class="cuadro" style="background:var(--barra-sin)"></i>${sin} sin fecha</span>` : ''}</div>
        <div class="mini" style="line-height:1.45"><b>Elegible</b>: cumple el requisito de antigüedad de la posesión que exige la Ley Pierri (${cfg.regla === 'CORTE_FIJO' ? 'posesión anterior al ' + cfg.fechaCorte.split('-').reverse().join('/') : 'diez años de posesión'}). <b>No elegible</b>: no lo cumple. Los demás requisitos de la ley se verifican después, en el trámite.</div>
@@ -2005,12 +2135,13 @@ function pintarMetricas(){
   // Cuenta lo mismo que muestra el filtro al que lleva, para que el número no engañe.
   const revisada = d => !!(d.revision && d.revision.revisado), anterior = d => cl(d).startsWith('ELEGIBLE');
   const incompletas = registros.filter(r => r.fuente === 'texto_incompleto').length;
+  // Las tareas sobre lo leído no cuentan lo estimado con la planilla: eso tiene su propia tarea, conseguir el PDF.
   const tareas = [
-    ['Anteriores al corte sin revisar', 'controlarlas contra el PDF', R.filter(d => anterior(d) && !revisada(d)).length, 'c-v', 'ELEGIBLE+SIN_REVISAR'],
+    ['Anteriores al corte sin revisar', puedeCargar() ? 'controlarlas contra el PDF' : 'todavía sin controlar a mano', RL.filter(d => anterior(d) && !revisada(d)).length, 'c-v', 'ELEGIBLE+LEIDAS+SIN_REVISAR'],
     ['Con dudas', 'el sistema marcó algo para mirar', R.filter(d => d.revisar).length, 'c-a', 'REVISAR'],
-    ['Anteriores no inscriptas', 'resolución dictada, sin inscribir', R.filter(d => anterior(d) && d.inscripcion && d.inscripcion.estado === 'NO_FIGURA_EN_PADRON').length, 'c-r', 'ELEGIBLE+INSC:NO_FIGURA_EN_PADRON'],
-    ['No se pudieron leer', WEB ? 'se completan en el kit' : 'necesitan el modelo', incompletas, 'c-a', 'INCOMPLETA'],
-  ];
+    ['Anteriores que no figuran en el Padrón', 'cruce por nombre: confirmarlas a mano', RL.filter(d => anterior(d) && d.inscripcion && d.inscripcion.estado === 'NO_FIGURA_EN_PADRON').length, 'c-r', 'ELEGIBLE+LEIDAS+INSC:NO_FIGURA_EN_PADRON'],
+    ['No se pudieron leer', !puedeCargar() ? 'falta leerlas con el modelo' : WEB ? 'se leen con el modelo desde Configuración' : 'necesitan el modelo', incompletas, 'c-a', 'INCOMPLETA'],
+  ].concat(nPlan ? [['Anteriores según la planilla', puedeCargar() ? 'sin la resolución leída: conseguir el PDF' : 'estimadas, sin la resolución leída', elegPlan, 'c-m', 'ELEGIBLE+POR_PLANILLA']] : []);
   $('pendientes').innerHTML = tareas.map(([t, sub, v, col, f]) =>
     `<button class="accion ${v ? 'clicable' : ''}" ${v ? `data-tarea="${f}"` : 'disabled'}><span class="txt"><b>${t}</b><small class="${v ? col : ''}">${v ? sub : 'nada pendiente'}</small></span><span class="num ${v ? col : 'c-g'}">${v}</span></button>`).join('');
   $('pendientes').querySelectorAll('[data-tarea]').forEach(b => b.addEventListener('click', () => {
@@ -2021,11 +2152,13 @@ function pintarMetricas(){
     marcarChips();
     pagina = 0; pintarTodo(); ir('expedientes');
   }));
-  const txt = !n ? 'Todavía no hay resoluciones cargadas.' : cfg.regla === 'CORTE_FIJO'
-    ? `${R.length} documentos leídos · ${n} evaluadas · corte: posesión anterior al ${cfg.fechaCorte.split('-').reverse().join('/')}`
-    : `${R.length} documentos leídos · ${n} evaluadas · criterio: diez años de posesión al día de hoy`;
+  const ademas = nPlan ? ` · además, ${nPlan} expedientes estimados con la planilla de la UEST` : '';
+  const txt = (!n ? 'Todavía no hay resoluciones cargadas.' : cfg.regla === 'CORTE_FIJO'
+    ? `${RL.length} documentos leídos · ${n} evaluadas · corte: posesión anterior al ${cfg.fechaCorte.split('-').reverse().join('/')}`
+    : `${RL.length} documentos leídos · ${n} evaluadas · criterio: diez años de posesión al día de hoy`) + ademas;
   $('avisoCorte').textContent = txt;
-  $('avisoCorte2').textContent = !n ? txt : `Con el criterio actual entran ${eleg} de ${n} evaluadas; con el otro, ${elegAlt}.`;
+  $('avisoCorte2').textContent = (!n ? 'Todavía no hay resoluciones leídas.' : `Resoluciones leídas: con el criterio actual entran ${eleg} de ${n} evaluadas; con el otro, ${elegAlt}.`)
+    + (nPlan ? ` Estimadas con la planilla de la UEST: ${elegPlan} de ${nPlanEval}; con el otro criterio, ${elegAltPlan}.` : '');
 }
 function tagDe(c){
   if(c === 'ELEGIBLE') return '<span class="tag p-v">Elegible</span>';
@@ -2040,16 +2173,23 @@ function tagInsc(d){
   const e = i.estado;
   if(e === 'INSCRIPTA') return ' <span class="tag p-m">Inscripta</span>';
   if(e === 'PROVISORIA' || e === 'OBSERVADA') return ` <span class="tag p-a">${e === 'PROVISORIA' ? 'Provisoria' : 'Observada'}</span>`;
-  if(e === 'NO_FIGURA_EN_PADRON') return ' <span class="tag p-r">No inscripta</span>';
+  // Un trámite que la planilla no registra con resolución no tiene nada que inscribir: no lleva "No figura en el Padrón".
+  if(e === 'NO_FIGURA_EN_PADRON') return d.tipo_documento === 'PLANILLA_UEST' && !d.resolucion_fecha && !d.resolucion_numero ? '' : ' <span class="tag p-r" title="el nombre no aparece en el Padrón cargado (cruce por nombre)">No figura en el Padrón</span>';
   if(e === 'AMBIGUO') return ' <span class="tag p-g">Ambiguo</span>';
   return '';
 }
-const valorOrden = (r, k) => { const d = r.derivado; return { expediente: d.expediente || '', rogante: d.rogante_principal || '', posee_desde: d.posee_desde || '9999', clasif: cl(d), localidad: loc(d), manzana: mz(d), fuente: r.fuente || '', cargado: r.cargado_en || '' }[k] || ''; };
+const valorOrden = (r, k) => { const d = r.derivado;
+  switch(k){ case 'expediente': return d.expediente || ''; case 'rogante': return d.rogante_principal || ''; case 'posee_desde': return d.posee_desde || '9999';
+    case 'clasif': return cl(d); case 'localidad': return loc(d); case 'manzana': return mz(d) || ''; case 'fuente': return r.fuente || ''; case 'cargado': return r.cargado_en || ''; default: return ''; } };
 document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => { if(orden.k === th.dataset.k) orden.asc = !orden.asc; else orden = { k: th.dataset.k, asc: true }; pintarTabla(); }));
+/** La lista en el orden elegido. La clave de orden se calcula una vez por fila, no en cada comparación. */
+function ordenar(lista){ return lista.map(r => [valorOrden(r, orden.k), r]).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0) * (orden.asc ? 1 : -1)).map(x => x[1]); }
 function pintarTabla(){
   document.querySelectorAll('th[data-k]').forEach(th => { th.classList.toggle('orden', th.dataset.k === orden.k); th.classList.toggle('asc', th.dataset.k === orden.k && orden.asc); });
-  const lista = vista.slice().sort((a, b) => { const x = valorOrden(a, orden.k), y = valorOrden(b, orden.k); return (x < y ? -1 : x > y ? 1 : 0) * (orden.asc ? 1 : -1); });
-  const total = lista.length, desde = pagina * POR_PAG, pag = lista.slice(desde, desde + POR_PAG);
+  const lista = ordenar(vista), total = lista.length;
+  // Si la lista se achicó (otro corte, una revisión, el Padrón), la página tiene que seguir existiendo.
+  pagina = Math.max(0, Math.min(pagina, Math.ceil(total / POR_PAG) - 1));
+  const desde = pagina * POR_PAG, pag = lista.slice(desde, desde + POR_PAG);
   const activos = filtrosActivos();
   $('subTabla').innerHTML = `${total} de ${registros.length}` + (activos.length
     ? ` · <b style="color:var(--ambar)">filtrando por: ${esc(activos.join(', '))}</b> · <a href="#" id="verTodas">ver todas</a>` : '');
@@ -2064,10 +2204,10 @@ function pintarTabla(){
       <td class="exp">${esc(d.expediente || '—')}<div class="mini">${esc(d.resolucion_numero ? d.resolucion_numero + '/' + (d.resolucion_anio || '') : '')}</div></td>
       <td>${esc(d.rogante_principal || '—')}${d.cantidad_rogantes > 1 ? ` <span class="mini">+${d.cantidad_rogantes - 1}</span>` : ''}${marcas ? `<div class="mini">${esc(marcas)}</div>` : ''}</td>
       <td><b>${esc(d.posee_desde ? d.posee_desde.slice(0, 4) : '—')}</b><div class="mini">${!d.posee_desde ? '' : d.posee_desde_precision === 'anio' ? 'año aprox.' : d.posee_desde_precision === 'mes' ? 'mes ' + esc(d.posee_desde.slice(5, 7)) : esc(d.posee_desde.slice(8, 10) + '/' + d.posee_desde.slice(5, 7))}</div></td>
-      <td>${tagDe(c)}${tagInsc(d)}${d.revisar ? ' <span class="tag p-r">Revisar</span>' : ''}</td>
+      <td>${tagDe(c)}${deLaPlanilla(r) ? ' <span class="tag p-est" title="estimado con la planilla de la UEST: no se leyó la resolución">estimado</span>' : ''}${tagInsc(d)}${d.revisar ? ' <span class="tag p-r">Revisar</span>' : ''}</td>
       <td class="col-sec">${esc(loc(d))}<div class="mini">${esc([d.geo && d.geo.ped_nombre, d.geo && d.geo.dep_nombre].filter(Boolean).join(' · '))}</div></td>
       <td class="col-sec">${esc(mz(d) || '—')}</td>
-      <td class="col-sec"><span class="mini">${esc(r.fuente === 'texto' ? 'leída por texto' : r.fuente === 'modelo' ? 'revisada por el modelo' : 'no se pudo leer')}</span></td>
+      <td class="col-sec"><span class="mini">${esc(r.fuente === 'texto' ? 'leída por texto' : r.fuente === 'modelo' ? 'revisada por el modelo' : r.fuente === 'planilla' ? 'estimada con la planilla' : 'no se pudo leer')}</span></td>
       <td class="col-sec"><span class="mini">${esc(fechaCarga(r.cargado_en))}</span></td>
     </tr>`;
   }).join('');
@@ -2097,14 +2237,17 @@ $('filas').addEventListener('click', e => {
   const caja = e.target.closest('.revision');
   if(caja){ if(e.target.classList.contains('rv-guardar')) guardarRevision(caja); return; }
   const tr = e.target.closest('tr.fila'); if(!tr) return;
+  if(visorReg && registros[Number(tr.dataset.i)] && registros[Number(tr.dataset.i)].hash !== visorReg) cerrarVisor();
   const sig = tr.nextElementSibling; if(sig && sig.classList.contains('det')){ sig.remove(); return; }
   document.querySelectorAll('tr.det').forEach(x => x.remove());
   const r = registros[Number(tr.dataset.i)], d = r.derivado, e2 = r.extraido || {}, g = d.geo || {}, c = g.catastro || {};
   const rog = (e2.rogantes || []).map(x => `${esc(x.apellido_nombre || '?')} · DNI ${esc(x.dni || '?')} · ${esc(x.estado_civil || '')} · ${esc([x.domicilio && x.domicilio.calle, x.domicilio && x.domicilio.numero, x.domicilio && x.domicilio.localidad].filter(Boolean).join(' '))}`).join('<br>');
   const rev = d.revision || {};
-  const ESTADO_REG = { INSCRIPTA: 'Inscripta', PROVISORIA: 'Provisoria', OBSERVADA: 'Observada', NO_FIGURA_EN_PADRON: 'No inscripta (el Registro no tiene la anotación)',
+  const ESTADO_REG = { INSCRIPTA: 'Inscripta', PROVISORIA: 'Provisoria', OBSERVADA: 'Observada', NO_FIGURA_EN_PADRON: 'No figura en el Padrón cargado (el cruce es por nombre: confirmarlo a mano)',
     AMBIGUO: 'Ambigua (el nombre aparece más de una vez)', SIN_NOMBRE_PARA_CRUZAR: 'Sin nombre legible para cruzar con el Registro' };
   const insc = d.inscripcion ? `${esc(ESTADO_REG[d.inscripcion.estado] || d.inscripcion.estado)}${d.inscripcion.diario ? ' · diario ' + esc(d.inscripcion.diario) : ''}${d.inscripcion.candidatas ? ' · candidatas: ' + esc(d.inscripcion.candidatas.map(x => x.diario + ' (' + x.estado + ')').join(', ')) : ''}` : 'sin cruzar con el Padrón';
+  if(deLaPlanilla(r)){ tr.insertAdjacentHTML('afterend', `<tr class="det"><td colspan="8" class="detalle">${fichaPlanilla(r, insc)}</td></tr>`); return; }
+  const pe = r.planilla_estimaba;
   tr.insertAdjacentHTML('afterend', `<tr class="det"><td colspan="8" class="detalle"><p style="margin:0 0 10px;font-size:14px"><b class="${cl(d).startsWith('ELEGIBLE') ? 'c-v' : cl(d).startsWith('NO_ELEGIBLE') ? 'c-g' : 'c-r'}">${esc(VEREDICTOS[cl(d)] || cl(d))}</b> · posee desde ${esc(fechaPosesion(d))} · ${config().regla === 'CORTE_FIJO' ? 'corte ' + esc((config().fechaCorte || '2006-01-01').split('-').reverse().join('/')) : 'plazo móvil de 10 años'}</p><dl>
     <dt>Rogantes</dt><dd>${rog || '—'}</dd>
     <dt>Posesión</dt><dd>${esc(fechaPosesion(d))} (${esc(CRITERIOS[d.posesion_criterio] || d.posesion_criterio || 'sin criterio')})<br><span class="mini">${esc(e2.posesion && e2.posesion.texto_original || '')}</span></dd>
@@ -2113,13 +2256,14 @@ $('filas').addEventListener('click', e => {
     <dt>Catastro</dt><dd>${c.encontrada ? esc(`${c.localidad} · ${c.nomenclatura_legible} · ${c.estado || ''} · ${c.sup_tierra || '?'} m² tierra, ${c.sup_mejoras || 0} m² construidos`) : 'sin parcela encontrada'}</dd>
     <dt>Registro</dt><dd>${insc}</dd>
     <dt>Inventario UEST</dt><dd>${r.inventario ? esc(`${r.inventario.estado_digitalizacion || ''} · cuenta ${r.inventario.cuenta || 'sin'}${r.inventario.cuenta_coincide === false ? ' (NO coincide con la leída)' : r.inventario.cuenta_coincide ? ' (coincide)' : ''} · resolución N° ${r.inventario.nro_resolucion || 'sin'}${r.inventario.resolucion_coincide === false ? ' (NO coincide)' : r.inventario.resolucion_coincide ? ' (coincide)' : ''}${r.inventario.iniciador ? ' · SUAC: ' + r.inventario.iniciador + (r.inventario.dni ? ' DNI ' + r.inventario.dni : '') + (r.inventario.dni_coincide === false ? ' (DNI NO coincide)' : r.inventario.dni_coincide ? ' (DNI coincide)' : '') : ''}`) : 'no está en el inventario cargado'}</dd>
+    ${pe ? `<dt>Planilla UEST</dt><dd>${esc(`estimaba posesión desde ${pe.posee_desde ? pe.posee_desde.slice(0, 4) : '—'}: ${String(VEREDICTOS[pe.clasificacion] || pe.clasificacion).toLowerCase()}`)}${pe.coincide === false ? ' · <b class="c-r">no coincide con la resolución</b>' : pe.coincide ? ' · coincide con la resolución' : ''}</dd>` : ''}
     <dt>Señales</dt><dd>${esc((d.senales || []).join(', ') || '—')}</dd>
     <dt>Revisar</dt><dd>${esc((d.motivos_revision || []).join(' · ') || 'no')}</dd>
     <dt>Archivo</dt><dd>${esc(r.archivo || '')}${r.tomo ? ` <span class="mini">(páginas ${(Number(r.tomo.desde) || 0) + 1}–${(Number(r.tomo.hasta) || 0) + 1} de ${esc(r.tomo.archivo)})</span>` : ''}</dd>
   </dl>
   ${SERVIDOR && !WEB ? `<div class="acciones" style="margin-top:12px"><a class="boton-ver" href="/api/documento?id=${encodeURIComponent(r.hash)}" target="_blank" rel="noopener">Ver la resolución original</a><span class="mini">se abre el PDF tal como lo leyó el sistema, para controlarlo</span></div>` : ''}
-  ${WEB ? (r.pdf_web ? `<div class="acciones" style="margin-top:12px"><button class="boton-ver" data-verpdf="${esc(r.pdf_web)}" data-desde="${r.tomo ? Number(r.tomo.desde) || 0 : ''}" data-hasta="${r.tomo ? Number(r.tomo.hasta) || 0 : ''}" data-nombre="${esc(r.archivo || '')}">Ver la resolución original</button><span class="mini">se abre al costado el PDF tal como lo leyó el sistema, para controlarlo</span></div>`
-    : `<p class="mini" style="margin:12px 0 0">El PDF de esta resolución todavía no está guardado en la web.${YO && YO.permisos && YO.permisos.cargar ? ' Subilo en Cargar: si ya estaba leído, se guarda sin volver a leerlo y queda para verlo acá.' : ''}</p>`) : ''}
+  ${WEB ? (r.pdf_web ? `<div class="acciones" style="margin-top:12px"><button class="boton-ver" data-verpdf="${esc(r.pdf_web)}" data-desde="${r.tomo ? Number(r.tomo.desde) || 0 : ''}" data-hasta="${r.tomo ? Number(r.tomo.hasta) || 0 : ''}" data-nombre="${esc(r.archivo || '')}" data-exp="${esc(d.expediente || '')}" data-reg="${esc(r.hash)}">Ver la resolución original</button><span class="mini">se abre al costado el PDF tal como lo leyó el sistema, para controlarlo</span></div>`
+    : `<p class="mini" style="margin:12px 0 0">El PDF de esta resolución todavía no está guardado en la web.${YO && YO.permisos && YO.permisos.cargar ? ' Subilo en "Filtro Ley Pierri" (la carga de PDF, en el menú): si ya estaba leído, se guarda sin volver a leerlo y queda para verlo acá.' : ''}</p>`) : ''}
   ${SERVIDOR && (!WEB || (YO && YO.permisos && YO.permisos.revisar)) ? `<div class="revision" data-id="${encodeURIComponent(r.hash)}">
     <label class="tilde"><input type="checkbox" class="rv-ok" ${rev.revisado ? 'checked' : ''}> <b>Revisada</b> contra el documento</label>
     <div class="controles">
@@ -2136,28 +2280,112 @@ $('filas').addEventListener('click', e => {
       <div class="grupo" style="flex:1;min-width:190px"><label>Observación</label><input type="text" class="rv-nota" value="${esc(rev.nota || '')}" placeholder="qué hubo que corregir"></div>
       <button class="rv-guardar">Guardar revisión</button>
     </div>
-    <span class="mini rv-estado">${rev.en ? 'Revisada el ' + new Date(rev.en).toLocaleString('es-AR') + (rev.revisor ? ' por ' + esc(rev.revisor) : '') : 'Sin revisar'}</span>
+    <span class="mini rv-estado">${rev.en ? 'Revisada el ' + fechaHora(rev.en) + (rev.revisor ? ' por ' + esc(rev.revisor) : '') : 'Sin revisar'}</span>
   </div>` : ''}<details><summary>Datos completos</summary><pre>${esc(JSON.stringify({ extraido: e2, derivado: d }, null, 1))}</pre></details></td></tr>`);
 });
 
+/** La ficha de un expediente estimado con la planilla de la UEST: qué se declaró al iniciar el trámite y qué falta para confirmarlo. */
+function fichaPlanilla(r, insc){
+  const d = r.derivado, p = r.planilla || {}, g = d.geo || {}, c = g.catastro || {}, cfg = config(), k = cl(d);
+  const fecha = iso => iso ? String(iso).split('-').reverse().join('/') : '—';
+  const estim = d.posee_desde ? `el trámite ingresó el ${fecha(p.fecha_ingreso)} declarando ${p.antiguedad} año${p.antiguedad === 1 ? '' : 's'} de posesión: posee desde ${fechaPosesion(d)}` : (d.sin_estimar || 'sin dato');
+  const catastro = c.encontrada ? `${c.localidad} · ${c.nomenclatura_legible} · ${c.estado || ''} · ${c.sup_tierra || '?'} m² tierra, ${c.sup_mejoras || 0} m² construidos`
+    : !g.cuenta_normalizada ? (g.ubicacion_aproximada ? 'sin cuenta: ubicada aproximadamente por la localidad' : 'sin cuenta ni localidad para ubicarla')
+    : c.encontrada === false ? 'Catastro no tiene esa cuenta' : 'sin consultar todavía' + (puedeCargar() ? ': "Ubicar las parcelas en Catastro", en Inventario' : '');
+  const inv = r.inventario ? `${r.inventario.estado_digitalizacion || ''} · cuenta ${r.inventario.cuenta || 'sin'} · resolución N° ${r.inventario.nro_resolucion || 'sin'}` : 'no está en el inventario cargado';
+  return `<p style="margin:0 0 10px;font-size:14px"><b class="${k.startsWith('ELEGIBLE') ? 'c-v' : k.startsWith('NO_ELEGIBLE') ? 'c-g' : 'c-r'}">${esc(VEREDICTOS[k] || k)}</b> · estimada con la planilla de la UEST · ${cfg.regla === 'CORTE_FIJO' ? 'corte ' + esc((cfg.fechaCorte || '2006-01-01').split('-').reverse().join('/')) : 'plazo móvil de 10 años'}</p><dl>
+    <dt>Estimación</dt><dd>${esc(estim)}<br><span class="mini">No se leyó la resolución: es lo que se declaró al iniciar el trámite. La resolución puede fijar otra antigüedad.</span></dd>
+    <dt>Iniciador</dt><dd>${esc(d.rogante_principal || '—')}${d.dni_principal ? ' · DNI ' + esc(d.dni_principal) : ''}</dd>
+    <dt>Resolución</dt><dd>${p.con_resolucion ? esc('según la planilla: ' + [d.resolucion_numero && 'N° ' + d.resolucion_numero, d.resolucion_fecha && 'del ' + fecha(d.resolucion_fecha)].filter(Boolean).join(' ')) : 'la planilla no registra resolución'}</dd>
+    <dt>Trámite</dt><dd>${esc([p.estado, p.etapa].filter(Boolean).join(' · ') || '—')}</dd>
+    <dt>Inmueble</dt><dd>${esc([g.localidad, g.calle, g.ped_nombre && 'pedanía ' + g.ped_nombre, p.tipo_lugar, p.superficie].filter(Boolean).join(' · ') || '—')}</dd>
+    <dt>Cuenta</dt><dd>${esc(g.cuenta_normalizada || 'sin cuenta')}</dd>
+    <dt>Catastro</dt><dd>${esc(catastro)}</dd>
+    <dt>Registro</dt><dd>${insc}</dd>
+    <dt>Inventario UEST</dt><dd>${esc(inv)}</dd>
+  </dl>
+  <p class="mini" style="margin:12px 0 0">${puedeCargar() ? 'Para confirmarla, conseguí el PDF de la resolución y subilo en "Filtro Ley Pierri" (la carga de PDF, en el menú): la lectura reemplaza a esta estimación.' : 'Se confirma cuando se lea la resolución.'}</p>
+  <details><summary>Datos completos</summary><pre>${esc(JSON.stringify({ planilla: p, derivado: d }, null, 1))}</pre></details>`;
+}
+/** La planilla de trámites de la UEST: qué trae, qué estima y cuánto acierta contra lo leído. */
+function pintarPlanilla(){
+  const pl = resumenSrv.planilla || {};
+  ['btnSIAUbicar','btnSIALista'].forEach(id => $(id).disabled = !pl.cargada);
+  if(!pl.cargada){ $('siaSub').textContent = 'sin cargar'; $('siaTarjetas').innerHTML = ''; return; }
+  const f = x => Number(x || 0).toLocaleString('es-AR'), pc = (a, b) => b ? Math.round(a / b * 100) : 0;
+  const E = registros.filter(deLaPlanilla), D = E.map(r => r.derivado), k = c => D.filter(d => cl(d) === c).length;
+  const ant = k('ELEGIBLE') + k('ELEGIBLE_BORDE'), pos = k('NO_ELEGIBLE') + k('NO_ELEGIBLE_BORDE'), borde = k('ELEGIBLE_BORDE') + k('NO_ELEGIBLE_BORDE'), sin = k('SIN_DATO');
+  const conRes = E.filter(r => r.planilla && r.planilla.con_resolucion && cl(r.derivado).startsWith('ELEGIBLE')).length;
+  const parcela = D.filter(d => d.geo && d.geo.catastro && d.geo.catastro.encontrada).length, aprox = D.filter(d => d.geo && d.geo.ubicacion_aproximada).length;
+  const sinConsultar = D.filter(d => d.geo && d.geo.cuenta_normalizada && !d.geo.catastro).length;
+  const v = pl.validacion || {};
+  $('siaSub').textContent = [pl.archivo, pl.cargado_en && fechaCarga(pl.cargado_en)].filter(Boolean).join(' · ');
+  const tarjeta = (t, n, col, mini, filtro, pill) => `<div class="tarjeta ${filtro ? 'clicable' : ''}" ${filtro ? `data-siaver="${filtro}" role="button" tabindex="0"` : ''}><div class="t"><span>${t}</span>${pill || ''}</div><span class="n ${col}">${n}</span><span class="mini">${mini}</span></div>`;
+  $('siaTarjetas').innerHTML =
+    tarjeta('Expedientes en la planilla', f(pl.expedientes), 'c-m', `${f(pl.con_lectura)} ya tienen la resolución leída (manda la lectura)`) +
+    tarjeta('Anteriores al corte (estimado)', f(ant), 'c-v', `${f(conRes)} con resolución según la planilla · tocá para ver cuáles`, 'ELEGIBLE', `<span class="pill p-v">${pc(ant, E.length)} %</span>`) +
+    tarjeta('Posteriores al corte (estimado)', f(pos), 'c-g', 'tocá para ver cuáles', 'NO_ELEGIBLE') +
+    tarjeta('En el borde', f(borde), 'c-a', `a menos de ${f(config().margenBordeMeses)} meses del corte: la resolución puede cambiar el resultado`) +
+    tarjeta('Sin antigüedad usable', f(sin), 'c-r', 'la planilla no trae la fecha de ingreso o la antigüedad', 'SIN_DATO') +
+    tarjeta('En el mapa', f(parcela + aprox), 'c-m', `${f(parcela)} por la parcela de Catastro · ${f(aprox)} aproximadas por la localidad${sinConsultar ? ` · ${f(sinConsultar)} cuentas sin consultar` : ''}`) +
+    // Con pocos casos un porcentaje engaña: hasta 30 comparados se muestra "tantos de tantos".
+    tarjeta('¿Cuánto acierta?', v.comparadas >= 30 ? pc(v.coinciden, v.comparadas) + ' %' : v.comparadas ? `${f(v.coinciden)} de ${f(v.comparadas)}` : '—', 'c-m', v.comparadas
+      ? `${v.comparadas >= 30 ? `en ${f(v.comparadas)} expedientes` : 'expedientes'} con la resolución leída en que coincide si entra o no${v.diferencia_mediana_anios != null ? ` · diferencia típica en el año de inicio: ${v.diferencia_mediana_anios} año${v.diferencia_mediana_anios === 1 ? '' : 's'}` : ''}${v.comparadas < 30 ? ' · todavía son pocos para sacar conclusiones' : ''}`
+      : 'todavía no hay resoluciones leídas de expedientes de la planilla: cuando se lean, se mide acá');
+  $('siaTarjetas').querySelectorAll('[data-siaver]').forEach(el => el.addEventListener('click', () => {
+    ['fDep','fLoc','fSec','fInsc','fAnioD','fAnioH'].forEach(id => $(id).value = ''); $('buscar').value = ''; localidadSel = null;
+    F.elig = el.dataset.siaver; F.lect = 'POR_PLANILLA'; F.ctrl = null; marcarChips(); pagina = 0; pintarTodo(); ir('expedientes');
+  }));
+}
+/**
+ * La planilla para Excel de lo que se está viendo. Con la planilla de la UEST cargada, cada fila dice si sale de una
+ * resolución leída o es una estimación; a una estimación sin cruzar no se le pone "ORDENADA": no hay resolución leída.
+ */
+function planillaExcel(lista){
+  if(!lista.some(deLaPlanilla)) return P.aCSV(lista);
+  const cols = ['origen'].concat(P.COLUMNAS_PLANILLA);
+  const c = v => { const t = v == null ? '' : String(v); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  const filas = lista.filter(r => r.derivado).map(r => { const f = P.aFilaPlanilla(r);
+    f.origen = deLaPlanilla(r) ? 'estimada con la planilla de la UEST' : 'resolución leída';
+    if(deLaPlanilla(r) && !r.derivado.inscripcion) f.inscripcion = '';
+    return cols.map(k => c(f[k])).join(';'); });
+  return [cols.join(';')].concat(filas).join('\n');
+}
+/** La lista para pedir los PDF: primero los del borde (donde la estimación puede cambiar), después los anteriores al corte. */
+$('btnSIALista').addEventListener('click', () => {
+  const orden = { ELEGIBLE_BORDE: 0, NO_ELEGIBLE_BORDE: 0, ELEGIBLE: 1 }, texto = { ELEGIBLE_BORDE: 'anterior al corte, en el borde', NO_ELEGIBLE_BORDE: 'posterior al corte, en el borde', ELEGIBLE: 'anterior al corte' };
+  const lista = registros.filter(r => deLaPlanilla(r) && cl(r.derivado) in orden).sort((a, b) => orden[cl(a.derivado)] - orden[cl(b.derivado)]
+    || ((b.planilla && b.planilla.con_resolucion ? 1 : 0) - (a.planilla && a.planilla.con_resolucion ? 1 : 0)) || String(a.derivado.expediente).localeCompare(String(b.derivado.expediente)));
+  const c = v => { const t = v == null ? '' : String(v); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  const filas = lista.map(r => { const d = r.derivado, p = r.planilla || {};
+    return [d.expediente, texto[cl(d)], d.posee_desde ? d.posee_desde.slice(0, 4) : '', d.resolucion_numero || '', d.resolucion_fecha ? d.resolucion_fecha.split('-').reverse().join('/') : '', [p.estado, p.etapa].filter(Boolean).join(' · '), loc(d), d.geo && d.geo.dep_nombre || '', d.geo && d.geo.cuenta_normalizada || ''].map(c).join(';'); });
+  descargar('\ufeff' + ['Expediente;Estimación;Posee desde (año);Resolución N°;Fecha de resolución;Trámite;Localidad;Departamento;Cuenta'].concat(filas).join('\r\n'), 'pedir_pdf_planilla_uest.csv', 'text/csv;charset=utf-8');
+});
 /** Versión web: muestra al costado el PDF guardado (cifrado en el repositorio), solo las páginas de esta resolución. */
 let visorTarea = 0;
+let visorReg = null;   // la resolución cuyo PDF está abierto: al abrir la ficha de otra, el visor se cierra
 async function abrirVisor(ds){
-  const yo = ++visorTarea;
-  $('visor').classList.remove('oculto'); document.body.classList.add('con-visor'); $('visorTitulo').textContent = ds.nombre || 'Resolución original';
+  const yo = ++visorTarea; visorReg = ds.reg || null;
+  $('visor').classList.remove('oculto'); document.body.classList.add('con-visor');
+  $('visorTitulo').textContent = ds.exp ? 'Expediente ' + ds.exp : (ds.nombre || 'Resolución original');
   $('visorSub').textContent = 'trayendo el PDF y descifrándolo…'; $('visorPaginas').innerHTML = '';
+  const ficha = document.querySelector('#filas tr.det'), caja = ficha && (ficha.querySelector('.revision') || ficha);
+  if(caja) try{ caja.scrollIntoView({ block: 'nearest' }); }catch(e){}
+  const archivo = ds.exp && ds.nombre ? ds.nombre.replace(/#.*$/, '') + ' · ' : '';
   try{
     const r = await api('/api/web/pdf?h=' + encodeURIComponent(ds.verpdf));
     if(yo !== visorTarea) return;
     const lib = await window.PIERRI_WEB.pdfjs();
     const doc = await lib.getDocument({ data: r.bytes, isEvalSupported: false, verbosity: 0 }).promise;
+    if(yo !== visorTarea){ await doc.destroy(); return; }
     try{
       const desde = ds.desde !== '' && ds.desde != null ? Number(ds.desde) + 1 : 1;
       const hasta = Math.min(ds.hasta !== '' && ds.hasta != null ? Number(ds.hasta) + 1 : doc.numPages, doc.numPages);
-      $('visorSub').textContent = desde > 1 || hasta < doc.numPages ? `páginas ${desde} a ${hasta} de ${doc.numPages} del archivo` : `${doc.numPages} página${doc.numPages === 1 ? '' : 's'}`;
+      $('visorSub').textContent = archivo + (desde > 1 || hasta < doc.numPages ? `páginas ${desde} a ${hasta} de ${doc.numPages} del archivo` : `${doc.numPages} página${doc.numPages === 1 ? '' : 's'}`);
       const ancho = Math.max(300, $('visorPaginas').clientWidth - 24) * (window.devicePixelRatio || 1);
       for(let i = desde; i <= hasta && yo === visorTarea; i++){
         const pg = await doc.getPage(i), escala = Math.min(3, ancho / pg.getViewport({ scale: 1 }).width), vp = pg.getViewport({ scale: escala });
+        if(yo !== visorTarea) break;   // mientras se traía la página se abrió otro PDF: no se mezclan
         const cv = document.createElement('canvas'); cv.width = Math.floor(vp.width); cv.height = Math.floor(vp.height); cv.setAttribute('aria-label', 'página ' + i);
         $('visorPaginas').appendChild(cv);
         await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
@@ -2165,7 +2393,7 @@ async function abrirVisor(ds){
     } finally { await doc.destroy(); }
   }catch(err){ if(yo === visorTarea) $('visorSub').textContent = 'No se pudo abrir: ' + err.message; }
 }
-function cerrarVisor(){ visorTarea++; $('visor').classList.add('oculto'); document.body.classList.remove('con-visor'); $('visorPaginas').innerHTML = ''; }
+function cerrarVisor(){ visorTarea++; visorReg = null; $('visor').classList.add('oculto'); document.body.classList.remove('con-visor'); $('visorPaginas').innerHTML = ''; }
 $('visorCerrar').addEventListener('click', cerrarVisor);
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('visor').classList.contains('oculto')) cerrarVisor(); });
 
@@ -2200,10 +2428,11 @@ function pintarRanking(){
 /** Ranking de localidades: con filtros (mapa) o sobre todo lo cargado (Resumen). */
 function armarRanking(conFiltros, cuantos){
   const m = new Map();
-  for(const r of registros){ if(conFiltros && !pasa(r, true)) continue; const d = r.derivado; if(d.tipo_documento !== 'RESOLUCION_INSCRIPCION') continue; const k = claveGrupo(d);
-    if(!m.has(k)) m.set(k, { nombre: k, dep: agrupacion === 'departamento' ? '' : (d.geo && d.geo.dep_nombre || ''), total: 0, eleg: 0 }); const f = m.get(k); f.total++; if(cl(d).startsWith('ELEGIBLE')) f.eleg++; }
+  for(const r of registros){ if(conFiltros && !pasa(r, true)) continue; const d = r.derivado; if(!evaluable(d)) continue; const k = claveGrupo(d);
+    if(!m.has(k)) m.set(k, { nombre: k, dep: agrupacion === 'departamento' ? '' : (d.geo && d.geo.dep_nombre || ''), total: 0, eleg: 0, est: 0 }); const f = m.get(k); f.total++; if(cl(d).startsWith('ELEGIBLE')){ f.eleg++; if(deLaPlanilla(r)) f.est++; } }
   const lista = Array.from(m.values()).sort((a, b) => b.eleg - a.eleg || b.total - a.total), max = Math.max(1, ...lista.map(x => x.eleg));
-  const html = lista.slice(0, cuantos).map(x => `<div class="item ${localidadSel === x.nombre ? 'on' : ''}" data-loc="${esc(x.nombre)}"><span>${esc(x.nombre)}<small>${esc(x.dep)}</small></span><div class="barra"><i style="width:${Math.round(x.eleg / max * 100)}%"></i></div><span class="cifra">${x.eleg}<small style="font-weight:400"> / ${x.total}</small></span></div>`).join('') || '<div class="vacio">Sin datos todavía.</div>';
+  const conEst = lista.some(x => x.est);
+  const html = lista.slice(0, cuantos).map(x => `<div class="item ${localidadSel === x.nombre ? 'on' : ''}" data-loc="${esc(x.nombre)}"><span>${esc(x.nombre)}<small>${esc([x.dep, x.est ? x.est + (x.est === 1 ? ' estimada' : ' estimadas') : ''].filter(Boolean).join(' · '))}</small></span><div class="barra"><i style="width:${Math.round(x.eleg / max * 100)}%"></i></div><span class="cifra">${x.eleg}<small style="font-weight:400"> / ${x.total}</small></span></div>`).join('') + (conEst ? '<div class="mini" style="margin-top:6px">Anteriores al corte / total por lugar. Incluye lo estimado con la planilla de la UEST, sin la resolución leída.</div>' : '') || '<div class="vacio">Sin datos todavía.</div>';
   return html;
 }
 function enlazarRanking(){
@@ -2217,21 +2446,24 @@ document.querySelectorAll('#agrupar .chip, #agrupar2 .chip').forEach(b => b.addE
   pagina = 0; pintarTodo();
 }));
 function pintarPadron(){
-  const R = registros.map(r => r.derivado);
-  const cuenta = e => R.filter(d => d.inscripcion && d.inscripcion.estado === e).length;
+  // Las resoluciones leídas. Lo estimado con la planilla tiene su propio recuadro (Inventario y Resumen).
+  const R = registros.filter(r => !deLaPlanilla(r)).map(r => r.derivado);
+  const porEstado = {}; for(const d of R) if(d.inscripcion) porEstado[d.inscripcion.estado] = (porEstado[d.inscripcion.estado] || 0) + 1;
+  const cuenta = e => porEstado[e] || 0;
   const p = resumenSrv.padron || {};
   const cruzados = cuenta('INSCRIPTA') + cuenta('PROVISORIA') + cuenta('OBSERVADA');
   $('subRegistro').textContent = p.filas ? `Padrón ${p.archivo || ''} · ${p.filas} filas` : 'Padrón sin cargar';
-  const tarjetas = [['Inscriptas', cuenta('INSCRIPTA'), 'c-m', 'INSCRIPTA'], ['Provisorias u observadas', cuenta('PROVISORIA') + cuenta('OBSERVADA'), 'c-a', 'TRABADA'], ['No inscriptas', cuenta('NO_FIGURA_EN_PADRON'), 'c-r', 'NO_FIGURA_EN_PADRON'], ['Ambiguas', cuenta('AMBIGUO'), 'c-g', 'AMBIGUO'], ['Sin nombre para cruzar', cuenta('SIN_NOMBRE_PARA_CRUZAR'), 'c-g', 'SIN']];
-  $('padronTarjetas').innerHTML = (p.filas ? `<div class="tarjeta"><div class="t"><span>Padrón cargado</span></div><span class="n c-m" style="font-size:20px">${esc(p.archivo || '')}</span><span class="mini">${Number(p.filas) || 0} filas · ${p.cargado_en ? new Date(p.cargado_en).toLocaleString('es-AR') : ''}</span></div>` : `<div class="tarjeta"><div class="t"><span>Padrón</span></div><span class="n c-g" style="font-size:20px">sin cargar</span><span class="mini">cargá el .xls del Registro para cruzar</span></div>`)
+  const tarjetas = [['Inscriptas', cuenta('INSCRIPTA'), 'c-m', 'INSCRIPTA'], ['Provisorias u observadas', cuenta('PROVISORIA') + cuenta('OBSERVADA'), 'c-a', 'TRABADA'], ['No figuran en el Padrón', cuenta('NO_FIGURA_EN_PADRON'), 'c-r', 'NO_FIGURA_EN_PADRON'], ['Ambiguas', cuenta('AMBIGUO'), 'c-g', 'AMBIGUO'], ['Sin nombre para cruzar', cuenta('SIN_NOMBRE_PARA_CRUZAR'), 'c-g', 'SIN']];
+  $('padronTarjetas').innerHTML = (p.filas ? `<div class="tarjeta"><div class="t"><span>Padrón cargado</span></div><span class="n c-m" style="font-size:15px;overflow-wrap:anywhere">${esc(p.archivo || '')}</span><span class="mini">${Number(p.filas) || 0} filas · ${p.cargado_en ? fechaHora(p.cargado_en) : ''}</span></div>` : `<div class="tarjeta"><div class="t"><span>Padrón</span></div><span class="n c-g" style="font-size:20px">sin cargar</span><span class="mini">cargá el .xls del Registro para cruzar</span></div>`)
     + tarjetas.map(([t, n, c, f]) => `<div class="tarjeta ${n ? 'clicable' : ''}" ${n ? `data-verinsc="${f}" role="button" tabindex="0"` : ''}><div class="t"><span>${t}</span></div><span class="n ${c}">${n}</span>${n ? '<span class="mini">tocá para ver cuáles</span>' : ''}</div>`).join('');
   $('padronTarjetas').querySelectorAll('[data-verinsc]').forEach(el => el.addEventListener('click', () => verInscripcion(el.dataset.verinsc)));
   $('registroResumen').innerHTML = p.filas || cruzados ? `<div class="tarjetas" style="grid-template-columns:repeat(3,minmax(0,1fr))">
       <div class="clicable" data-verinsc="INSCRIPTA" role="button" tabindex="0" style="background:var(--suave);border-radius:8px;padding:10px 12px"><span class="mini">Inscriptas</span><div class="disp c-m" style="font-size:24px">${cuenta('INSCRIPTA')}</div></div>
       <div class="clicable" data-verinsc="TRABADA" role="button" tabindex="0" style="background:var(--suave);border-radius:8px;padding:10px 12px"><span class="mini">Observadas / provisorias</span><div class="disp c-a" style="font-size:24px">${cuenta('PROVISORIA') + cuenta('OBSERVADA')}</div></div>
-      <div class="clicable" data-verinsc="NO_FIGURA_EN_PADRON" role="button" tabindex="0" style="background:var(--suave);border-radius:8px;padding:10px 12px"><span class="mini">No inscriptas</span><div class="disp c-r" style="font-size:24px">${cuenta('NO_FIGURA_EN_PADRON')}</div></div></div>
-      <p class="mini" style="margin:0">${cuenta('NO_FIGURA_EN_PADRON') ? `${cuenta('NO_FIGURA_EN_PADRON')} resolución(es) dictadas nunca llegaron a inscribirse en el Registro Personal de Poseedores. Antes de la escritura hay que completar esa inscripción.` : 'Todas las cruzadas están inscriptas.'} ${cuenta('AMBIGUO') ? cuenta('AMBIGUO') + ' ambiguas para mirar a mano.' : ''}</p>`
-    : `<p class="mini" style="margin:0">Cargá el Padrón del Registro (el .xls de anotaciones de posesión) para saber cuáles de estas resoluciones quedaron efectivamente inscriptas.</p><div class="acciones"><button class="sec" data-ir="padron">Ir al Padrón</button></div>`;
+      <div class="clicable" data-verinsc="NO_FIGURA_EN_PADRON" role="button" tabindex="0" style="background:var(--suave);border-radius:8px;padding:10px 12px"><span class="mini">No figuran en el Padrón</span><div class="disp c-r" style="font-size:24px">${cuenta('NO_FIGURA_EN_PADRON')}</div></div></div>
+      <p class="mini" style="margin:0">${cuenta('NO_FIGURA_EN_PADRON') ? `${cuenta('NO_FIGURA_EN_PADRON')} resolución(es) leídas no aparecen en el Padrón cargado. El cruce es por nombre: confirmalas a mano antes de darlas por no inscriptas.` : 'Todas las resoluciones leídas que se cruzaron figuran en el Padrón.'} ${cuenta('AMBIGUO') ? cuenta('AMBIGUO') + ' ambiguas para mirar a mano.' : ''}</p>`
+    : puedeCargar() ? `<p class="mini" style="margin:0">Cargá el Padrón del Registro (el .xls de anotaciones de posesión) para saber cuáles de estas resoluciones figuran inscriptas.</p><div class="acciones"><button class="sec" data-ir="padron">Ir al Padrón</button></div>`
+    : '<p class="mini" style="margin:0">Todavía no se cargó el Padrón del Registro.</p>';
   $('registroResumen').querySelectorAll('[data-ir]').forEach(b => b.addEventListener('click', () => ir(b.dataset.ir)));
   $('registroResumen').querySelectorAll('[data-verinsc]').forEach(el => el.addEventListener('click', () => verInscripcion(el.dataset.verinsc)));
 }
@@ -2277,7 +2509,10 @@ function abrirExpediente(hash){
   const r = registros.find(x => x.hash === hash); if(!r) return;
   if(mapa) mapa.closePopup();
   limpiarFiltros();
-  $('buscar').value = r.derivado.expediente || ''; pagina = 0; pintarTodo(); ir('expedientes');
+  // Con número se la busca; sin número se va a la página donde está en la lista completa.
+  if(r.derivado.expediente){ $('buscar').value = r.derivado.expediente; pagina = 0; pintarTodo(); }
+  else { pagina = Math.max(0, Math.floor(ordenar(vista).indexOf(r) / POR_PAG)); pintarTabla(); }
+  ir('expedientes');
   setTimeout(() => {
     const idx = String(registros.indexOf(r));
     const fila = document.querySelector(`#filas tr.fila[data-i="${idx}"]`);
@@ -2290,13 +2525,14 @@ document.addEventListener('click', e => { const a = e.target.closest('[data-abri
 /** Lleva a la tabla de Expedientes filtrada por estado en el Registro, para ver cuáles son. */
 function verInscripcion(estado){
   ['fDep','fLoc','fSec','fAnioD','fAnioH'].forEach(id => $(id).value = '');
-  $('buscar').value = ''; localidadSel = null; F.elig = 'TODOS'; F.lect = null; F.ctrl = null; marcarChips();
-  pagina = 0; pintarTodo();
-  $('fInsc').value = estado; pintarTodo(); ir('expedientes');
+  $('buscar').value = ''; localidadSel = null; F.elig = 'TODOS'; F.ctrl = null;
+  F.lect = registros.some(deLaPlanilla) ? 'LEIDAS' : null; marcarChips();   // las tarjetas del Registro cuentan lo leído
+  $('fInsc').value = estado; pagina = 0; pintarTodo(); ir('expedientes');
 }
 /** Los nombres de Catastro y los del inventario difieren en abreviaturas: Gral./General, Pte./Presidente. */
-const claveDep = n => P.normalizarTexto(String(n||'')).replace(/\./g,'')
-  .replace(/^GRAL /,'GENERAL ').replace(/^PTE /,'PRESIDENTE ').replace(/\s+/g,' ').trim();
+const CLAVE_DEP = new Map();   // son 26 departamentos: se normaliza cada nombre una sola vez
+const claveDep = n => { const k = String(n||''); if(!CLAVE_DEP.has(k)) CLAVE_DEP.set(k, P.normalizarTexto(k).replace(/\./g,'')
+  .replace(/^GRAL /,'GENERAL ').replace(/^PTE /,'PRESIDENTE ').replace(/\s+/g,' ').trim()); return CLAVE_DEP.get(k); };
 /** Colorea cada departamento de la provincia según cuántos expedientes con resolución tiene. */
 function pintarDepartamentos(locs){
   if(!window.DEPARTAMENTOS){ console.warn('Sin límites departamentales cargados'); return; }
@@ -2329,7 +2565,8 @@ function pintarDepartamentos(locs){
   } catch(err) { console.error('No se pudieron dibujar los departamentos:', err); }
 }
 function iniciarMapa(){
-  mapa = L.map('mapa', { scrollWheelZoom: true }).setView([-31.4, -64.2], 7);
+  // Con la planilla de la UEST son decenas de miles de puntos: se dibujan en un lienzo (canvas), no uno por uno.
+  mapa = L.map('mapa', { scrollWheelZoom: true, preferCanvas: true }).setView([-31.4, -64.2], 7);
   const calles = L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG:3857@png/{z}/{x}/{y}.png', { maxZoom: 18, tms: true, attribution: '© IGN Argentina' });
   const gris = L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/mapabase_gris@EPSG:3857@png/{z}/{x}/{y}.png', { maxZoom: 18, tms: true, attribution: '© IGN Argentina' });
   const satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Imágenes © Esri' });
@@ -2350,7 +2587,7 @@ function pintarDepartamentosMapa(){
     capaDepMapa.clearLayers();
     const porDep = new Map();
     for(const r of vista){
-      const d = r.derivado; if(d.tipo_documento !== 'RESOLUCION_INSCRIPCION') continue;
+      const d = r.derivado; if(!evaluable(d)) continue;
       const k = claveDep(dep(d)); if(!k || k === claveDep('(SIN DEPARTAMENTO)')) continue;
       const f = porDep.get(k) || { total: 0, eleg: 0 };
       f.total++; if(cl(d).startsWith('ELEGIBLE')) f.eleg++;
@@ -2364,7 +2601,7 @@ function pintarDepartamentosMapa(){
         return { color: '#16436e', weight: 1.2,
           fillColor: t > .66 ? '#12492f' : t > .33 ? '#1d6b45' : t > .12 ? '#5a9b78' : '#b9d8c7', fillOpacity: .5 }; },
       onEachFeature: (f, c) => { const v = porDep.get(claveDep(f.properties.n)) || { total: 0, eleg: 0 };
-        c.bindTooltip(`<b>${esc(f.properties.n)}</b><br>${v.eleg} elegibles de ${v.total} leídas`, { sticky: true }); }
+        c.bindTooltip(`<b>${esc(f.properties.n)}</b><br>${v.eleg} elegibles de ${v.total}`, { sticky: true }); }
     }).addTo(capaDepMapa);
   } catch(err) { console.error('No se pudieron dibujar los departamentos en el mapa:', err); }
 }
@@ -2381,17 +2618,23 @@ function pintarMapa(){
     const [lat, lon] = k.split(',').map(Number); pts.push([lat, lon]);
     const cls = ds.map(cl);
     const col = cls.some(c => c === 'ELEGIBLE') ? COLOR.v : cls.some(c => c.endsWith('_BORDE')) ? COLOR.a : cls.every(c => c === 'NO_ELEGIBLE' || c === 'NO_APLICA') ? COLOR.g : COLOR.r;
-    const aprox = ds.every(d => d.geo.ubicacion_aproximada);
-    const html = `<div style="font:12.5px Public Sans,sans-serif;max-width:300px"><b>${esc(loc(ds[0]))}</b>${aprox ? '' : ' · ' + esc(mz(ds[0]))}<br>` +
-      (aprox ? `<span style="color:var(--ambar)">Ubicación aproximada: centro de la localidad. ${ds.length > 1 ? 'Estas resoluciones no traen' : 'La resolución no trae'} número de cuenta para ubicar la parcela.</span><br>` : '') +
-      '<div style="margin-top:4px;display:flex;flex-direction:column;gap:5px">' + rs.map(r => { const d = r.derivado;
-        return `<div><a href="#" data-abrir="${esc(r.hash)}" style="font-weight:700">${esc(d.expediente || 'sin número')}</a> — ${esc(d.rogante_principal || '')} — ${esc(cl(d).replace(/_/g, ' ').toLowerCase())}` +
+    const aprox = ds.every(d => d.geo.ubicacion_aproximada), est = rs.every(deLaPlanilla);
+    // El globo se arma recién al abrirlo, y con los primeros 25: en el centro de una localidad puede haber miles.
+    const html = () => `<div style="font:12.5px Public Sans,sans-serif;max-width:300px"><b>${esc(loc(ds[0]))}</b>${aprox ? '' : ' · ' + esc(mz(ds[0]))}<br>` +
+      (aprox ? `<span style="color:var(--ambar)">Ubicación aproximada: centro de la localidad, porque no hay parcela de Catastro para ${ds.length > 1 ? `estos ${ds.length} expedientes` : 'este expediente'}.</span><br>` : '') +
+      (est ? '<span class="mini">Estimado con la planilla de la UEST: no se leyó la resolución.</span><br>' : '') +
+      '<div style="margin-top:4px;display:flex;flex-direction:column;gap:5px">' + rs.slice(0, 25).map(r => { const d = r.derivado;
+        return `<div><a href="#" data-abrir="${esc(r.hash)}" style="font-weight:700">${esc(d.expediente || 'sin número')}</a> — ${esc(d.rogante_principal || '')} — ${esc(cl(d).replace(/_/g, ' ').toLowerCase())}${deLaPlanilla(r) ? ' (planilla)' : ''}` +
           (SERVIDOR && !WEB ? ` · <a href="/api/documento?id=${encodeURIComponent(r.hash)}" target="_blank" rel="noopener">ver PDF</a>` : '') + '</div>'; }).join('') +
+      (rs.length > 25 ? `<div class="mini">y ${rs.length - 25} más: elegí la localidad en el panel de la derecha para verlos en Expedientes.</div>` : '') +
       `<div class="mini" style="margin-top:2px">Tocá el número para abrir el expediente.</div></div></div>`;
+    // Lleno: resolución leída. Claro: estimado con la planilla. Borde punteado: ubicación aproximada, por la localidad.
     L.circleMarker([lat, lon], aprox
-      ? { radius: 9 + Math.min(ds.length, 8), color: col, weight: 2.5, dashArray: '4 3', fillColor: col, fillOpacity: .18 }
+      ? { radius: 9 + Math.min(ds.length, 8), color: est ? '#fff' : col, weight: est ? 2 : 2.5, dashArray: '4 3', fillColor: col, fillOpacity: est ? .3 : .18 }
+      : est ? { radius: 7 + Math.min(ds.length, 8), color: '#fff', weight: 1.5, fillColor: col, fillOpacity: .35 }
       : { radius: 7 + Math.min(ds.length, 8), color: '#fff', fillColor: col, fillOpacity: .9, weight: 1.5 }).bindPopup(html).addTo(capa);
   }
+  $('leyendaEst').classList.toggle('oculto', !vista.some(deLaPlanilla));
   const ubic = vista.filter(r => r.derivado.geo && r.derivado.geo.lat != null), nAprox = ubic.filter(r => r.derivado.geo.ubicacion_aproximada).length;
   $('subMapa').textContent = `${ubic.length} de ${vista.length} expedientes en el mapa` + (nAprox ? ` · ${nAprox} con ubicación aproximada (por localidad)` : '') +
     (vista.length - ubic.length ? ` · ${vista.length - ubic.length} sin ubicar (sin cuenta ni localidad legible)` : '') + (localidadSel ? ' · ' + localidadSel : '');
@@ -2401,15 +2644,21 @@ function pintarMapa(){
 $('expJson').addEventListener('click', () => descargar(JSON.stringify({ sistema: 'Relevamiento Ley Pierri', autor: 'Baltasar Corna Fantin', organismo: 'Escribanía General de Gobierno de Córdoba', fecha: new Date().toISOString(), origen: origenNombre, config: config(), resumen: resumenSrv, resultados: registros }, null, 1), 'relevamiento_ley_pierri.json', 'application/json'));
 $('expKml').addEventListener('click', () => {
   const grupos = new Map();
-  for(const r of vista){ const d = r.derivado; if(!d.geo || d.geo.lat == null) continue; const k = d.geo.lat.toFixed(6) + ',' + d.geo.lon.toFixed(6); if(!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(d); }
+  for(const r of vista){ const d = r.derivado; if(!d.geo || d.geo.lat == null) continue; const k = d.geo.lat.toFixed(6) + ',' + d.geo.lon.toFixed(6); if(!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(Object.assign({ _est: deLaPlanilla(r) }, d)); }
   const x = s => String(s == null ? '' : s).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
   const marcas = Array.from(grupos.entries()).map(([k, ds]) => { const [lat, lon] = k.split(',');
-    const desc = ds.map(d => `${d.expediente} — ${d.rogante_principal || ''} — ${cl(d)} — posee desde ${d.posee_desde || '?'}`).join('\n');
-    return `<Placemark><name>${x(loc(ds[0]) + ' ' + mz(ds[0]) + ' (' + ds.length + ')')}</name><description>${x(desc)}</description><styleUrl>#${ds.some(d => cl(d) === 'ELEGIBLE') ? 'eleg' : 'otro'}</styleUrl><Point><coordinates>${lon},${lat},0</coordinates></Point></Placemark>`; }).join('\n');
-  descargar(`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Relevamiento Ley Pierri</name><description>Escribanía General de Gobierno de Córdoba · Baltasar Corna Fantin · {FECHA}</description><Style id="eleg"><IconStyle><color>ff456b1d</color><scale>1.1</scale></IconStyle></Style><Style id="otro"><IconStyle><color>ffa6948a</color><scale>0.9</scale></IconStyle></Style>\n${marcas}</Document></kml>`.replace('{FECHA}', new Date().toLocaleDateString('es-AR')), 'relevamiento_ley_pierri.kml', 'application/vnd.google-earth.kml+xml');
+    const desc = ds.map(d => `${d.expediente} — ${d.rogante_principal || ''} — ${cl(d)}${d._est ? ' (ESTIMADA con la planilla de la UEST, sin la resolución leída)' : ''} — posee desde ${d.posee_desde || '?'}`).join('\n');
+    const eleg = ds.some(d => cl(d) === 'ELEGIBLE'), est = ds.every(d => d._est);
+    return `<Placemark><name>${x(loc(ds[0]) + ' ' + mz(ds[0]) + ' (' + ds.length + ')')}</name><description>${x(desc)}</description><styleUrl>#${eleg ? (est ? 'est' : 'eleg') : 'otro'}</styleUrl><Point><coordinates>${lon},${lat},0</coordinates></Point></Placemark>`; }).join('\n');
+  descargar(`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Relevamiento Ley Pierri</name><description>Escribanía General de Gobierno de Córdoba · Baltasar Corna Fantin · {FECHA}</description><Style id="eleg"><IconStyle><color>ff456b1d</color><scale>1.1</scale></IconStyle></Style><Style id="otro"><IconStyle><color>ffa6948a</color><scale>0.9</scale></IconStyle></Style><Style id="est"><IconStyle><color>8c456b1d</color><scale>0.9</scale></IconStyle></Style>\n${marcas}</Document></kml>`.replace('{FECHA}', new Date().toLocaleDateString('es-AR')), 'relevamiento_ley_pierri.kml', 'application/vnd.google-earth.kml+xml');
 });
 function descargar(contenido, nombre, tipo){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([contenido], { type: tipo })); a.download = nombre; a.click(); URL.revokeObjectURL(a.href); }
-function avisar(t, err){ $('aviso').innerHTML = `<div class="msg ${err ? 'err' : ''}" style="margin-bottom:16px">${esc(t)}</div>`; setTimeout(() => { if($('aviso').textContent === t) $('aviso').innerHTML = ''; }, 9000); }
+/** Un aviso arriba de la pantalla, se esté donde se esté. Lo que salió bien se va solo; un error queda hasta cerrarlo. */
+function avisar(t, err){
+  $('aviso').innerHTML = `<div class="msg ${err ? 'err' : ''}" role="${err ? 'alert' : 'status'}"><span>${esc(t)}</span>${err ? '<button class="cerrar-aviso" title="Cerrar el aviso" aria-label="Cerrar el aviso">×</button>' : ''}</div>`;
+  if(!err) setTimeout(() => { const m = $('aviso').querySelector('.msg span'); if(m && m.textContent === t) $('aviso').innerHTML = ''; }, 9000);
+}
+$('aviso').addEventListener('click', e => { if(e.target.closest('.cerrar-aviso')) $('aviso').innerHTML = ''; });
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 // Modo demo o publicado: si esta página lleva datos embebidos (window.DEMO_DATOS), se muestran directamente, sin servidor.

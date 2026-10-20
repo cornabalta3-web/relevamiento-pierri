@@ -26,6 +26,8 @@
  *                      de nuevo el JSON del kit no las pise: se aplican encima, y si el kit tiene una más nueva, manda esa.
  *   padron.enc, inventario.enc, catastro.enc   el Padrón del Registro, el inventario de la UEST y las parcelas ya
  *                      consultadas en Catastro. Todo lo que sale de cruzarlos se calcula al mirar, no se guarda.
+ *   sia.enc            la planilla de trámites de la UEST (SIA), solo las columnas que sirven (pierri_sia.js): con ella
+ *                      se estima la posesión de los expedientes que todavía no tienen su resolución leída.
  *   Todos los .enc van comprimidos y cifrados con la DEK.
  *
  * Rama "pdf" (no se publica en la página): los PDF originales, cifrados uno por uno con una llave propia y
@@ -58,7 +60,7 @@
   const PERMISOS = { ver: ['veedor', 'editor', 'admin'], revisar: ['admin'], cargar: ['admin'], administrar: ['admin'] };
   const RUTAS = { usuarios: 'datos/usuarios.json', datos: 'datos/relevamiento.enc', admin: 'datos/admin.enc', indice: 'datos/indice.json',
     revisiones: 'datos/revisiones.enc', padron: 'datos/padron.enc', inventario: 'datos/inventario.enc', catastro: 'datos/catastro.enc',
-    instrucciones: 'datos/modelo.enc', completadas: 'datos/completadas.enc' };
+    instrucciones: 'datos/modelo.enc', completadas: 'datos/completadas.enc', sia: 'datos/sia.enc' };
   const CLAVE_TOKEN = 'pierri_web_token';
   // La clave de API de Anthropic, como el token: solo en esta computadora y cifrada con la contraseña del administrador.
   const CLAVE_API = 'pierri_web_clave_api', CLAVE_MODELO = 'pierri_web_modelo';
@@ -86,7 +88,11 @@
   const dormir = ms => new Promise(r => setTimeout(r, ms));
   const mb = n => (n / 1024 / 1024).toLocaleString('es-AR', { maximumFractionDigits: 1 }) + ' MB';
   /** Avisa al Tablero cómo va una tarea larga (leer, subir, esperar a GitHub). */
-  function progreso(texto) { try { window.dispatchEvent(new CustomEvent('pierri-web-progreso', { detail: texto })); } catch (e) { /* sin pantalla */ } }
+  let PROGRESO = '';   // lo último que se avisó: vuelve a mostrarse después de una espera
+  function progreso(texto, deEspera) {
+    if (!deEspera) PROGRESO = texto;
+    try { window.dispatchEvent(new CustomEvent('pierri-web-progreso', { detail: texto })); } catch (e) { /* sin pantalla */ }
+  }
   let OCUPADO = 0;
   async function ocupado(fn) { OCUPADO++; try { return await fn(); } finally { OCUPADO--; } }
 
@@ -169,6 +175,7 @@
     if (status === 401) return 'GitHub no acepta el token: está vencido, revocado o mal copiado. Cargá uno nuevo en Configuración.';
     if (status === 403) return 'El token no tiene permiso de escritura sobre este repositorio (Contents: Read and write).';
     if (status === 404) return 'GitHub no encuentra el repositorio con ese token: revisá que el token incluya este repositorio.';
+    if (status >= 500) return `GitHub tuvo una falla de su lado (${status}). No es el token ni tus datos: probá de nuevo en un rato; lo ya guardado no se pierde.`;
     return 'GitHub respondió ' + status + '.';
   }
   async function red(url, opciones) {
@@ -190,8 +197,21 @@
   }
   // En las cargas grandes, GitHub pide dejar al menos un segundo entre escrituras.
   const RITMO = { ultimo: 0, minimo: 0 };
+  /**
+   * Una falla momentánea de GitHub (500 a 504) se reintenta sola hasta tres veces, a los 5, 15 y 30 segundos. No en el
+   * avance de la rama (PATCH): si GitHub lo aplicó y contestó mal, repetirlo podría duplicar el cambio; ese lo resuelve
+   * la transacción, que vuelve a leer el estado.
+   */
+  async function esperar5xx(r, fallas) {
+    if (r.status < 500 || r.status > 504 || fallas >= 3) return false;
+    const s = [5, 15, 30][fallas];
+    progreso(`GitHub tuvo una falla momentánea: reintento en ${s} segundos…`, true);
+    await dormir(s * 1000);
+    progreso(PROGRESO, true);
+    return true;
+  }
   async function gh(token, metodo, ruta, cuerpo) {
-    for (let intento = 0; ; intento++) {
+    for (let intento = 0, fallas5xx = 0; ; intento++) {
       if (metodo !== 'GET' && RITMO.minimo) { const falta = RITMO.ultimo + RITMO.minimo - Date.now(); if (falta > 0) await dormir(falta); RITMO.ultimo = Date.now(); }
       const r = await red(`https://api.github.com/repos/${REPO.owner}/${REPO.repo}${ruta}`, {
         method: metodo, cache: 'no-store',
@@ -202,16 +222,21 @@
       if (r.ok) return j;
       const espera = esperaPedida(r, j);
       if (espera != null && intento < 6) {
-        progreso(`GitHub pidió una pausa: sigo solo en ${Math.ceil(espera / 1000)} segundos…`);
-        await dormir(espera); continue;
+        progreso(`GitHub pidió una pausa: sigo solo en ${Math.ceil(espera / 1000)} segundos…`, true);
+        await dormir(espera); progreso(PROGRESO, true); continue;
       }
+      if (metodo !== 'PATCH' && await esperar5xx(r, fallas5xx)) { fallas5xx++; continue; }
       const e = new Error(errorGitHub(r.status, j)); e.status = r.status; throw e;
     }
   }
   /** Lee un archivo en un commit dado por la API (lo último de verdad). Devuelve null si no existe. */
   async function leerEn(token, ruta, ref) {
-    const r = await red(`https://api.github.com/repos/${REPO.owner}/${REPO.repo}/contents/${ruta}?ref=${encodeURIComponent(ref)}`,
-      { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github.raw+json', 'X-GitHub-Api-Version': '2022-11-28' }, cache: 'no-store' });
+    let r;
+    for (let fallas = 0; ; fallas++) {
+      r = await red(`https://api.github.com/repos/${REPO.owner}/${REPO.repo}/contents/${ruta}?ref=${encodeURIComponent(ref)}`,
+        { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github.raw+json', 'X-GitHub-Api-Version': '2022-11-28' }, cache: 'no-store' });
+      if (!(await esperar5xx(r, fallas))) break;
+    }
     if (r.status === 404) return null;
     if (!r.ok) throw new Error(errorGitHub(r.status, await r.json().catch(() => ({}))));
     return r.text();
@@ -299,6 +324,7 @@
     // error (pedido antes de que GitHub lo tuviera), se vuelve a pedir sin usarlo.
     let r = await red(url, { headers: rango, cache: 'force-cache' });
     if (!r.ok) r = await red(url, { headers: rango, cache: 'reload' });
+    for (let fallas = 0; await esperar5xx(r, fallas); fallas++) r = await red(url, { headers: rango, cache: 'reload' });
     if (!r.ok) throw new Error(`GitHub no devolvió el PDF (respuesta ${r.status}). Si recién lo cargaste, esperá unos cinco minutos y volvé a probar.`);
     let u = new Uint8Array(await r.arrayBuffer());
     if (r.status === 200 && u.length !== p.len) u = u.subarray(p.off, p.off + p.len);   // el servidor mandó el paquete entero
@@ -388,7 +414,7 @@
   }
   /** Todo lo que está cifrado con la DEK en un commit: lo que hay que volver a cifrar al cambiarla. */
   async function rutasCifradas(estado) {
-    return [RUTAS.datos, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro, RUTAS.instrucciones, RUTAS.completadas]
+    return [RUTAS.datos, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro, RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia]
       .concat(leerIndice(await estado.leer(RUTAS.indice)).lecturas);
   }
   function anotar(boveda, s, accion, detalle) {
@@ -576,29 +602,35 @@
   }
 
   // ───────────── Lo guardado, en memoria ─────────────
-  let CACHE = null;   // lo descifrado de esta pestaña: { dek, kit, indice, lecturas, revisiones, padron, inventario, catastro }
+  let CACHE = null;   // lo descifrado de esta pestaña: { dek, kit, indice, lecturas, revisiones, padron, inventario, catastro, sia, … }
   /** Lee y descifra todo lo guardado. El administrador lo lee por la API (lo último); los demás, de la página publicada. */
   async function cargarTodo(s) {
     const token = s.rol === 'admin' ? tokenGuardado() : '';
-    let leer = leerPublicado;
+    let leer = leerPublicado, aviso = null;
     if (token) {
-      const estado = await estadoFresco(token);
-      s.dek = b64((await abrirEstado(estado, s)).dek);
-      // Si la lectura directa falla por la red (o GitHub la desvía), se usa lo publicado.
-      leer = async ruta => { try { return await estado.leer(ruta); } catch (e) { if (!e.red) throw e; return leerPublicado(ruta); } };
+      try {
+        const estado = await estadoFresco(token);
+        s.dek = b64((await abrirEstado(estado, s)).dek);
+        // Si la lectura directa falla por la red (o GitHub la desvía), se usa lo publicado.
+        leer = async ruta => { try { return await estado.leer(ruta); } catch (e) { if (!e.red) throw e; return leerPublicado(ruta); } };
+      } catch (e) {
+        // Con el token vencido o revocado no se puede guardar, pero lo publicado se puede ver, como lo ve cualquiera.
+        if (!(e && (e.status === 401 || e.status === 403 || e.status === 404))) throw e;
+        aviso = `Mostrando lo publicado (puede tener unos minutos de atraso). Para guardar cambios: ${e.message}`;
+      }
     }
     const dek = desb64(s.dek);
     try {
       const [txtKit, txtIndice, ...extras] = await Promise.all([RUTAS.datos, RUTAS.indice, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro,
-        RUTAS.instrucciones, RUTAS.completadas].map(leer));
+        RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia].map(leer));
       const indice = leerIndice(txtIndice);
       const textos = await Promise.all(indice.lecturas.map(leer));
       const lecturas = {};
       for (let i = 0; i < textos.length; i++) if (textos[i]) lecturas[indice.lecturas[i]] = limpiar(await abrirJSON(dek, textos[i]));
-      const [revisiones, padron, inventario, catastro, instrucciones, completadas] = await Promise.all(extras.map(t => abrirJSON(dek, t)));
+      const [revisiones, padron, inventario, catastro, instrucciones, completadas, sia] = await Promise.all(extras.map(t => abrirJSON(dek, t)));
       // Las instrucciones del modelo van al modelo tal cual (no se muestran): no se les cambia nada.
       return { dek: s.dek, kit: limpiar(await abrirDatosTexto(dek, txtKit)), indice, lecturas, revisiones: limpiar(revisiones), padron: limpiar(padron),
-        inventario: limpiar(inventario), catastro: limpiar(catastro), instrucciones, completadas: limpiar(completadas) };
+        inventario: limpiar(inventario), catastro: limpiar(catastro), instrucciones, completadas: limpiar(completadas), sia: limpiar(sia), aviso };
     } catch (e) {
       if (e.name !== 'OperationError') throw e;
       // El administrador cambió la llave de los datos: hay que volver a ingresar para recibir la nueva.
@@ -622,7 +654,7 @@
       if (cambios.indice.lecturas.some(r => r !== cambios.ruta && !CACHE.lecturas[r])) { CACHE = null; return; }
       CACHE.indice = cambios.indice; CACHE.lecturas[cambios.ruta] = cambios.contenido;
     }
-    for (const k of ['kit', 'revisiones', 'padron', 'inventario', 'catastro', 'instrucciones', 'completadas']) if (k in cambios) CACHE[k] = cambios[k];
+    for (const k of ['kit', 'revisiones', 'padron', 'inventario', 'catastro', 'instrucciones', 'completadas', 'sia']) if (k in cambios) CACHE[k] = cambios[k];
   }
   /** Lo leído en la web: los archivos (con dónde está cada PDF) y los registros, sin repetir. */
   function lecturasWeb(c) {
@@ -678,11 +710,49 @@
     return cfg;
   }
 
-  let VISTA = null;   // lo último que se calculó: todos los registros, los archivos y el resultado del cruce con el Padrón
+  let VISTA = null;   // lo último que se calculó: los registros leídos, los archivos, el cruce con el Padrón y la planilla
+  // La ubicación por localidad de la planilla: miles de expedientes repiten unos pocos cientos de localidades, y la tabla
+  // de localidades no cambia mientras la página está abierta. Clave: localidad|departamento → [lat, lon, dep] o null.
+  const UBIC_LOC = new Map();
+  function ubicarPorLocalidadRapido(d, loc) {
+    const P = window.PierriCore, g = d.geo, k = P.normLocalidad(g.localidad) + '|' + P.normLocalidad(g.dep_nombre);
+    if (!UBIC_LOC.has(k)) { const x = { geo: { localidad: g.localidad, dep_nombre: g.dep_nombre } }; UBIC_LOC.set(k, P.ubicarPorLocalidad(x, loc) ? [x.geo.lat, x.geo.lon, x.geo.dep_nombre] : null); }
+    const u = UBIC_LOC.get(k);
+    if (!u) return false;
+    g.lat = u[0]; g.lon = u[1]; g.ubicacion_aproximada = 'localidad'; if (!g.dep_nombre) g.dep_nombre = u[2];
+    return true;
+  }
+  /**
+   * Los expedientes de la planilla de trámites que todavía no tienen una resolución leída, con su posesión estimada,
+   * ubicados por la parcela (si ya se consultó en Catastro) o por la localidad. Los que sí tienen la resolución leída no
+   * se repiten: manda la lectura, y la planilla sirve para medir cuánto acierta.
+   */
+  function planillaEnVista(todos, sia, cfg, T, cat, loc) {
+    const P = window.PierriCore, SIA = window.PierriSIA;
+    const filas = sia.filas || [], meta = { archivo: sia.archivo || null, cargado_en: sia.cargado_en || null };
+    const porExp = new Map(filas.map(f => [f.expediente, f]));
+    const leidas = new Set();
+    for (const r of todos) {
+      // Un documento que no se pudo leer (sin tipo) no reemplaza a la estimación: no se sabe qué dice.
+      if (!r.derivado || r.repetido_de || r.error || !r.derivado.tipo_documento || P.clasificar(r.derivado) === 'NO_APLICA') continue;
+      const e = SIA.canonExpediente(r.derivado.expediente); if (e && porExp.has(e)) leidas.add(e);
+    }
+    const validacion = SIA.compararConLeidas(todos, porExp, cfg, T);
+    const registros = [];
+    for (const f of filas) {
+      if (leidas.has(f.expediente)) continue;
+      const r = SIA.registroDePlanilla(f, cfg, T, meta), g = r.derivado.geo, cta = g.cuenta_normalizada ? g.cuenta_normalizada.replace(/\D/g, '') : '';
+      if (cta && cat[cta]) P.enriquecerConCatastro(r.derivado, cat[cta].p || null, T);
+      if (loc && g.lat == null) ubicarPorLocalidadRapido(r.derivado, loc);
+      registros.push(r);
+    }
+    return { registros, resumen: { cargada: true, archivo: meta.archivo, cargado_en: meta.cargado_en, expedientes: filas.length, con_lectura: leidas.size,
+      estimadas: registros.length, validacion } };
+  }
   /**
    * Lo que ve el Tablero, calculado en el momento sobre una copia: lo del kit más lo leído en la web (si un PDF está en
    * los dos, manda la lectura del kit), las correcciones (la más nueva), Catastro, la localidad, los repetidos, el
-   * inventario, el Padrón y los grupos por domicilio o matrícula. El mismo orden que el kit.
+   * inventario, la planilla de trámites, el Padrón y los grupos por domicilio o matrícula. El mismo orden que el kit.
    */
   function vista(c, s, loc) {
     const P = window.PierriCore, B = window.PierriBase, T = tabla();
@@ -719,7 +789,19 @@
     if (!c.inventario) for (const r of todos) delete r.inventario;
     let indiceInv = null;
     if (c.inventario) { indiceInv = B.indicePorExpediente(c.inventario.filas || []); B.anexarInventario(todos, indiceInv); }
-    const cruce = c.padron ? B.cruzarConPadron(todos, c.padron.filas || [], indiceInv || new Map()) : null;
+    // La planilla suma sus estimaciones a lo leído: también se ubican, se cruzan con el inventario y con el Padrón.
+    const sia = c.sia && window.PierriSIA ? planillaEnVista(todos, c.sia, cfg, T, cat, loc) : null;
+    const conPlanilla = sia ? todos.concat(sia.registros) : todos;
+    if (sia && indiceInv) B.anexarInventario(sia.registros, indiceInv);
+    // El Padrón. Lo leído se cruza solo, igual que en el kit: la planilla no le cambia el resultado ni los conteos. La
+    // planilla se cruza junto con lo leído (si su iniciador también tiene una resolución leída, su expediente queda
+    // ambiguo), y después lo leído se vuelve a cruzar solo, que es lo que queda.
+    let cruce = null;
+    if (c.padron) {
+      const filasP = c.padron.filas || [], inv = indiceInv || new Map();
+      if (sia) { B.cruzarConPadron(conPlanilla, filasP, inv); window.PierriSIA.controlarCruce(sia.registros); }
+      cruce = B.cruzarConPadron(todos, filasP, inv);
+    }
     P.detectarClusters(todos.filter(r => r.derivado && !r.repetido_de && !r.error).map(r => r.derivado));
 
     const validos = todos.filter(r => r.derivado && !r.repetido_de && !r.error);
@@ -742,9 +824,11 @@
     resumen.padron = c.padron ? { archivo: c.padron.archivo || null, cargado_en: c.padron.cargado_en || null, filas: (c.padron.filas || []).length } : {};
     resumen.inventario = { cargado: false };
     if (c.inventario) resumen.inventario = B.resumenInventario(c.inventario.filas || [], parcelasDe(cat), todos, { archivo: c.inventario.archivo || null, cargado_en: c.inventario.cargado_en || null });
-    VISTA = { todos, archivos: web.archivos, cruce };
+    resumen.planilla = sia ? sia.resumen : { cargada: false };
+    resumen.aviso_datos = c.aviso || null;
+    VISTA = { todos, archivos: web.archivos, cruce, planilla: sia };
     const clave = s.claveApi || '';
-    return { config: Object.assign({}, cfg, { key: clave ? '••••' + clave.slice(-4) : '', modelo: modeloElegido() }), resumen, registros: todos.filter(r => r.derivado) };
+    return { config: Object.assign({}, cfg, { key: clave ? '••••' + clave.slice(-4) : '', modelo: modeloElegido() }), resumen, registros: conPlanilla.filter(r => r.derivado) };
   }
   async function datos() {
     const s = exigir('ver');
@@ -759,6 +843,8 @@
     let d;
     try { d = JSON.parse(texto.replace(/^﻿/, '')); } catch (e) { throw new Error('El archivo no es un JSON válido.'); }
     if (!d || !Array.isArray(d.resultados)) throw new Error('Ese JSON no es el que baja "Guardar JSON" del kit: no tiene "resultados".');
+    // Un JSON bajado de la web trae también las estimaciones de la planilla: no son lecturas y la planilla ya está guardada aparte.
+    d.resultados = d.resultados.filter(r => !r || r.fuente !== 'planilla');
     const validas = d.resultados.filter(r => r && r.derivado && !r.repetido_de).length;
     const contenido = limpiar({ fecha: ahora(), origen: nombre || 'relevamiento', fecha_kit: d.fecha || null, resumen: d.resumen || {}, config: d.config || {}, resultados: d.resultados });
     let dekUsada = null;
@@ -802,7 +888,8 @@
   /** Lo leído y todavía no guardado en GitHub. Se guarda solo cada tanto y al terminar la carga. */
   function pendienteNuevo() { return { registros: [], archivos: {}, pdfs: [], bytes: 0, resoluciones: 0, fallo: null }; }
   let PEND = pendienteNuevo();
-  const hayPendiente = () => PEND.pdfs.length > 0 || Object.keys(PEND.archivos).length > 0;
+  const hayPendientePDF = () => PEND.pdfs.length > 0 || Object.keys(PEND.archivos).length > 0;
+  const hayPendiente = () => hayPendientePDF() || Object.keys(PEND_MODELO.registros).length > 0 || PEND_MODELO.tokens > 0;
   const cuantosPendientes = () => Object.keys(PEND.archivos).length;
   /** Lo que estaba esperando, delante de lo que llegó después (si un guardado falló y hay que reintentar). */
   function juntarPendientes(a, b) {
@@ -817,8 +904,11 @@
     const n = cuantosPendientes();
     if (n) { try { sessionStorage.setItem('pierri_pendientes', String(n)); } catch (e) { /* sin almacenamiento */ } }
     PEND = pendienteNuevo();
+    PEND_MODELO = { registros: {}, tokens: 0, noLeidas: 0 };
   }
-  let CATASTRO_CAIDO = false;
+  // Si Catastro no contestó, por diez minutos no se lo vuelve a esperar en cada tanda; después se prueba de nuevo.
+  let CATASTRO_CAIDO = 0;
+  const catastroCaido = () => !!CATASTRO_CAIDO && Date.now() - CATASTRO_CAIDO < 10 * 60000;
   // Una sola cosa por vez con lo leído sin guardar, como la cola `procesando` del kit: leer un PDF, guardar una tanda.
   let COLA = Promise.resolve();
   function enCola(fn) { const p = COLA.then(fn, fn); COLA = p.then(() => {}, () => {}); return p; }
@@ -901,8 +991,16 @@
   }
   /** "Guardar lo pendiente" y el final de una carga: en la cola, después de lo que se esté leyendo. */
   function guardarPendiente() {
-    exigir('cargar'); exigirToken();
-    return enCola(() => { PEND.fallo = null; return guardarAhora(); });
+    const s = exigir('cargar'); exigirToken();
+    return enCola(async () => {
+      PEND.fallo = null;
+      const r = await guardarAhora();
+      if (Object.keys(PEND_MODELO.registros).length || PEND_MODELO.tokens) {
+        const p = PEND_MODELO;
+        await ocupado(() => guardarModelo(s, p.registros, p.tokens, modeloElegido(), p.noLeidas || 0, p.id));
+      }
+      return r;
+    });
   }
   /**
    * Guarda en GitHub lo leído: primero los PDF cifrados (en su rama), después las resoluciones y dónde quedó cada PDF
@@ -911,7 +1009,7 @@
    */
   async function guardarAhora() {
     const s = exigir('cargar'); exigirToken();
-    if (!hayPendiente()) return { ok: true, archivos: 0, resoluciones: 0 };
+    if (!hayPendientePDF()) return { ok: true, archivos: 0, resoluciones: 0 };
     const lote = PEND; PEND = pendienteNuevo();
     return ocupado(async () => {
       RITMO.minimo = 1000;
@@ -927,8 +1025,8 @@
         const cuentas = [...new Set(lote.registros.map(r => r.derivado && r.derivado.geo && r.derivado.geo.cuenta_normalizada).filter(Boolean).map(x => x.replace(/\D/g, '')))]
           .filter(x => x.length === 12 && !(CACHE && CACHE.catastro && CACHE.catastro[x]));
         // Si Catastro no respondió una vez en esta carga, no se lo vuelve a esperar en cada tanda: queda para el botón.
-        if (cuentas.length && !CATASTRO_CAIDO) {
-          try { progreso('Consultando Catastro…'); parcelas = await consultarParcelas(cuentas); } catch (e) { parcelas = null; CATASTRO_CAIDO = true; }
+        if (cuentas.length && !catastroCaido()) {
+          try { progreso('Consultando Catastro…'); parcelas = await consultarParcelas(cuentas); } catch (e) { parcelas = null; CATASTRO_CAIDO = Date.now(); }
         }
         progreso('Guardando las resoluciones leídas…');
         const n = Object.keys(lote.archivos).length, m = lote.resoluciones;
@@ -1030,10 +1128,13 @@
     (await out.copyPages(src, idx)).forEach(pg => out.addPage(pg));
     return new Uint8Array(await out.save());
   }
-  /** El mismo pedido y los mismos reintentos que el kit (pierri_lector.js), desde el navegador. */
+  /**
+   * El mismo pedido y los mismos reintentos que el kit (pierri_lector.js), desde el navegador. Si el modelo contesta
+   * sin los datos, se reintenta una sola vez; lo que cobraron esas respuestas viaja en el error (err.tokens).
+   */
   async function leerConModelo(bytes, k, modelo, inst) {
-    const cuerpo = window.PierriTomos.cuerpoModelo(b64(bytes), modelo, inst.prompt_sistema, inst.prompt_usuario);
-    let ultimo = 'sin respuesta';
+    const T = window.PierriTomos, cuerpo = T.cuerpoModelo(b64(bytes), modelo, inst.prompt_sistema, inst.prompt_usuario);
+    let ultimo = 'sin respuesta', sinDatos = 0, cobrados = 0;
     for (let intento = 0; intento < 5; intento++) {
       let resp;
       try {
@@ -1041,13 +1142,22 @@
           headers: Object.assign({ 'content-type': 'application/json' }, ENCABEZADOS_API(k)), body: JSON.stringify(cuerpo) });
       } catch (err) { ultimo = 'error de red: ' + err.message; await dormir(1500 * 2 ** intento); continue; }
       if (resp.status === 429 || resp.status >= 500) { ultimo = 'la API respondió ' + resp.status; await dormir(1500 * 2 ** intento); continue; }
-      if (!resp.ok) throw new Error('la API respondió ' + resp.status + ': ' + (await resp.text()).slice(0, 300));
-      const leido = window.PierriTomos.respuestaModelo(await resp.json());
-      if (!leido) { ultimo = 'el modelo no devolvió JSON válido'; continue; }
+      if (!resp.ok) { const e = new Error('la API respondió ' + resp.status + ': ' + (await resp.text()).slice(0, 300)); e.tokens = cobrados; throw e; }
+      const data = await resp.json(), leido = T.respuestaModelo(data);
+      if (!leido) { cobrados += T.tokensDe(data); ultimo = 'el modelo no devolvió JSON válido'; if (++sinDatos >= 2) break; continue; }
+      leido.tokens += cobrados;
       return leido;
     }
-    throw new Error(ultimo);
+    const e = new Error(ultimo); e.tokens = cobrados; throw e;
   }
+  // Las que no se pudieron leer por algo de ese documento (el modelo contestó sin datos, la API rechazó el PDF, el PDF
+  // guardado no abre) no se vuelven a pagar en cada vuelta: se saltean hasta volver a ingresar. Las que GitHub todavía no
+  // publicó, solo por cinco minutos. hash → hasta cuándo se saltea.
+  const FALLIDAS_MODELO = new Map();
+  const salteada = h => (FALLIDAS_MODELO.get(h) || 0) > Date.now();
+  // Lo leído con el modelo (y lo cobrado sin datos) que GitHub no guardó: se guarda en la vuelta siguiente, con "Guardar
+  // lo pendiente" o al cerrar la sesión, sin volver a pagarlo.
+  let PEND_MODELO = { registros: {}, tokens: 0, noLeidas: 0 };
   /** "Completar incompletas con el modelo": hasta LOTE_MODELO por vez, en la cola con las cargas. */
   function completar() {
     const s = exigir('cargar'); exigirToken();
@@ -1058,20 +1168,27 @@
     await datos();
     const c = CACHE, T = window.PierriTomos, P = window.PierriCore;
     if (!c.instrucciones || !c.instrucciones.prompt_sistema) throw new Error('Faltan las instrucciones del modelo: cargalas una vez en Configuración.');
+    // Primero se guarda lo que ya se pagó y GitHub no guardó; si GitHub sigue fallando, no se lee (ni se cobra) nada nuevo.
+    const antes = PEND_MODELO, guardadasAntes = Object.keys(antes.registros).length;
+    if (guardadasAntes || antes.tokens) { await guardarModelo(s, antes.registros, antes.tokens, modeloElegido(), antes.noLeidas || 0, antes.id); await datos(); }
     const incompletas = VISTA.todos.filter(r => r.derivado && r.fuente === 'texto_incompleto' && !r.error);
     const conPdf = incompletas.filter(r => r.pdf_web);
-    const lote = conPdf.slice(0, LOTE_MODELO), ix = indices(c), modelo = modeloElegido(), cfg = cfgDe(c, s);
+    const nuevas = {};
+    const porProbar = conPdf.filter(r => !salteada(r.hash) && !nuevas[r.hash]);
+    const lote = porProbar.slice(0, LOTE_MODELO), ix = indices(c), modelo = modeloElegido(), cfg = cfgDe(c, s);
     // El registro tal como se guardó (sin lo que se calcula al mirar), del kit o de lo leído en la web.
     const original = new Map();
     for (const r of (c.kit.resultados || []).concat(lecturasWeb(c).registros)) if (r && !original.has(r.hash)) original.set(r.hash, r);
-    const nuevas = {}, fallas = [];
-    let n = 0, tokens = 0;
+    const fallas = [];
+    let n = 0, tokens = 0, noLeidas = 0, corte = null;
     for (let i = 0; i < lote.length; i++) {
       const r = lote[i];
       progreso(`Leyendo con el modelo ${i + 1} de ${lote.length}: ${(r.derivado && r.derivado.expediente) || r.archivo}…`);
       try {
-        let bytes = await traerPDF(ix.archivos[r.pdf_web]);
-        if (r.tomo) bytes = await recortarPaginas(bytes, r.tomo.desde, r.tomo.hasta);
+        let bytes;
+        // Si el PDF guardado no se puede traer o abrir, es un problema de ese documento (salvo que falte la conexión).
+        try { bytes = await traerPDF(ix.archivos[r.pdf_web]); if (r.tomo) bytes = await recortarPaginas(bytes, r.tomo.desde, r.tomo.hasta); }
+        catch (e) { if (!e.red && !/GitHub no devolvió el PDF \(respuesta 5/.test(String(e.message))) e.documento = true; throw e; }
         const leido = await leerConModelo(bytes, s.claveApi, modelo, c.instrucciones);
         const reg = structuredClone(original.get(r.hash) || r);
         const fusion = T.fusionar(reg.extraido, leido.extraido);
@@ -1080,36 +1197,69 @@
         delete reg.falla_modelo; delete reg.error_modelo;
         nuevas[r.hash] = limpiar(reg); n++; tokens += leido.tokens;
       } catch (err) {
-        const m = T.motivoModelo(err); fallas.push(m.texto);
-        if (m.grave) break;   // clave mala o sin crédito: no tiene sentido seguir
+        const m = T.motivoModelo(err), deDocumento = m.documento || (err && err.documento);
+        fallas.push(deDocumento && !m.documento ? 'no se pudo abrir el PDF guardado de esa resolución' : m.texto);
+        tokens += Number(err && err.tokens) || 0;
+        // Un problema de la cuenta o de la conexión (clave, crédito, demasiados pedidos, Anthropic caído, sin internet)
+        // corta, dice por qué, y la próxima vez se vuelve a intentar. Un problema de este documento lo saltea y sigue.
+        if (!deDocumento) { corte = m.texto; break; }
+        FALLIDAS_MODELO.set(r.hash, /GitHub no devolvió el PDF/.test(String(err.message)) ? Date.now() + 5 * 60000 : Infinity); noLeidas++;
       }
     }
-    if (n) {
+    // Se guarda también si no salió ninguna: lo cobrado queda en la cuenta de tokens y en la auditoría.
+    const motivos = [...new Set(fallas)];
+    if (n || tokens) {
+      try { await guardarModelo(s, nuevas, tokens, modelo, noLeidas); }
+      catch (e) { if (noLeidas) e.message += ` Además, ${noLeidas === 1 ? 'una no se pudo leer' : noLeidas + ' no se pudieron leer'}: ${motivos.join('; ')}.`; throw e; }
+    }
+    progreso('');
+    return { completadas: guardadasAntes + n, no_leidas: noLeidas, pendientes: conPdf.length - n, por_probar: corte ? 0 : porProbar.length - lote.length,
+      sin_pdf: incompletas.length - conPdf.length, tokens: (antes.tokens || 0) + tokens, corte, fallas: motivos.slice(0, 4) };
+  }
+  /**
+   * Guarda lo leído con el modelo (y lo cobrado sin datos). Si GitHub no lo guarda, queda en PEND_MODELO: lo guarda la
+   * vuelta siguiente, "Guardar lo pendiente" o el cierre de sesión, sin volver a pagarlo.
+   */
+  async function guardarModelo(s, nuevas, tokens, modelo, noLeidas, idPrevio) {
+      // Cada guardado lleva una marca: si GitHub lo aplicó pero contestó con error, el reintento lo reconoce y no vuelve
+      // a sumar los tokens ni a anotarlo en la auditoría.
+      const id = idPrevio || (Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+      const c = CACHE || {}, n = Object.keys(nuevas).length;
       let parcelas = null;
       const cuentas = [...new Set(Object.values(nuevas).map(r => r.derivado.geo && r.derivado.geo.cuenta_normalizada).filter(Boolean).map(x => x.replace(/\D/g, '')))]
         .filter(x => x.length === 12 && !(c.catastro && c.catastro[x]));
-      if (cuentas.length && !CATASTRO_CAIDO) { try { parcelas = await consultarParcelas(cuentas); } catch (e) { CATASTRO_CAIDO = true; } }
+      if (cuentas.length && !catastroCaido()) { try { parcelas = await consultarParcelas(cuentas); } catch (e) { CATASTRO_CAIDO = Date.now(); } }
       progreso('Guardando lo leído con el modelo…');
       let escrito = null;
       await transaccion(async estado => {
         const ab = await abrirEstado(estado, s);
-        const comp = Object.assign((await abrirJSON(ab.dek, await estado.leer(RUTAS.completadas))) || {}, nuevas);
+        const previo = (await abrirJSON(ab.dek, await estado.leer(RUTAS.completadas))) || {};
+        if ((previo._guardados || []).includes(id)) { escrito = { dek: ab.dek, completadas: previo }; throw Object.assign(new Error('ya guardado'), { yaGuardado: true }); }
+        const comp = Object.assign(previo, nuevas);
+        comp._guardados = (previo._guardados || []).concat(id).slice(-50);
+        // Lo cobrado por respuestas que no trajeron los datos: no es de ninguna resolución, pero se suma a los tokens.
+        const sinDatos = tokens - Object.values(nuevas).reduce((a, r) => a + (Number(r.tokens) || 0), 0);
+        if (sinDatos > 0) comp._sin_lectura = { tokens: ((comp._sin_lectura && comp._sin_lectura.tokens) || 0) + sinDatos };
         const archivos = { [RUTAS.completadas]: await sellarDatos(ab.dek, comp) };
         escrito = { dek: ab.dek, completadas: comp };
         if (parcelas && Object.keys(parcelas).length) {
           const cat = sumarParcelas(await abrirJSON(ab.dek, await estado.leer(RUTAS.catastro)), parcelas);
           archivos[RUTAS.catastro] = await sellarDatos(ab.dek, cat); escrito.catastro = cat;
         }
-        anotar(ab.boveda, s, 'completar_con_modelo', `${n} resolución(es), ${tokens} tokens (${modelo})`);
+        anotar(ab.boveda, s, 'completar_con_modelo', `${n} resolución(es) leídas${noLeidas ? `, ${noLeidas} que no pudo leer` : ''}, ${tokens} tokens (${modelo})`);
         archivos[RUTAS.admin] = await sellarBovedaDe(ab, s);
         return archivos;
-      }, 'Actualización del relevamiento');
+      }, 'Actualización del relevamiento').catch(e => {
+        if (e && e.yaGuardado) return;
+        PEND_MODELO = { registros: nuevas, tokens, noLeidas, id };
+        progreso('');
+        throw new Error(`GitHub no guardó lo leído con el modelo (${e.message}). Quedó en esta pestaña: tocá de nuevo "Completar incompletas con el modelo" y se guarda sin volver a cobrarlo.`);
+      });
+      PEND_MODELO = { registros: {}, tokens: 0, noLeidas: 0 };
       const cambios = { completadas: escrito.completadas };
       if (escrito.catastro) cambios.catastro = escrito.catastro;
       alGuardar(s, escrito.dek, cambios);
-    }
-    progreso('');
-    return { completadas: n, pendientes: conPdf.length - n, sin_pdf: incompletas.length - conPdf.length, tokens, fallas: fallas.slice(0, 3) };
+      progreso('');
   }
 
   // ───────────── Ver un PDF guardado ─────────────
@@ -1117,7 +1267,7 @@
     const s = exigir('ver');
     const c = await cacheDatos(s);
     const a = indices(c).archivos[String(h || '')];
-    if (!a || !a.pdf) throw new Error('Este PDF todavía no está guardado en la web. Subilo en "Cargar": si ya estaba leído, se guarda sin volver a leerlo.');
+    if (!a || !a.pdf) throw new Error('Este PDF todavía no está guardado en la web. Subilo en "Filtro Ley Pierri" (la carga de PDF, en el menú): si ya estaba leído, se guarda sin volver a leerlo.');
     return { nombre: a.nombre, bytes: await traerPDF(a) };
   }
 
@@ -1152,14 +1302,15 @@
    * Lee la planilla del Padrón en un proceso aparte (leer_planilla.js, con SheetJS): si el archivo viniera armado para
    * atacar la librería, no alcanza la página, que es donde están las llaves y el token. Vuelven solo las filas.
    */
-  function leerPlanilla(bytes) {
+  function leerPlanilla(bytes, modo) {
     return new Promise((ok, mal) => {
       const w = new Worker('leer_planilla.js');
       const fin = (f, x) => { clearTimeout(t); w.terminate(); f(x); };
-      const t = setTimeout(() => fin(mal, new Error('la planilla tardó demasiado en leerse')), 120000);
+      const t = setTimeout(() => fin(mal, new Error('la planilla tardó demasiado en leerse')), modo ? 300000 : 120000);
       w.onmessage = e => (e.data && e.data.error) ? fin(mal, new Error(e.data.error)) : fin(ok, (e.data && e.data.filas) || []);
-      w.onerror = e => { e.preventDefault(); fin(mal, new Error(e.message || 'no se pudo leer')); };
-      w.postMessage(bytes.buffer, [bytes.buffer]);
+      w.onerror = e => { e.preventDefault(); fin(mal, new Error(e.message || 'no se pudo leer (¿la computadora se quedó sin memoria?)')); };
+      if (modo) w.postMessage({ bytes: bytes.buffer, modo }, [bytes.buffer]);
+      else w.postMessage(bytes.buffer, [bytes.buffer]);
     });
   }
   /** Guarda un archivo cifrado con la DEK, leyendo el último estado. cambiar(actual) devuelve el contenido nuevo. */
@@ -1218,21 +1369,73 @@
     const c = await cacheDatos(s);
     const cuentas = window.PierriBase.cuentasSinParcela(c.inventario ? c.inventario.filas || [] : [], parcelasDe(c.catastro), Math.min(Number(maximo) || 500, 500));
     if (!cuentas.length) { const d = await datos(); return { consultadas: 0, encontradas: 0, pendientes: 0, inventario: d.resumen.inventario }; }
-    const nuevas = await consultarParcelas(cuentas);
-    for (const v of Object.values(nuevas)) v.inv = true;
-    await guardarUno(s, 'catastro', actual => sumarParcelas(actual, nuevas));
+    // Mientras consulta cuenta como trabajo en curso, como la ubicación de la planilla.
+    const nuevas = await ocupado(async () => {
+      const n = await consultarParcelas(cuentas);
+      for (const v of Object.values(n)) v.inv = true;
+      await guardarUno(s, 'catastro', actual => sumarParcelas(actual, n));
+      return n;
+    });
     const d = await datos(), inv = d.resumen.inventario || {};
     return { consultadas: cuentas.length, encontradas: Object.values(nuevas).filter(v => v.p).length, pendientes: inv.pendientes_catastro || 0, inventario: inv };
   }
-  async function catastro() {
+  /**
+   * Consulta en Catastro las cuentas que todavía no se consultaron (de las resoluciones y de la planilla), de a una tanda
+   * de hasta `maximo` y guardando cada tanda: con la planilla son decenas de miles, y si se corta, sigue donde quedó.
+   * Devuelve cuántas se consultaron y se encontraron en esta tanda, y cuántas faltan.
+   */
+  async function catastro(maximo) {
     const s = exigir('cargar'); exigirToken();
+    const d = await datos(), consultadas = (CACHE && CACHE.catastro) || {};
+    // Una cuenta que Catastro no encontró se vuelve a consultar pasado un mes (pudo haberse dado de alta la parcela).
+    const haceUnMes = new Date(Date.now() - 30 * 86400000).toISOString();
+    const yaConsultada = x => consultadas[x] && (consultadas[x].p || String(consultadas[x].en || '') > haceUnMes);
+    const todas = [...new Set(d.registros.map(r => r.derivado.geo).filter(g => g && g.cuenta_normalizada && !(g.catastro && g.catastro.encontrada))
+      .map(g => g.cuenta_normalizada.replace(/\D/g, '')).filter(x => x.length === 12 && !yaConsultada(x)))];
+    if (!todas.length) return { ubicadas: 0, consultadas: 0, pendientes: 0 };
+    const cuentas = todas.slice(0, Math.min(Number(maximo) || 2000, 2000));
+    progreso(`Consultando Catastro: ${cuentas.length} cuentas (faltan ${todas.length})…`);
+    // Mientras consulta cuenta como trabajo en curso: el navegador avisa antes de cerrar y la sesión no se vence.
+    return ocupado(async () => {
+      try {
+        // De a 50 cuentas por pedido: si uno falla, se guarda lo que sí contestó. Tres fallas seguidas cortan la tanda.
+        const nuevas = {};
+        let fallas = 0, seguidas = 0, error = null;
+        for (let i = 0; i < cuentas.length; i += 50) {
+          const lote = cuentas.slice(i, i + 50);
+          try { Object.assign(nuevas, await consultarParcelas(lote)); seguidas = 0; }
+          catch (e) { fallas += lote.length; error = e; if (++seguidas >= 3) break; }
+          if (i % 500 === 0) progreso(`Consultando Catastro: ${Math.min(i + 50, cuentas.length)} de ${cuentas.length} cuentas de esta tanda (faltan ${todas.length})…`);
+        }
+        const n = Object.keys(nuevas).length;
+        if (!n) throw error || new Error('Catastro no respondió');
+        progreso('Guardando las parcelas encontradas…');
+        await guardarUno(s, 'catastro', actual => sumarParcelas(actual, nuevas));
+        return { ubicadas: Object.values(nuevas).filter(v => v.p).length, consultadas: n, pendientes: todas.length - n,
+          fallas: fallas ? `${fallas} cuentas no se pudieron consultar: ${(error && error.message) || 'error'}` : null };
+      } finally { progreso(''); }
+    });
+  }
+  /**
+   * Carga la planilla de trámites de la UEST (.xlsx del SIA). Reemplaza a la anterior: es la exportación completa.
+   * Se lee en el proceso aparte, como el Padrón, y se guarda solo lo que sirve (pierri_sia.js).
+   */
+  async function cargarSIA(cuerpo, nombreCrudo) {
+    const s = exigir('cargar'); exigirToken();
+    const nombre = limpiar(String(nombreCrudo || 'planilla.xlsx')).slice(0, 200);
+    let leida;
+    progreso(`Leyendo ${nombre} (una planilla grande tarda un minuto)…`);
+    await ocupado(async () => {
+      try {
+        try { leida = window.PierriSIA.filasSIA(await leerPlanilla(new Uint8Array(await cuerpo.arrayBuffer()), 'matriz')); }
+        catch (e) { throw new Error('no se pudo leer la planilla: ' + (e.message || e)); }
+        if (!leida.filas.length) throw new Error('la planilla no tiene ningún expediente con número válido');
+        progreso(`Guardando ${leida.filas.length.toLocaleString('es-AR')} expedientes cifrados…`);
+        await guardarUno(s, 'sia', () => ({ archivo: nombre, cargado_en: ahora(), filas: leida.filas }), 'carga_planilla_sia', `${nombre}: ${leida.filas.length} expedientes`);
+      } finally { progreso(''); }
+    });
     const d = await datos();
-    const cuentas = [...new Set(d.registros.map(r => r.derivado.geo).filter(g => g && g.cuenta_normalizada && !(g.catastro && g.catastro.encontrada))
-      .map(g => g.cuenta_normalizada.replace(/\D/g, '')).filter(x => x.length === 12))];
-    if (!cuentas.length) return { ubicadas: 0 };
-    const nuevas = await consultarParcelas(cuentas);
-    await guardarUno(s, 'catastro', actual => sumarParcelas(actual, nuevas));
-    return { ubicadas: Object.values(nuevas).filter(v => v.p).length };
+    return { expedientes: leida.filas.length, descartadas: leida.descartadas, planilla: d.resumen.planilla };
   }
   async function inventarioLocalidades() {
     const d = await datos(), c = CACHE;
@@ -1290,6 +1493,7 @@
       case '/api/clave': return cambiarClavePropia(cuerpoJSON());
       case '/api/usuarios': return usuarios(metodo, cuerpoJSON());
       case '/api/datos': return datos();
+      case '/api/web/recargar': exigir('ver'); CACHE = null; return datos();   // volver a traer lo guardado (lo que cargaron otros)
       case '/api/config': {
         const s = exigir('ver'), c = cuerpoJSON();
         if ('key' in c || 'modelo' in c) return configModelo(c);
@@ -1303,7 +1507,8 @@
       case '/api/inventario': return cargarInventario(o.body, url.searchParams.get('nombre'));
       case '/api/inventario/ubicar': return ubicarInventario(url.searchParams.get('maximo'));
       case '/api/inventario/localidades': return inventarioLocalidades();
-      case '/api/catastro': return catastro();
+      case '/api/catastro': return catastro(url.searchParams.get('maximo'));
+      case '/api/web/sia': return cargarSIA(o.body, url.searchParams.get('nombre'));
       case '/api/archivos': return archivos();
       case '/api/web/inicial': return inicial(cuerpoJSON());
       case '/api/web/importar': return importar(o.body, url.searchParams.get('nombre'));
@@ -1317,5 +1522,6 @@
     }
   }
 
-  window.PIERRI_WEB = { api, repo: REPO, version: 3, pdfjs, ocupado: () => OCUPADO > 0, pendientes: hayPendiente, cuantosPendientes };
+  window.PIERRI_WEB = { api, repo: REPO, version: 3, pdfjs, ocupado: () => OCUPADO > 0, pendientes: hayPendiente, cuantosPendientes, catastroCaido,
+    modeloSalteada: salteada, modeloSinGuardar: () => ({ resoluciones: Object.keys(PEND_MODELO.registros).length, tokens: PEND_MODELO.tokens }) };
 })();
