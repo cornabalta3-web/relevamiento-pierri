@@ -176,7 +176,7 @@
     if (status === 403) return 'El token no tiene permiso de escritura sobre este repositorio (Contents: Read and write).';
     if (status === 404) return 'GitHub no encuentra el repositorio con ese token: revisá que el token incluya este repositorio.';
     if (status >= 500) return `GitHub tuvo una falla de su lado (${status}). No es el token ni tus datos: probá de nuevo en un rato; lo ya guardado no se pierde.`;
-    return 'GitHub respondió ' + status + '.';
+    return 'GitHub respondió ' + status + (j && j.message ? ` («${String(j.message).slice(0, 120)}»)` : '') + '.';
   }
   async function red(url, opciones) {
     try { return await fetch(url, opciones); }
@@ -255,7 +255,7 @@
   async function transaccion(construir, mensaje) {
     const token = tokenGuardado();
     if (!token) throw new Error('Falta el permiso de GitHub para guardar: cargalo en Configuración.');
-    for (let intento = 0; intento < 3; intento++) {
+    for (let intento = 0; intento < 4; intento++) {
       const head = await punta(token);
       const base = await gh(token, 'GET', `/git/commits/${head}`);
       const estado = { token, head, leer: ruta => leerEn(token, ruta, head) };
@@ -267,14 +267,33 @@
       }
       const t = await gh(token, 'POST', '/git/trees', { base_tree: base.tree.sha, tree: arbol });
       const c = await gh(token, 'POST', '/git/commits', { message: mensaje, tree: t.sha, parents: [head] });
-      try { await gh(token, 'PATCH', `/git/refs/heads/${encodeURIComponent(REPO.rama)}`, { sha: c.sha, force: false }); return estado; }
+      try { if (await avanzarRama(token, REPO.rama, head, c.sha)) return estado; }
       catch (e) {
         if (e.red) throw new Error('Se cortó la conexión justo al guardar: no se sabe si quedó guardado. Volvé a ingresar y fijate antes de repetirlo.');
-        if (e.status === 422 || e.status === 409) continue;
         throw e;
       }
     }
-    throw new Error('GitHub no aceptó el cambio: o el sistema cambió varias veces mientras guardabas, o la rama tiene reglas de protección. Volvé a ingresar y probá de nuevo.');
+    throw new Error('GitHub no aceptó el cambio: alguien más estaba guardando al mismo tiempo, varias veces seguidas. Volvé a tocar en un rato: lo ya guardado no se pierde.');
+  }
+  /**
+   * Mueve la rama al commit nuevo. GitHub contesta 422 tanto si otro guardó en el medio (hay que rearmar el commit
+   * sobre lo nuevo) como si recibió demasiados cambios seguidos ("the endpoint has been spammed": hay que esperar).
+   * Se distinguen mirando la rama. true: quedó guardado; false: otro guardó en el medio.
+   */
+  const PAUSAS_RAMA = [5, 15, 30, 60];
+  async function avanzarRama(token, rama, head, sha) {
+    for (let i = 0; ; i++) {
+      try { await gh(token, 'PATCH', `/git/refs/heads/${encodeURIComponent(rama)}`, { sha, force: false }); return true; }
+      catch (e) {
+        if (e.red || (e.status !== 422 && e.status !== 409)) throw e;
+        const ahora = await punta(token, rama);
+        if (ahora === sha) return true;
+        if (ahora !== head) return false;
+        if (i >= PAUSAS_RAMA.length) throw new Error(`GitHub no aceptó el cambio ni después de esperar dos minutos: ${e.message} Esperá unos minutos y volvé a tocar: lo ya guardado no se pierde.`);
+        progreso(`GitHub pidió ir más despacio: vuelvo a guardar en ${PAUSAS_RAMA[i]} segundos…`, true);
+        await dormir(PAUSAS_RAMA[i] * 1000); progreso(PROGRESO, true);
+      }
+    }
   }
   /** El último commit de una rama (la principal si no se dice otra). */
   async function punta(token, rama) {
@@ -305,8 +324,8 @@
       const t = await gh(token, 'POST', '/git/trees', arbolBase ? { base_tree: arbolBase, tree: arbol } : { tree: arbol });
       const c = await gh(token, 'POST', '/git/commits', { message: 'PDF cifrados', tree: t.sha, parents: head ? [head] : [] });
       try {
-        if (head) await gh(token, 'PATCH', `/git/refs/heads/${encodeURIComponent(RAMA_PDF)}`, { sha: c.sha, force: false });
-        else await gh(token, 'POST', '/git/refs', { ref: `refs/heads/${RAMA_PDF}`, sha: c.sha });
+        if (head) { if (await avanzarRama(token, RAMA_PDF, head, c.sha)) return c.sha; continue; }
+        await gh(token, 'POST', '/git/refs', { ref: `refs/heads/${RAMA_PDF}`, sha: c.sha });
         return c.sha;
       } catch (e) {
         if (e.red) throw new Error('Se cortó la conexión justo al guardar los PDF. Volvé a intentar: lo que ya estaba guardado no se pierde.');
@@ -905,6 +924,7 @@
     if (n) { try { sessionStorage.setItem('pierri_pendientes', String(n)); } catch (e) { /* sin almacenamiento */ } }
     PEND = pendienteNuevo();
     PEND_MODELO = { registros: {}, tokens: 0, noLeidas: 0 };
+    PEND_CATASTRO = {};
   }
   // Si Catastro no contestó, por diez minutos no se lo vuelve a esperar en cada tanda; después se prueba de nuevo.
   let CATASTRO_CAIDO = 0;
@@ -1406,34 +1426,41 @@
    * de hasta `maximo` y guardando cada tanda: con la planilla son decenas de miles, y si se corta, sigue donde quedó.
    * Devuelve cuántas se consultaron y se encontraron en esta tanda, y cuántas faltan.
    */
+  // Lo consultado en Catastro que no se pudo guardar: se guarda primero en el próximo toque, sin volver a consultarlo.
+  let PEND_CATASTRO = {};
   async function catastro(maximo) {
     const s = exigir('cargar'); exigirToken();
     const d = await datos(), consultadas = (CACHE && CACHE.catastro) || {};
     // Una cuenta que Catastro no encontró se vuelve a consultar pasado un mes (pudo haberse dado de alta la parcela).
     const haceUnMes = new Date(Date.now() - 30 * 86400000).toISOString();
-    const yaConsultada = x => consultadas[x] && (consultadas[x].p || String(consultadas[x].en || '') > haceUnMes);
+    const yaConsultada = x => PEND_CATASTRO[x] || (consultadas[x] && (consultadas[x].p || String(consultadas[x].en || '') > haceUnMes));
     const todas = [...new Set(d.registros.map(r => r.derivado.geo).filter(g => g && g.cuenta_normalizada && !(g.catastro && g.catastro.encontrada))
       .map(g => g.cuenta_normalizada.replace(/\D/g, '')).filter(x => x.length === 12 && !yaConsultada(x)))];
-    if (!todas.length) return { ubicadas: 0, consultadas: 0, pendientes: 0 };
-    const cuentas = todas.slice(0, Math.min(Number(maximo) || 2000, 2000));
-    progreso(`Consultando Catastro: ${cuentas.length} cuentas (faltan ${todas.length})…`);
+    const previas = Object.keys(PEND_CATASTRO).length;
+    if (!todas.length && !previas) return { ubicadas: 0, consultadas: 0, pendientes: 0 };
+    // Cada tanda guarda una sola vez: hasta un minuto de consultas o las cuentas pedidas. Guardar muy seguido hace que
+    // GitHub pida ir más despacio.
+    const cuentas = todas.slice(0, Math.min(Number(maximo) || 20000, 20000)), hasta = Date.now() + 60000;
+    progreso(`Consultando Catastro: faltan ${todas.length.toLocaleString('es-AR')} cuentas…`);
     // Mientras consulta cuenta como trabajo en curso: el navegador avisa antes de cerrar y la sesión no se vence.
     return ocupado(async () => {
       try {
         // De a 50 cuentas por pedido: si uno falla, se guarda lo que sí contestó. Tres fallas seguidas cortan la tanda.
-        const nuevas = {};
-        let fallas = 0, seguidas = 0, error = null;
-        for (let i = 0; i < cuentas.length; i += 50) {
+        const nuevas = Object.assign({}, PEND_CATASTRO);
+        let fallas = 0, seguidas = 0, error = null, i = 0;
+        for (; i < cuentas.length && Date.now() < hasta; i += 50) {
           const lote = cuentas.slice(i, i + 50);
           try { Object.assign(nuevas, await consultarParcelas(lote)); seguidas = 0; }
-          catch (e) { fallas += lote.length; error = e; if (++seguidas >= 3) break; }
-          if (i % 500 === 0) progreso(`Consultando Catastro: ${Math.min(i + 50, cuentas.length)} de ${cuentas.length} cuentas de esta tanda (faltan ${todas.length})…`);
+          catch (e) { fallas += lote.length; error = e; if (++seguidas >= 3) { i += 50; break; } }
+          if (i % 500 === 0) progreso(`Consultando Catastro: ${Math.min(i + 50, cuentas.length).toLocaleString('es-AR')} cuentas en esta tanda (faltan ${todas.length.toLocaleString('es-AR')})…`);
         }
         const n = Object.keys(nuevas).length;
         if (!n) throw error || new Error('Catastro no respondió');
         progreso('Guardando las parcelas encontradas…');
-        await guardarUno(s, 'catastro', actual => sumarParcelas(actual, nuevas));
-        return { ubicadas: Object.values(nuevas).filter(v => v.p).length, consultadas: n, pendientes: todas.length - n,
+        try { await guardarUno(s, 'catastro', actual => sumarParcelas(actual, nuevas)); }
+        catch (e) { PEND_CATASTRO = nuevas; e.consultadas = n - previas; throw e; }
+        PEND_CATASTRO = {};
+        return { ubicadas: Object.values(nuevas).filter(v => v.p).length, consultadas: n - previas, pendientes: todas.length - (n - previas),
           fallas: fallas ? `${fallas} cuentas no se pudieron consultar: ${(error && error.message) || 'error'}` : null };
       } finally { progreso(''); }
     });

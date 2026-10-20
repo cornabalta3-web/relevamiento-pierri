@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-8dfWFDhPjv2rdkMl/Mv/fPNGfQYryFC6b+wbuXk0di4=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-rkS43XG2w4NqhVFoMWPoSp4keNi/ri2Vy3ZeN6N5Vwc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://idecor-ws.mapascordoba.gob.ar https://api.anthropic.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-8dfWFDhPjv2rdkMl/Mv/fPNGfQYryFC6b+wbuXk0di4=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-7yheOrdrDgUpf3P1CMpn4MfDmsm7Jq5KpdLag9UL6DE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://idecor-ws.mapascordoba.gob.ar https://api.anthropic.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1383,7 +1383,7 @@ tr.rc-resalte td{background:var(--ambar2)!important;transition:background .4s}
 <script src="pierri_tomos.js?v=lliaphfjecgj"></script>
 <script src="pierri_base.js?v=jdiefpgcmkfp"></script>
 <script src="pierri_sia.js?v=oeindmgeodhj"></script>
-<script src="pierri_web.js?v=lbnhhghheffl"></script>
+<script src="pierri_web.js?v=bbppimhfmmdk"></script>
 <script>
 (function(){
 'use strict';
@@ -1788,7 +1788,7 @@ if(SERVIDOR){
     let ubicadas = 0, consultadas = 0, fallas = null;
     try{
       for(let vuelta = 0; vuelta < 200; vuelta++){
-        const r = await api('/api/catastro?maximo=2000', { method: 'POST' });
+        const r = await api('/api/catastro', { method: 'POST' });
         ubicadas += r.ubicadas || 0; consultadas += r.consultadas || 0; fallas = r.fallas || null;   // vale lo de la última tanda: las fallas se reintentan en la siguiente
         if(!r.pendientes || !r.consultadas) break;
         boton.textContent = `Catastro: ${consultadas.toLocaleString('es-AR')} consultadas, faltan ${r.pendientes.toLocaleString('es-AR')}…`;
@@ -1797,7 +1797,7 @@ if(SERVIDOR){
         + (fallas ? ` Ojo: ${fallas}. Volvé a tocar más tarde y se consultan esas.` : ''), !!fallas);
       await cargarDesdeServidor();
     }catch(err){
-      avisar('Catastro: ' + err.message + (consultadas ? ' Lo consultado hasta acá quedó guardado: volvé a tocar y sigue donde quedó.' : ''), true);
+      avisar('Catastro: ' + err.message + (err.consultadas ? ' Lo consultado en esta tanda quedó en esta pestaña: volvé a tocar y se guarda sin volver a consultarlo.' : consultadas ? ' Lo consultado hasta acá quedó guardado: volvé a tocar y sigue donde quedó.' : ''), true);
       if(consultadas) await cargarDesdeServidor().catch(() => {});
     }
     boton.textContent = rotulo; boton.disabled = false;
