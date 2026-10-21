@@ -177,19 +177,21 @@
     return { texto: 'la IA no respondió (' + m.slice(0, 120) + ')', grave: false };
   }
   function fusionar(deTexto, delModelo) {
-    const e = JSON.parse(JSON.stringify(delModelo));
+    const e = JSON.parse(JSON.stringify(delModelo || {}));
+    const t = deTexto || {}, afT = Array.isArray(t.dominio && t.dominio.afectados) ? t.dominio.afectados : [], posT = t.posesion || {};
     e._fuente = 'mixto';
-    if (!e.expediente && deTexto.expediente) e.expediente = deTexto.expediente;
-    if (deTexto.dominio.afectados.length) {
+    e.dominio = e.dominio || {}; e.posesion = e.posesion || {};
+    if (!e.expediente && t.expediente) e.expediente = t.expediente;
+    if (afT.length) {
       for (const a of e.dominio.afectados || []) {
-        if (a.cuenta) continue;
-        const t = deTexto.dominio.afectados.find(x => x.matricula === a.matricula && x.cuenta);
-        if (t) a.cuenta = t.cuenta;
+        if (!a || a.cuenta) continue;
+        const x = afT.find(y => y && y.matricula === a.matricula && y.cuenta);
+        if (x) a.cuenta = x.cuenta;
       }
-      if (!(e.dominio.afectados || []).length) e.dominio.afectados = deTexto.dominio.afectados;
+      if (!(e.dominio.afectados || []).length) e.dominio.afectados = afT;
     }
-    if (!e.posesion.antiguedad_anios && !e.posesion.fecha_inicio_declarada && (deTexto.posesion.antiguedad_anios || deTexto.posesion.fecha_inicio_declarada))
-      Object.assign(e.posesion, deTexto.posesion);
+    if (!e.posesion.antiguedad_anios && !e.posesion.fecha_inicio_declarada && (posT.antiguedad_anios || posT.fecha_inicio_declarada))
+      Object.assign(e.posesion, posT);
     return e;
   }
   function nombreControlDe(r) { return r.tomo ? (r.tomo.expedienteVisto ? `documento_${r.tomo.expedienteVisto.replace('/', '-')}_tomo.pdf` : r.archivo) : r.archivo; }

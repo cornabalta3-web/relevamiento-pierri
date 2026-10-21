@@ -62,7 +62,8 @@
   const PERMISOS = { ver: ['veedor', 'editor', 'admin'], revisar: ['admin'], cargar: ['admin'], administrar: ['admin'] };
   const RUTAS = { usuarios: 'datos/usuarios.json', datos: 'datos/relevamiento.enc', admin: 'datos/admin.enc', indice: 'datos/indice.json',
     revisiones: 'datos/revisiones.enc', padron: 'datos/padron.enc', inventario: 'datos/inventario.enc', catastro: 'datos/catastro.enc',
-    instrucciones: 'datos/modelo.enc', completadas: 'datos/completadas.enc', sia: 'datos/sia.enc', criterio: 'datos/criterio.enc' };
+    instrucciones: 'datos/modelo.enc', completadas: 'datos/completadas.enc', sia: 'datos/sia.enc', criterio: 'datos/criterio.enc',
+    controles: 'datos/controles.enc' };
   const CLAVE_TOKEN = 'pierri_web_token';
   // La clave de API de Anthropic, como el token: solo en esta computadora y cifrada con la contraseña del administrador.
   const CLAVE_API = 'pierri_web_clave_api', CLAVE_MODELO = 'pierri_web_modelo';
@@ -176,7 +177,9 @@
   function hastaCuando(h) {
     if (!h || typeof h.get !== 'function') return null;
     const ra = Number(h.get('retry-after')), reset = Number(h.get('x-ratelimit-reset'));
-    const t = ra > 0 ? Date.now() + ra * 1000 : reset > 0 ? reset * 1000 : null;
+    // x-ratelimit-reset dice cuándo se renueva el cupo por hora: solo vale si ese cupo se agotó. Con un límite secundario
+    // (cupo libre y sin retry-after) no se sabe la hora, y el aviso dice "esperá unos minutos".
+    const t = ra > 0 ? Date.now() + ra * 1000 : reset > 0 && h.get('x-ratelimit-remaining') === '0' ? reset * 1000 : null;
     return t ? new Date(t + 59999).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) : null;   // redondeado al minuto siguiente
   }
   function errorGitHub(status, j, h) {
@@ -451,8 +454,8 @@
   }
   /** Todo lo que está cifrado con la DEK en un commit: lo que hay que volver a cifrar al cambiarla. */
   async function rutasCifradas(estado) {
-    return [RUTAS.datos, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro, RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia, RUTAS.criterio]
-      .concat(leerIndice(await estado.leer(RUTAS.indice)).lecturas);
+    return [RUTAS.datos, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro, RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia, RUTAS.criterio,
+      RUTAS.controles].concat(leerIndice(await estado.leer(RUTAS.indice)).lecturas);
   }
   function anotar(boveda, s, accion, detalle) {
     boveda.cambios = boveda.cambios || [];
@@ -646,7 +649,7 @@
   }
 
   // ───────────── Lo guardado, en memoria ─────────────
-  let CACHE = null;   // lo descifrado de esta pestaña: { dek, kit, indice, lecturas, revisiones, padron, inventario, catastro, sia, criterio, … }
+  let CACHE = null;   // lo descifrado de esta pestaña: { dek, kit, indice, lecturas, revisiones, padron, inventario, catastro, sia, criterio, controles, … }
   /** Lee y descifra todo lo guardado. El administrador lo lee por la API (lo último); los demás, de la página publicada. */
   async function cargarTodo(s) {
     const token = s.rol === 'admin' ? tokenGuardado() : '';
@@ -666,15 +669,16 @@
     const dek = desb64(s.dek);
     try {
       const [txtKit, txtIndice, ...extras] = await Promise.all([RUTAS.datos, RUTAS.indice, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro,
-        RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia, RUTAS.criterio].map(leer));
+        RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia, RUTAS.criterio, RUTAS.controles].map(leer));
       const indice = leerIndice(txtIndice);
       const textos = await Promise.all(indice.lecturas.map(leer));
       const lecturas = {};
       for (let i = 0; i < textos.length; i++) if (textos[i]) lecturas[indice.lecturas[i]] = limpiar(await abrirJSON(dek, textos[i]));
-      const [revisiones, padron, inventario, catastro, instrucciones, completadas, sia, criterio] = await Promise.all(extras.map(t => abrirJSON(dek, t)));
+      const [revisiones, padron, inventario, catastro, instrucciones, completadas, sia, criterio, controles] = await Promise.all(extras.map(t => abrirJSON(dek, t)));
       // Las instrucciones del modelo van al modelo tal cual (no se muestran): no se les cambia nada.
       return { dek: s.dek, kit: limpiar(await abrirDatosTexto(dek, txtKit)), indice, lecturas, revisiones: limpiar(revisiones), padron: limpiar(padron),
-        inventario: limpiar(inventario), catastro: limpiar(catastro), instrucciones, completadas: limpiar(completadas), sia: limpiar(sia), criterio: limpiar(criterio), aviso };
+        inventario: limpiar(inventario), catastro: limpiar(catastro), instrucciones, completadas: limpiar(completadas), sia: limpiar(sia), criterio: limpiar(criterio),
+        controles: limpiar(controles), aviso };
     } catch (e) {
       if (e.name !== 'OperationError') throw e;
       // El administrador cambió la llave de los datos: hay que volver a ingresar para recibir la nueva.
@@ -698,7 +702,7 @@
       if (cambios.indice.lecturas.some(r => r !== cambios.ruta && !CACHE.lecturas[r])) { CACHE = null; return; }
       CACHE.indice = cambios.indice; CACHE.lecturas[cambios.ruta] = cambios.contenido;
     }
-    for (const k of ['kit', 'revisiones', 'padron', 'inventario', 'catastro', 'instrucciones', 'completadas', 'sia', 'criterio']) if (k in cambios) CACHE[k] = cambios[k];
+    for (const k of ['kit', 'revisiones', 'padron', 'inventario', 'catastro', 'instrucciones', 'completadas', 'sia', 'criterio', 'controles']) if (k in cambios) CACHE[k] = cambios[k];
   }
   /** Lo leído en la web: los archivos (con dónde está cada PDF) y los registros, sin repetir. */
   function lecturasWeb(c) {
@@ -769,7 +773,7 @@
       margenBordeMeses: Number.isFinite(m) && m >= 0 ? Math.min(36, Math.round(m)) : actual.margenBordeMeses };
     if (nuevo.regla === actual.regla && nuevo.fechaCorte === actual.fechaCorte && nuevo.margenBordeMeses === actual.margenBordeMeses) return { ok: true, sin_cambios: true };
     exigirToken();
-    const texto = (nuevo.regla === 'CORTE_FIJO' ? 'corte fijo: posesión anterior al ' + nuevo.fechaCorte.split('-').reverse().join('/') : 'plazo móvil de diez años')
+    const texto = (nuevo.regla === 'CORTE_FIJO' ? 'corte fijo: posesión anterior al ' + nuevo.fechaCorte.split('-').reverse().join('/') : 'plazo móvil de 10 años al día de hoy (proyecto PE-13/26, con media sanción)')
       + ` · borde ±${nuevo.margenBordeMeses} meses`;
     await guardarUno(s, 'criterio', () => Object.assign({}, nuevo, { en: ahora(), por: s.usuario }), 'cambio_de_criterio', texto);
     return { ok: true };
@@ -837,7 +841,7 @@
     // Lo completado después con el modelo reemplaza a la lectura por texto de esa misma resolución.
     const comp = c.completadas || {};
     const todos = structuredClone(deKit.concat(web.registros.filter(r => !enKit.has(r.hash))).map(r => comp[r.hash] || r));
-    const revs = c.revisiones || {}, cat = c.catastro || {};
+    const revs = c.revisiones || {}, cat = c.catastro || {}, ctrls = c.controles || {};
     for (const r of todos) {
       if (!r.derivado) continue;
       const d = r.derivado, pd = d.posee_desde ? P.parseFecha(d.posee_desde) : null;
@@ -845,9 +849,21 @@
       d.motivos_revision = (d.motivos_revision || []).filter(m => !m.startsWith('caso borde'));
       if (d.elegibilidad.borde) d.motivos_revision.push(`caso borde (posee desde ${d.posee_desde}, límite ${d.elegibilidad.fechaLimite})`);
       d.revisar = d.motivos_revision.length > 0;
+      // Lo que dejó "Controlar con IA". Si difieren en algo que decide, queda con dudas (como la doble lectura del kit),
+      // hasta que alguien elija en la ficha. Si la lectura por texto cambió después del control, el control ya no vale.
+      const ci = ctrls[r.hash];
+      delete r.control_ia;   // solo vale lo guardado en controles.enc (no lo que traiga una copia de respaldo importada)
+      if (ci && ci.ia && !controlViejo(ci, d)) {
+        r.control_ia = ci;
+        if (!ci.coincide) { d.motivos_revision.push('texto e IA no coinciden en ' + decisivas(ci).map(x => x.campo).join(', ')); d.revisar = true; }
+      }
       const rw = revs[r.hash];
       if (rw && (!r.revision || String(rw.en || '') >= String(r.revision.en || ''))) r.revision = rw;
       B.aplicarRevision(r, cfg);
+      // Controlada con IA y coincide: el borde ya se miró contra el documento, salvo que una persona la marque con dudas.
+      if (r.control_ia && r.control_ia.coincide && !(d.revision && (d.revision.revisado || d.revision.dudas))) {
+        d.motivos_revision = d.motivos_revision.filter(m => !m.startsWith('caso borde')); d.revisar = d.motivos_revision.length > 0;
+      }
       const g = d.geo, cta = g && g.cuenta_normalizada ? g.cuenta_normalizada.replace(/\D/g, '') : '';
       // Ubicada por la parcela: deja de ser la ubicación aproximada por localidad que pudo traer del kit.
       if (cta && !(g.catastro && g.catastro.encontrada) && cat[cta] && P.enriquecerConCatastro(d, cat[cta].p || null, T)) delete g.ubicacion_aproximada;
@@ -868,12 +884,18 @@
     const conPlanilla = sia ? todos.concat(sia.registros) : todos;
     if (sia && indiceInv) B.anexarInventario(sia.registros, indiceInv);
     // El Padrón. Lo leído se cruza solo, igual que en el kit: la planilla no le cambia el resultado ni los conteos. La
-    // planilla se cruza junto con lo leído (si su iniciador también tiene una resolución leída, su expediente queda
-    // ambiguo), y después lo leído se vuelve a cruzar solo, que es lo que queda.
+    // planilla se cruza junto con lo leído (si su iniciador también tiene una resolución leída de otro expediente, queda
+    // ambiguo), y después lo leído se vuelve a cruzar solo, que es lo que queda. Una lectura del mismo expediente que una
+    // estimación (de trámite o sin leer, que no la reemplaza) no entra en ese cruce: si no, la estimación daría
+    // "ambigua" por su propio expediente.
     let cruce = null;
     if (c.padron) {
       const filasP = c.padron.filas || [], inv = indiceInv || new Map();
-      if (sia) { B.cruzarConPadron(conPlanilla, filasP, inv); window.PierriSIA.controlarCruce(sia.registros); }
+      if (sia) {
+        const canon = window.PierriSIA.canonExpediente, expEst = new Set(sia.registros.map(r => canon(r.derivado.expediente)).filter(Boolean));
+        const otras = todos.filter(r => !r.derivado || !expEst.has(canon(r.derivado.expediente)));
+        B.cruzarConPadron(otras.concat(sia.registros), filasP, inv); window.PierriSIA.controlarCruce(sia.registros);
+      }
       cruce = B.cruzarConPadron(todos, filasP, inv);
     }
     P.detectarClusters(todos.filter(r => r.derivado && !r.repetido_de && !r.error).map(r => r.derivado));
@@ -890,7 +912,9 @@
       errores: (Number(kr.errores) || 0) + todos.filter(r => r.error).length,
       incompletas: validos.filter(r => r.fuente === 'texto_incompleto').length,
       // Los tokens del kit (de su resumen) más los gastados en la web al completar con el modelo.
-      tokens: (Number(kr.tokens) || deKit.reduce((a, r) => a + (Number(r.tokens) || 0), 0)) + Object.values(comp).reduce((a, r) => a + (Number(r.tokens) || 0), 0),
+      // También los del control con IA (cada control y lo cobrado sin datos).
+      tokens: (Number(kr.tokens) || deKit.reduce((a, r) => a + (Number(r.tokens) || 0), 0)) + Object.values(comp).reduce((a, r) => a + (Number(r.tokens) || 0), 0)
+        + Object.values(ctrls).reduce((a, r) => a + (Number(r && r.tokens) || 0), 0),
       instrucciones_modelo: !!(c.instrucciones && c.instrucciones.prompt_sistema),
       cargado_web: c.kit.fecha || null, cargado_web_archivo: c.kit.origen || null,
       pdf_guardados: Object.values(web.archivos).filter(a => a.pdf).length,
@@ -899,8 +923,13 @@
     resumen.inventario = { cargado: false };
     if (c.inventario) resumen.inventario = B.resumenInventario(c.inventario.filas || [], parcelasDe(cat), todos, { archivo: c.inventario.archivo || null, cargado_en: c.inventario.cargado_en || null });
     resumen.planilla = sia ? sia.resumen : { cargada: false };
+    const hechos = todos.filter(r => r.control_ia && !r.repetido_de);
+    resumen.control_ia = { controladas: hechos.length, coinciden: hechos.filter(r => r.control_ia.coincide).length,
+      con_diferencias: hechos.filter(r => !r.control_ia.coincide).length,
+      // De las que difieren, las que todavía nadie eligió en su ficha cuál lectura vale.
+      falta_elegir: hechos.filter(r => !r.control_ia.coincide && !(r.derivado && r.derivado.revision && r.derivado.revision.revisado)).length };
     resumen.aviso_datos = c.aviso || null;
-    VISTA = { todos, archivos: web.archivos, cruce, planilla: sia };
+    VISTA = { todos, archivos: web.archivos, cruce, planilla: sia, controles: ctrls };
     const clave = s.claveApi || '';
     const fijado = c.criterio && c.criterio.en ? { en: c.criterio.en, por: c.criterio.por || null } : null;
     return { config: Object.assign({}, cfg, { key: clave ? '••••' + clave.slice(-4) : '', modelo: modeloElegido(), fijado }), resumen, registros: conPlanilla.filter(r => r.derivado) };
@@ -971,7 +1000,8 @@
   function pendienteNuevo() { return { registros: [], archivos: {}, pdfs: [], bytes: 0, resoluciones: 0, fallo: null }; }
   let PEND = pendienteNuevo();
   const hayPendientePDF = () => PEND.pdfs.length > 0 || Object.keys(PEND.archivos).length > 0;
-  const hayPendiente = () => hayPendientePDF() || Object.keys(PEND_MODELO.registros).length > 0 || PEND_MODELO.tokens > 0;
+  const hayPendiente = () => hayPendientePDF() || Object.keys(PEND_MODELO.registros).length > 0 || PEND_MODELO.tokens > 0
+    || Object.keys(PEND_CONTROL.registros).length > 0 || PEND_CONTROL.tokens > 0;
   const cuantosPendientes = () => Object.keys(PEND.archivos).length;
   /** Lo que estaba esperando, delante de lo que llegó después (si un guardado falló y hay que reintentar). */
   function juntarPendientes(a, b) {
@@ -987,6 +1017,7 @@
     if (n) { try { sessionStorage.setItem('pierri_pendientes', String(n)); } catch (e) { /* sin almacenamiento */ } }
     PEND = pendienteNuevo();
     PEND_MODELO = { registros: {}, tokens: 0, noLeidas: 0 };
+    PEND_CONTROL = { registros: {}, tokens: 0, noLeidas: 0 };
     PEND_CATASTRO = {};
   }
   // Si Catastro no contestó, por diez minutos no se lo vuelve a esperar en cada tanda; después se prueba de nuevo.
@@ -1081,6 +1112,10 @@
       if (Object.keys(PEND_MODELO.registros).length || PEND_MODELO.tokens) {
         const p = PEND_MODELO;
         await ocupado(() => guardarModelo(s, p.registros, p.tokens, modeloElegido(), p.noLeidas || 0, p.id));
+      }
+      if (Object.keys(PEND_CONTROL.registros).length || PEND_CONTROL.tokens) {
+        const p = PEND_CONTROL;
+        await ocupado(() => guardarControles(s, p.registros, p.tokens, p.modelo || modeloElegido(), p.noLeidas || 0, p.id));
       }
       return r;
     });
@@ -1345,6 +1380,135 @@
       progreso('');
   }
 
+  // ───────────── Controlar con IA (solo con el botón) ─────────────
+  // La IA vuelve a leer una resolución ya leída por texto y se comparan las dos lecturas campo por campo, como la doble
+  // lectura del kit (procesar_lote.js). Si coinciden en lo que decide el resultado, queda controlada con IA; si no, queda
+  // con dudas, con las dos lecturas, para que alguien elija en la ficha. Se guarda cifrado en datos/controles.enc:
+  // { [hash]: { en, por, modelo, tokens, coincide, diferencias, texto, ia }, _guardados, _sin_lectura }.
+  const DECISIVOS = ['posee_desde', 'cuenta', 'expediente', 'clasificacion'];
+  const decisivas = ci => (ci.diferencias || []).filter(x => DECISIVOS.includes(x.campo));
+  /** Lo que se guarda de cada lectura para mostrar las dos en la ficha. */
+  function resumenLectura(d) {
+    const g = d.geo || {};
+    return { expediente: d.expediente || null, posee_desde: d.posee_desde || null, precision: d.posee_desde_precision || null, criterio: d.posesion_criterio || null,
+      cuenta: g.cuenta_normalizada || null, tipo_documento: d.tipo_documento || null, clasificacion: window.PierriCore.clasificar(d),
+      rogante: d.rogante_principal || null, dni: d.dni_principal || null, matriculas: (d.matriculas || []).slice(0, 6) };
+  }
+  /** ¿La lectura por texto cambió desde que se controló (se volvió a cargar distinta)? Entonces el control ya no vale. */
+  function controlViejo(ci, d) {
+    const t = ci.texto || {}, dig = x => String(x || '').replace(/\D/g, '');
+    return (t.expediente || '') !== (d.expediente || '') || String(t.posee_desde || '').slice(0, 7) !== String(d.posee_desde || '').slice(0, 7)
+      || dig(t.cuenta) !== dig(d.geo && d.geo.cuenta_normalizada);
+  }
+  /**
+   * Las que se pueden controlar con IA: leídas por texto, válidas, que ordenan algo y tienen fecha, sin un control a mano
+   * (ni "con dudas" de una persona) y sin un control con IA guardado. Para no pagar dos veces lo mismo.
+   */
+  function controlables() {
+    // Sobre lo último que se calculó (VISTA), que guarda también los controles con que se calculó: la memoria (CACHE) se
+    // vacía, por ejemplo, al crear un usuario, y el Tablero pregunta cuántas hay sin volver a traer todo.
+    if (!VISTA) return [];
+    const P = window.PierriCore, hechos = VISTA.controles || {};
+    // Un control guardado vale mientras la lectura por texto siga siendo la misma (si cambió, se puede volver a controlar).
+    return VISTA.todos.filter(r => r.derivado && !r.error && !r.repetido_de && r.fuente === 'texto' && !r.control_ia && !r.derivado.revision
+      && !(hechos[r.hash] && hechos[r.hash].ia && !controlViejo(hechos[r.hash], r.derivado))
+      && !['NO_APLICA', 'SIN_DATO', 'REVISAR'].includes(P.clasificar(r.derivado)));
+  }
+  // Las que la IA no pudo leer por algo de ese documento no se vuelven a pagar en cada vuelta (como FALLIDAS_MODELO).
+  const FALLIDAS_CONTROL = new Map();
+  const controlSalteada = h => (FALLIDAS_CONTROL.get(h) || 0) > Date.now();
+  // Lo controlado (y lo cobrado sin datos) que GitHub no guardó: se guarda en la vuelta siguiente, sin volver a pagarlo.
+  let PEND_CONTROL = { registros: {}, tokens: 0, noLeidas: 0 };
+  /** Para el Tablero, antes de preguntar: cuántas hay para controlar y cuántas ya se pagaron y esperan guardarse. */
+  function paraControlar() {
+    const lista = controlables(), conPdf = lista.filter(r => r.pdf_web), sinGuardar = Object.keys(PEND_CONTROL.registros).length;
+    const salteadas = conPdf.filter(r => controlSalteada(r.hash)).length;
+    return { con_pdf: conPdf.length - salteadas - conPdf.filter(r => PEND_CONTROL.registros[r.hash]).length, sin_pdf: lista.length - conPdf.length,
+      salteadas, sin_guardar: sinGuardar, tokens_sin_guardar: PEND_CONTROL.tokens };
+  }
+  /** "Controlar con IA": hasta LOTE_MODELO por vez, en la cola con las cargas. */
+  function controlar() {
+    const s = exigir('cargar'); exigirToken();
+    return enCola(() => ocupado(() => controlarAhora(s)));
+  }
+  async function controlarAhora(s) {
+    if (!s.claveApi) return { controladas: 0, motivo: 'sin clave' };
+    await datos();
+    const T = window.PierriTomos, P = window.PierriCore;
+    if (!CACHE.instrucciones || !CACHE.instrucciones.prompt_sistema) throw new Error('Faltan las instrucciones de la IA: cargalas una vez en Configuración.');
+    // Primero lo que ya se pagó y GitHub no guardó; si GitHub sigue fallando, no se lee (ni se cobra) nada nuevo.
+    const antes = PEND_CONTROL, previas = Object.values(antes.registros);
+    if (previas.length || antes.tokens) { await guardarControles(s, antes.registros, antes.tokens, antes.modelo || modeloElegido(), antes.noLeidas || 0, antes.id); await datos(); }
+    const c = CACHE, lista = controlables(), conPdf = lista.filter(r => r.pdf_web);
+    const porProbar = conPdf.filter(r => !controlSalteada(r.hash));
+    const lote = porProbar.slice(0, LOTE_MODELO), ix = indices(c), modelo = modeloElegido(), cfg = cfgDe(c);
+    const nuevas = {}, fallas = [];
+    let n = 0, tokens = 0, noLeidas = 0, corte = null;
+    for (let i = 0; i < lote.length; i++) {
+      const r = lote[i];
+      progreso(`Controlando con IA ${i + 1} de ${lote.length}: ${r.derivado.expediente || r.archivo}…`);
+      try {
+        let bytes;
+        try { bytes = await traerPDF(ix.archivos[r.pdf_web]); if (r.tomo) bytes = await recortarPaginas(bytes, r.tomo.desde, r.tomo.hasta); }
+        catch (e) { if (!e.red && !/GitHub no devolvió el PDF \(respuesta 5/.test(String(e.message))) e.documento = true; throw e; }
+        const leido = await leerConModelo(bytes, s.claveApi, modelo, c.instrucciones);
+        const dIA = P.procesarRegistro(leido.extraido, cfg, tabla(), new Set(), { nombreArchivo: T.nombreControlDe(r) });
+        const cmp = P.compararLecturas(r.derivado, dIA);
+        const ci = { en: ahora(), por: s.usuario, modelo, tokens: leido.tokens, diferencias: cmp.diferencias, texto: resumenLectura(r.derivado), ia: resumenLectura(dIA) };
+        ci.coincide = decisivas(ci).length === 0;
+        nuevas[r.hash] = limpiar(ci); n++; tokens += leido.tokens;
+      } catch (err) {
+        const m = T.motivoModelo(err), deDocumento = m.documento || (err && err.documento);
+        fallas.push(deDocumento && !m.documento ? 'no se pudo abrir el PDF guardado de esa resolución' : m.texto);
+        tokens += Number(err && err.tokens) || 0;
+        // Un problema de la cuenta o de la conexión corta y dice por qué; uno de este documento lo saltea y sigue.
+        if (!deDocumento) { corte = m.texto; break; }
+        FALLIDAS_CONTROL.set(r.hash, /GitHub no devolvió el PDF/.test(String(err.message)) ? Date.now() + 5 * 60000 : Infinity); noLeidas++;
+      }
+    }
+    const motivos = [...new Set(fallas)];
+    if (n || tokens) {
+      try { await guardarControles(s, nuevas, tokens, modelo, noLeidas); }
+      catch (e) { if (noLeidas) e.message += ` Además, ${noLeidas === 1 ? 'una no se pudo leer' : noLeidas + ' no se pudieron leer'}: ${motivos.join('; ')}.`; throw e; }
+    }
+    progreso('');
+    const hechas = previas.concat(Object.values(nuevas));
+    return { controladas: hechas.length, coinciden: hechas.filter(x => x.coincide).length, con_diferencias: hechas.filter(x => !x.coincide).length,
+      no_leidas: noLeidas, por_probar: corte ? 0 : porProbar.length - lote.length, sin_pdf: lista.length - conPdf.length,
+      tokens: (antes.tokens || 0) + tokens, corte, fallas: motivos.slice(0, 4) };
+  }
+  /**
+   * Guarda lo controlado con IA (y lo cobrado sin datos). Si GitHub no lo guarda, queda en PEND_CONTROL: lo guarda la
+   * vuelta siguiente, "Guardar lo pendiente" o el cierre de sesión, sin volver a pagarlo. Cada guardado lleva una marca
+   * (_guardados): si GitHub lo aplicó pero contestó con error, el reintento lo reconoce y no suma dos veces.
+   */
+  async function guardarControles(s, nuevas, tokens, modelo, noLeidas, idPrevio) {
+    const id = idPrevio || (Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+    const lista = Object.values(nuevas), n = lista.length, iguales = lista.filter(x => x.coincide).length;
+    progreso('Guardando lo controlado con IA…');
+    let escrito = null;
+    await transaccion(async estado => {
+      const ab = await abrirEstado(estado, s);
+      const previo = (await abrirJSON(ab.dek, await estado.leer(RUTAS.controles))) || {};
+      if ((previo._guardados || []).includes(id)) { escrito = { dek: ab.dek, controles: previo }; throw Object.assign(new Error('ya guardado'), { yaGuardado: true }); }
+      const ctl = Object.assign(previo, nuevas);
+      ctl._guardados = (previo._guardados || []).concat(id).slice(-50);
+      const sinDatos = tokens - lista.reduce((a, r) => a + (Number(r.tokens) || 0), 0);
+      if (sinDatos > 0) ctl._sin_lectura = { tokens: ((ctl._sin_lectura && ctl._sin_lectura.tokens) || 0) + sinDatos };
+      escrito = { dek: ab.dek, controles: ctl };
+      anotar(ab.boveda, s, 'control_con_ia', `${n} ${n === 1 ? 'resolución' : 'resoluciones'} (${iguales} ${iguales === 1 ? 'coincide' : 'coinciden'}, ${n - iguales} con diferencias)${noLeidas ? `, ${noLeidas} que no pudo leer` : ''}, ${tokens} tokens (${modelo})`);
+      return { [RUTAS.controles]: await sellarDatos(ab.dek, ctl), [RUTAS.admin]: await sellarBovedaDe(ab, s) };
+    }, 'Actualización del relevamiento').catch(e => {
+      if (e && e.yaGuardado) return;
+      PEND_CONTROL = { registros: nuevas, tokens, noLeidas, id, modelo };
+      progreso('');
+      throw new Error(`GitHub no guardó lo controlado con IA (${e.message}). Quedó en esta pestaña: tocá de nuevo "Controlar con IA" y se guarda sin volver a cobrarlo.`);
+    });
+    PEND_CONTROL = { registros: {}, tokens: 0, noLeidas: 0 };
+    alGuardar(s, escrito.dek, { controles: limpiar(escrito.controles) });
+    progreso('');
+  }
+
   // ───────────── Ver un PDF guardado ─────────────
   async function verPDF(h) {
     const s = exigir('ver');
@@ -1361,23 +1525,27 @@
     const fecha = String(c.posee_desde || '').trim();
     if (fecha && (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || isNaN(Date.parse(fecha)))) throw new Error('La fecha corregida debe ser una fecha válida (día, mes y año).');
     const tipo = TIPOS.includes(String(c.tipo_documento)) ? String(c.tipo_documento) : null;
-    const rev = limpiar({ revisado: !!c.revisado, revisor: String(c.revisor || '').trim().slice(0, 80) || null, nota: String(c.nota || '').trim().slice(0, 500) || null,
-      posee_desde: fecha || null, tipo_documento: tipo, en: ahora() });
-    const d0 = await datos();
-    const reg = d0.registros.find(r => r.hash === id);
+    // Firma quien ingresó: no se escribe a mano. "Con dudas" queda sin controlar, con la observación.
+    // Después de "Controlar con IA", si las lecturas difieren: cuál vale (la del texto o la de la IA), elegida mirando el PDF.
+    const vale = c.revisado && (c.vale === 'texto' || c.vale === 'ia') ? c.vale : null;
+    const rev = limpiar({ revisado: !!c.revisado, dudas: !c.revisado && !!c.dudas || null, revisor: String(s.nombre || s.usuario || '').trim().slice(0, 80) || null,
+      nota: String(c.nota || '').trim().slice(0, 500) || null, posee_desde: fecha || null, tipo_documento: tipo, vale, en: ahora() });
+    // La resolución se busca en lo último que se calculó (VISTA): volver a calcular todo solo para encontrarla trababa la
+    // página. El Tablero vuelve a traer los datos después de guardar, y ahí se calcula una sola vez.
+    if (!VISTA) await datos();
+    const reg = VISTA.todos.find(r => r.hash === id && r.derivado);
     if (!reg) throw new Error('No encuentro esa resolución.');
     let escrito = null;
     await ocupado(() => transaccion(async estado => {
       const ab = await abrirEstado(estado, s);
       const revs = (await abrirJSON(ab.dek, await estado.leer(RUTAS.revisiones))) || {};
       revs[id] = rev;
-      anotar(ab.boveda, s, 'revision', [reg.derivado.expediente || reg.archivo, rev.revisado ? 'controlada a mano' : 'sin controlar', rev.posee_desde ? 'posesión desde ' + rev.posee_desde.split('-').reverse().join('/') : '', rev.tipo_documento ? 'tipo corregido: ' + rev.tipo_documento : ''].filter(Boolean).join(' · '));
+      anotar(ab.boveda, s, 'revision', [reg.derivado.expediente || reg.archivo, rev.vale === 'ia' ? 'vale la lectura de la IA' : rev.vale === 'texto' ? 'vale la lectura por texto' : rev.revisado ? 'controlada a mano' : rev.dudas ? 'con dudas' : 'sin controlar', rev.posee_desde ? 'posesión desde ' + rev.posee_desde.split('-').reverse().join('/') : '', rev.tipo_documento ? 'tipo corregido: ' + rev.tipo_documento : ''].filter(Boolean).join(' · '));
       escrito = { dek: ab.dek, revisiones: limpiar(revs) };
       return { [RUTAS.revisiones]: await sellarDatos(ab.dek, revs), [RUTAS.admin]: await sellarBovedaDe(ab, s) };
     }, 'Actualización del relevamiento'));
     alGuardar(s, escrito.dek, { revisiones: escrito.revisiones });
-    const r1 = (await datos()).registros.find(r => r.hash === id);
-    return { ok: true, revision: rev, clasificacion: r1 ? window.PierriCore.clasificar(r1.derivado) : null };
+    return { ok: true, revision: rev, clasificacion: null };   // la clasificación nueva la trae el próximo /api/datos
   }
 
   // ───────────── Padrón, inventario y Catastro ─────────────
@@ -1637,6 +1805,7 @@
       case '/api/web/pdf': return verPDF(url.searchParams.get('h'));
       case '/api/web/instrucciones': return cargarInstrucciones(o.body);
       case '/api/completar': return completar();
+      case '/api/web/controlar': return controlar();
       case '/api/web/token': return token(metodo, cuerpoJSON());
       default:
         throw new Error('Esto todavía no está en la versión web.');
@@ -1644,5 +1813,6 @@
   }
 
   window.PIERRI_WEB = { api, repo: REPO, version: 3, pdfjs, ocupado: () => OCUPADO > 0, pendientes: hayPendiente, cuantosPendientes, catastroCaido,
-    modeloSalteada: salteada, modeloSinGuardar: () => ({ resoluciones: Object.keys(PEND_MODELO.registros).length, tokens: PEND_MODELO.tokens }) };
+    modeloSalteada: salteada, modeloSinGuardar: () => ({ resoluciones: Object.keys(PEND_MODELO.registros).length, tokens: PEND_MODELO.tokens }),
+    paraControlar };
 })();

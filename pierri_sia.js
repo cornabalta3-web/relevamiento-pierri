@@ -139,9 +139,19 @@
         superficie: f.superficie || null, tipo_lugar: f.tipo_lugar || null, con_resolucion: !!(fRes || f.resolucion_numero) } };
   }
 
+  const MUESTRA_CADA = 200;
+  function enMuestra(expediente) {
+    const e = canonExpediente(expediente); if (!e) return false;
+    let h = 0x811c9dc5;   // FNV-1a: por cada carácter, h = (h xor carácter) × el primo de FNV (2^24 + 2^8 + 0x93)
+    for (let i = 0; i < e.length; i++) { h ^= e.charCodeAt(i); h = (h + (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24)) >>> 0; }
+    return h % MUESTRA_CADA === 0;
+  }
+
   function compararConLeidas(registros, porExp, cfg, tabla) {
-    const out = { comparadas: 0, coinciden: 0, sin_comparar: 0, diferencia_mediana_anios: null, hasta_un_anio: 0 };
-    const difs = [];
+    const out = { comparadas: 0, coinciden: 0, sin_comparar: 0, diferencia_mediana_anios: null, hasta_un_anio: 0,
+      muestra: { expedientes: 0, leidas: 0, comparadas: 0, coinciden: 0 } };
+    const difs = [], M = out.muestra;
+    for (const e of porExp.keys()) if (enMuestra(e)) M.expedientes++;
     for (const r of registros || []) {
       if (!r.derivado || r.repetido_de || r.error || r.fuente === 'planilla' || !r.derivado.tipo_documento) continue;
       const c1 = P.clasificar(r.derivado); if (c1 === 'NO_APLICA') continue;
@@ -149,9 +159,12 @@
       const e = registroDePlanilla(f, cfg, tabla).derivado, c2 = P.clasificar(e);
       const evaluables = !/^(SIN_DATO|REVISAR)$/.test(c1) && c2 !== 'SIN_DATO';
       const coincide = evaluables ? c1.startsWith('ELEGIBLE') === c2.startsWith('ELEGIBLE') : null;
-      r.planilla_estimaba = { posee_desde: e.posee_desde, clasificacion: c2, coincide, fecha_ingreso: f.fecha_ingreso, antiguedad: numero(f.antiguedad) };
+      const m = enMuestra(f.expediente);
+      r.planilla_estimaba = { posee_desde: e.posee_desde, clasificacion: c2, coincide, fecha_ingreso: f.fecha_ingreso, antiguedad: numero(f.antiguedad), en_muestra: m };
+      if (m) M.leidas++;
       if (!evaluables) { out.sin_comparar++; continue; }
       out.comparadas++; if (coincide) out.coinciden++;
+      if (m) { M.comparadas++; if (coincide) M.coinciden++; }
       const d = Math.abs(Number(String(r.derivado.posee_desde).slice(0, 4)) - Number(String(e.posee_desde).slice(0, 4)));
       if (Number.isFinite(d)) { difs.push(d); if (d <= 1) out.hasta_un_anio++; }
     }
@@ -170,5 +183,5 @@
     }
   }
 
-  return { TIPO, canonExpediente, CAMPOS, filasSIA, registroDePlanilla, compararConLeidas, controlarCruce };
+  return { TIPO, canonExpediente, CAMPOS, filasSIA, registroDePlanilla, compararConLeidas, controlarCruce, enMuestra, MUESTRA_CADA };
 });
