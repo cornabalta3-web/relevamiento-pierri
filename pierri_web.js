@@ -28,6 +28,8 @@
  *                      consultadas en Catastro. Todo lo que sale de cruzarlos se calcula al mirar, no se guarda.
  *   sia.enc            la planilla de trámites de la UEST (SIA), solo las columnas que sirven (pierri_sia.js): con ella
  *                      se estima la posesión de los expedientes que todavía no tienen su resolución leída.
+ *   criterio.enc       el criterio de antigüedad (regla, fecha de corte, margen del borde). Lo fija el administrador y vale
+ *                      para todos; manda sobre el que traiga el JSON del kit.
  *   Todos los .enc van comprimidos y cifrados con la DEK.
  *
  * Rama "pdf" (no se publica en la página): los PDF originales, cifrados uno por uno con una llave propia y
@@ -60,7 +62,7 @@
   const PERMISOS = { ver: ['veedor', 'editor', 'admin'], revisar: ['admin'], cargar: ['admin'], administrar: ['admin'] };
   const RUTAS = { usuarios: 'datos/usuarios.json', datos: 'datos/relevamiento.enc', admin: 'datos/admin.enc', indice: 'datos/indice.json',
     revisiones: 'datos/revisiones.enc', padron: 'datos/padron.enc', inventario: 'datos/inventario.enc', catastro: 'datos/catastro.enc',
-    instrucciones: 'datos/modelo.enc', completadas: 'datos/completadas.enc', sia: 'datos/sia.enc' };
+    instrucciones: 'datos/modelo.enc', completadas: 'datos/completadas.enc', sia: 'datos/sia.enc', criterio: 'datos/criterio.enc' };
   const CLAVE_TOKEN = 'pierri_web_token';
   // La clave de API de Anthropic, como el token: solo en esta computadora y cifrada con la contraseña del administrador.
   const CLAVE_API = 'pierri_web_clave_api', CLAVE_MODELO = 'pierri_web_modelo';
@@ -170,8 +172,19 @@
   }
 
   // ───────────── Repositorio ─────────────
-  function errorGitHub(status, j) {
-    if (/rate limit/i.test(String((j && j.message) || ''))) return 'GitHub frenó los pedidos por un rato (límite de uso). Esperá unos minutos y volvé a intentar: lo ya guardado no se pierde.';
+  /** Hasta qué hora frenó GitHub los pedidos ("14:33"), según lo que avisa en la respuesta; null si no lo dice. */
+  function hastaCuando(h) {
+    if (!h || typeof h.get !== 'function') return null;
+    const ra = Number(h.get('retry-after')), reset = Number(h.get('x-ratelimit-reset'));
+    const t = ra > 0 ? Date.now() + ra * 1000 : reset > 0 ? reset * 1000 : null;
+    return t ? new Date(t + 59999).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) : null;   // redondeado al minuto siguiente
+  }
+  function errorGitHub(status, j, h) {
+    if (status === 429 || /rate limit/i.test(String((j && j.message) || ''))) {
+      const hora = hastaCuando(h);
+      return hora ? `GitHub frenó los pedidos hasta las ${hora} (límite de uso). Probá después de esa hora: lo ya guardado no se pierde.`
+        : 'GitHub frenó los pedidos por un rato (límite de uso). Esperá unos minutos y volvé a intentar: lo ya guardado no se pierde.';
+    }
     if (status === 401) return 'GitHub no acepta el token: está vencido, revocado o mal copiado. Cargá uno nuevo en Configuración.';
     if (status === 403) return 'El token no tiene permiso de escritura sobre este repositorio (Contents: Read and write).';
     if (status === 404) return 'GitHub no encuentra el repositorio con ese token: revisá que el token incluya este repositorio.';
@@ -226,7 +239,7 @@
         await dormir(espera); progreso(PROGRESO, true); continue;
       }
       if (metodo !== 'PATCH' && await esperar5xx(r, fallas5xx)) { fallas5xx++; continue; }
-      const e = new Error(errorGitHub(r.status, j)); e.status = r.status; throw e;
+      const e = new Error(errorGitHub(r.status, j, r.headers)); e.status = r.status; throw e;
     }
   }
   /** Lee un archivo en un commit dado por la API (lo último de verdad). Devuelve null si no existe. */
@@ -238,7 +251,7 @@
       if (!(await esperar5xx(r, fallas))) break;
     }
     if (r.status === 404) return null;
-    if (!r.ok) throw new Error(errorGitHub(r.status, await r.json().catch(() => ({}))));
+    if (!r.ok) throw new Error(errorGitHub(r.status, await r.json().catch(() => ({})), r.headers));
     return r.text();
   }
   /** Lee un archivo de la página publicada. Lo nuevo puede tardar unos minutos en aparecer. */
@@ -269,7 +282,7 @@
       const c = await gh(token, 'POST', '/git/commits', { message: mensaje, tree: t.sha, parents: [head] });
       try { if (await avanzarRama(token, REPO.rama, head, c.sha)) return estado; }
       catch (e) {
-        if (e.red) throw new Error('Se cortó la conexión justo al guardar: no se sabe si quedó guardado. Volvé a ingresar y fijate antes de repetirlo.');
+        if (e.red) throw new Error('Se cortó la conexión justo al guardar y no se sabe si quedó. Volvé a intentar: guardar dos veces lo mismo no duplica nada.');
         throw e;
       }
     }
@@ -377,8 +390,13 @@
     return s;
   }
   function exigirToken() { if (!tokenGuardado()) throw new Error('Falta el permiso de GitHub para guardar: cargalo en Configuración.'); }
-  function cortarSesion(texto) {
+  /**
+   * Corta la sesión y recarga la página a los 2,5 segundos. El motivo queda anotado para la pantalla de ingreso: sin él,
+   * la persona ve la página recargada sin saber por qué.
+   */
+  function cortarSesion(texto, motivo) {
     guardarSesion(null); CACHE = null; perderPendiente();
+    try { sessionStorage.setItem('pierri_motivo', motivo || texto); } catch (e) { /* sin almacenamiento */ }
     setTimeout(() => location.reload(), 2500);
     return new Error(texto);
   }
@@ -393,7 +411,7 @@
     for (const e of lista.usuarios) {
       try { const c = JSON.parse(td.decode(await abrirCon(priv, e.dek)).trim()); if (c.u === s.usuario) { carga = c; break; } } catch (err) { /* no es la suya */ }
     }
-    if (!carga) throw cortarSesion('Tu contraseña cambió en otra sesión. Volvé a ingresar.');
+    if (!carga) throw cortarSesion('Tu contraseña cambió en otra sesión. Volvé a ingresar.', 'La página se recargó sola porque tu contraseña cambió en otra sesión (o te la cambió el administrador). Volvé a ingresar con la contraseña nueva.');
     const ak = await abrirCon(priv, adm.ak);
     const plano = await descifrar(ak, adm);   // desde la v3 va comprimida, como los demás
     const boveda = JSON.parse(adm.v >= 3 ? await descomprimir(plano) : td.decode(plano));
@@ -433,7 +451,7 @@
   }
   /** Todo lo que está cifrado con la DEK en un commit: lo que hay que volver a cifrar al cambiarla. */
   async function rutasCifradas(estado) {
-    return [RUTAS.datos, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro, RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia]
+    return [RUTAS.datos, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro, RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia, RUTAS.criterio]
       .concat(leerIndice(await estado.leer(RUTAS.indice)).lecturas);
   }
   function anotar(boveda, s, accion, detalle) {
@@ -489,9 +507,16 @@
   async function inicial(c) {
     const u = normUsuario(c.usuario); validarUsuario(u); validarClave(c.clave);
     const token = String(c.token || '').trim();
-    if (!token) throw new Error('Falta el token de GitHub.');
-    const repo = await gh(token, 'GET', '');
-    if (repo.permissions && repo.permissions.push === false) throw new Error('Con ese token no se puede escribir en este repositorio.');
+    if (!token) throw new Error('Falta el permiso de GitHub (token): pegalo en su campo.');
+    // Todavía no se puede entrar a Configuración: si el permiso no sirve, se corrige acá mismo.
+    let repo;
+    try { repo = await gh(token, 'GET', ''); }
+    catch (e) {
+      if (e.status === 401) throw new Error('GitHub no acepta ese permiso (token): está vencido, revocado o mal copiado. Pegalo de nuevo en el campo «Permiso de GitHub», acá arriba.');
+      if (e.status === 404) throw new Error('GitHub no encuentra el repositorio con ese permiso (token): revisá que lo incluya y pegalo de nuevo en el campo «Permiso de GitHub», acá arriba.');
+      throw e;
+    }
+    if (repo.permissions && repo.permissions.push === false) throw new Error('Con ese permiso (token) no se puede escribir en este repositorio: al crearlo, dale «Contents: Read and write».');
     let sesionNueva, kekAdmin;
     guardarSesion({ token });   // provisoria: solo para que la transacción tenga el token
     try {
@@ -581,7 +606,7 @@
         if (c.rol === 'admin') throw new Error('En la versión web hay un solo administrador.');
         const ll = await llavesPara(u, c.clave, sal);
         boveda.usuarios[u] = { nombre: String(c.nombre || u).trim(), rol: c.rol, pub: ll.pub, priv: ll.priv, activo: true, creado: t };
-        anotar(boveda, s, 'usuario_alta', `${u} (${c.rol})`);
+        anotar(boveda, s, 'usuario_alta', `${u} (${ROLES[c.rol]})`);
       } else {
         const info = boveda.usuarios[u];
         if (!info) throw new Error('Ese usuario no existe.');
@@ -589,7 +614,7 @@
           if (!ROLES[c.rol]) throw new Error('Perfil desconocido.');
           if (u === s.usuario || c.rol === 'admin') throw new Error('En la versión web hay un solo administrador: ese perfil no se cambia.');
           info.rol = c.rol; info.actualizado = t;
-          anotar(boveda, s, 'usuario_perfil', `${u} → ${c.rol}`);
+          anotar(boveda, s, 'usuario_perfil', `${u} → ${ROLES[c.rol]}`);
         } else if (c.accion === 'activo') {
           if (u === s.usuario) throw new Error('No podés desactivar tu propia cuenta.');
           if (c.activo) {
@@ -621,7 +646,7 @@
   }
 
   // ───────────── Lo guardado, en memoria ─────────────
-  let CACHE = null;   // lo descifrado de esta pestaña: { dek, kit, indice, lecturas, revisiones, padron, inventario, catastro, sia, … }
+  let CACHE = null;   // lo descifrado de esta pestaña: { dek, kit, indice, lecturas, revisiones, padron, inventario, catastro, sia, criterio, … }
   /** Lee y descifra todo lo guardado. El administrador lo lee por la API (lo último); los demás, de la página publicada. */
   async function cargarTodo(s) {
     const token = s.rol === 'admin' ? tokenGuardado() : '';
@@ -641,19 +666,19 @@
     const dek = desb64(s.dek);
     try {
       const [txtKit, txtIndice, ...extras] = await Promise.all([RUTAS.datos, RUTAS.indice, RUTAS.revisiones, RUTAS.padron, RUTAS.inventario, RUTAS.catastro,
-        RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia].map(leer));
+        RUTAS.instrucciones, RUTAS.completadas, RUTAS.sia, RUTAS.criterio].map(leer));
       const indice = leerIndice(txtIndice);
       const textos = await Promise.all(indice.lecturas.map(leer));
       const lecturas = {};
       for (let i = 0; i < textos.length; i++) if (textos[i]) lecturas[indice.lecturas[i]] = limpiar(await abrirJSON(dek, textos[i]));
-      const [revisiones, padron, inventario, catastro, instrucciones, completadas, sia] = await Promise.all(extras.map(t => abrirJSON(dek, t)));
+      const [revisiones, padron, inventario, catastro, instrucciones, completadas, sia, criterio] = await Promise.all(extras.map(t => abrirJSON(dek, t)));
       // Las instrucciones del modelo van al modelo tal cual (no se muestran): no se les cambia nada.
       return { dek: s.dek, kit: limpiar(await abrirDatosTexto(dek, txtKit)), indice, lecturas, revisiones: limpiar(revisiones), padron: limpiar(padron),
-        inventario: limpiar(inventario), catastro: limpiar(catastro), instrucciones, completadas: limpiar(completadas), sia: limpiar(sia), aviso };
+        inventario: limpiar(inventario), catastro: limpiar(catastro), instrucciones, completadas: limpiar(completadas), sia: limpiar(sia), criterio: limpiar(criterio), aviso };
     } catch (e) {
       if (e.name !== 'OperationError') throw e;
       // El administrador cambió la llave de los datos: hay que volver a ingresar para recibir la nueva.
-      throw cortarSesion('Los datos se volvieron a cifrar. Volvé a ingresar con tu usuario.');
+      throw cortarSesion('Los datos se volvieron a cifrar. Volvé a ingresar con tu usuario.', 'La página se recargó sola porque los datos se volvieron a cifrar (pasa cuando el administrador desactiva a alguien o cambia una contraseña). Volvé a ingresar con tu usuario: lo que ya estaba guardado no se perdió.');
     }
   }
   async function cacheDatos(s) {
@@ -673,7 +698,7 @@
       if (cambios.indice.lecturas.some(r => r !== cambios.ruta && !CACHE.lecturas[r])) { CACHE = null; return; }
       CACHE.indice = cambios.indice; CACHE.lecturas[cambios.ruta] = cambios.contenido;
     }
-    for (const k of ['kit', 'revisiones', 'padron', 'inventario', 'catastro', 'instrucciones', 'completadas', 'sia']) if (k in cambios) CACHE[k] = cambios[k];
+    for (const k of ['kit', 'revisiones', 'padron', 'inventario', 'catastro', 'instrucciones', 'completadas', 'sia', 'criterio']) if (k in cambios) CACHE[k] = cambios[k];
   }
   /** Lo leído en la web: los archivos (con dónde está cada PDF) y los registros, sin repetir. */
   function lecturasWeb(c) {
@@ -722,11 +747,32 @@
     return LOCALIDADES;
   }
   const tabla = () => window.TABLA_CODIGOS || null;
-  function cfgDe(c, s) {
-    const cfg = Object.assign({ regla: 'CORTE_FIJO', fechaCorte: FECHA_CORTE, margenBordeMeses: 12 }, (c && c.kit && c.kit.config) || {}, s.config || {});
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(cfg.fechaCorte)) || isNaN(Date.parse(cfg.fechaCorte))) cfg.fechaCorte = FECHA_CORTE;
+  /** El criterio de antigüedad: el que fijó el administrador para todos (criterio.enc); si no fijó ninguno, el del kit. */
+  function cfgDe(c) {
+    const fijo = (c && c.criterio) || null, cfg = Object.assign({ regla: 'CORTE_FIJO', fechaCorte: FECHA_CORTE, margenBordeMeses: 12 }, (c && c.kit && c.kit.config) || {});
+    if (fijo) for (const k of ['regla', 'fechaCorte', 'margenBordeMeses']) if (fijo[k] != null) cfg[k] = fijo[k];
+    if (cfg.regla !== 'PLAZO_MOVIL') cfg.regla = 'CORTE_FIJO';
+    if (!fechaValida(cfg.fechaCorte)) cfg.fechaCorte = FECHA_CORTE;
     cfg.margenBordeMeses = Math.max(0, Number(cfg.margenBordeMeses) || 0);
     return cfg;
+  }
+  const fechaValida = f => /^\d{4}-\d{2}-\d{2}$/.test(String(f)) && !isNaN(Date.parse(f));
+  /**
+   * Fijar el criterio para todos: solo el administrador, y se guarda cifrado (criterio.enc). Lo que no sirve (una fecha
+   * vacía o mal escrita, un margen que no es un número) deja el valor que había. Sin cambios, no se guarda nada.
+   */
+  async function fijarCriterio(c) {
+    const s = exigir('administrar');
+    const actual = cfgDe(await cacheDatos(s)), m = c.margenBordeMeses === '' || c.margenBordeMeses == null ? NaN : Number(c.margenBordeMeses);
+    const nuevo = { regla: c.regla === 'PLAZO_MOVIL' ? 'PLAZO_MOVIL' : c.regla === 'CORTE_FIJO' ? 'CORTE_FIJO' : actual.regla,
+      fechaCorte: fechaValida(String(c.fechaCorte || '').trim()) ? String(c.fechaCorte).trim() : actual.fechaCorte,
+      margenBordeMeses: Number.isFinite(m) && m >= 0 ? Math.min(36, Math.round(m)) : actual.margenBordeMeses };
+    if (nuevo.regla === actual.regla && nuevo.fechaCorte === actual.fechaCorte && nuevo.margenBordeMeses === actual.margenBordeMeses) return { ok: true, sin_cambios: true };
+    exigirToken();
+    const texto = (nuevo.regla === 'CORTE_FIJO' ? 'corte fijo: posesión anterior al ' + nuevo.fechaCorte.split('-').reverse().join('/') : 'plazo móvil de diez años')
+      + ` · borde ±${nuevo.margenBordeMeses} meses`;
+    await guardarUno(s, 'criterio', () => Object.assign({}, nuevo, { en: ahora(), por: s.usuario }), 'cambio_de_criterio', texto);
+    return { ok: true };
   }
 
   let VISTA = null;   // lo último que se calculó: los registros leídos, los archivos, el cruce con el Padrón y la planilla
@@ -750,17 +796,26 @@
     const P = window.PierriCore, SIA = window.PierriSIA;
     const filas = sia.filas || [], meta = { archivo: sia.archivo || null, cargado_en: sia.cargado_en || null };
     const porExp = new Map(filas.map(f => [f.expediente, f]));
-    const leidas = new Set();
+    const leidas = new Set(), aparte = new Map();
     for (const r of todos) {
-      // Un documento que no se pudo leer (sin tipo) no reemplaza a la estimación: no se sabe qué dice.
-      if (!r.derivado || r.repetido_de || r.error || !r.derivado.tipo_documento || P.clasificar(r.derivado) === 'NO_APLICA') continue;
-      const e = SIA.canonExpediente(r.derivado.expediente); if (e && porExp.has(e)) leidas.add(e);
+      if (!r.derivado || r.repetido_de || r.error) continue;
+      const e = SIA.canonExpediente(r.derivado.expediente), f = e && porExp.get(e); if (!f) continue;
+      // Lo que dice la planilla del trámite de una resolución leída, para su ficha ("Lo que se sabe de este expediente").
+      r.en_planilla = { fecha_ingreso: f.fecha_ingreso || null, antiguedad: f.antiguedad == null ? null : f.antiguedad, estado: f.estado || null, etapa: f.etapa || null };
+      // Manda la lectura si fija la posesión (con tipo, o sin tipo pero con fecha: si no, contaría dos veces), o si la
+      // resolución desestima o cancela: el trámite no prosperó. Una de trámite o una sin leer del todo no dicen la
+      // posesión: queda la estimación, que avisa que ese PDF ya está cargado, y la lectura no cuenta entre las evaluables.
+      const t = r.derivado.tipo_documento, k = P.clasificar(r.derivado);
+      if ((k !== 'NO_APLICA' && (t || k !== 'REVISAR')) || t === 'RESOLUCION_DESESTIMA' || t === 'RESOLUCION_CANCELA') leidas.add(e);
+      else { r.derivado.sigue_estimada = true; if (!aparte.has(e)) aparte.set(e, { hash: r.hash, tipo: t || null }); }
     }
+    for (const r of todos) if (r.derivado && r.derivado.sigue_estimada && leidas.has(SIA.canonExpediente(r.derivado.expediente))) delete r.derivado.sigue_estimada;
     const validacion = SIA.compararConLeidas(todos, porExp, cfg, T);
     const registros = [];
     for (const f of filas) {
       if (leidas.has(f.expediente)) continue;
       const r = SIA.registroDePlanilla(f, cfg, T, meta), g = r.derivado.geo, cta = g.cuenta_normalizada ? g.cuenta_normalizada.replace(/\D/g, '') : '';
+      if (aparte.has(f.expediente)) r.leida_aparte = aparte.get(f.expediente);
       if (cta && cat[cta]) P.enriquecerConCatastro(r.derivado, cat[cta].p || null, T);
       if (loc && g.lat == null) ubicarPorLocalidadRapido(r.derivado, loc);
       registros.push(r);
@@ -775,7 +830,7 @@
    */
   function vista(c, s, loc) {
     const P = window.PierriCore, B = window.PierriBase, T = tabla();
-    const cfg = cfgDe(c, s);
+    const cfg = cfgDe(c);
     const deKit = (c.kit.resultados || []).filter(Boolean);
     const enKit = new Set(deKit.map(r => r.hash));
     const web = lecturasWeb(c);
@@ -837,7 +892,7 @@
       // Los tokens del kit (de su resumen) más los gastados en la web al completar con el modelo.
       tokens: (Number(kr.tokens) || deKit.reduce((a, r) => a + (Number(r.tokens) || 0), 0)) + Object.values(comp).reduce((a, r) => a + (Number(r.tokens) || 0), 0),
       instrucciones_modelo: !!(c.instrucciones && c.instrucciones.prompt_sistema),
-      cargado_web: c.kit.fecha || null,
+      cargado_web: c.kit.fecha || null, cargado_web_archivo: c.kit.origen || null,
       pdf_guardados: Object.values(web.archivos).filter(a => a.pdf).length,
     });
     resumen.padron = c.padron ? { archivo: c.padron.archivo || null, cargado_en: c.padron.cargado_en || null, filas: (c.padron.filas || []).length } : {};
@@ -847,7 +902,8 @@
     resumen.aviso_datos = c.aviso || null;
     VISTA = { todos, archivos: web.archivos, cruce, planilla: sia };
     const clave = s.claveApi || '';
-    return { config: Object.assign({}, cfg, { key: clave ? '••••' + clave.slice(-4) : '', modelo: modeloElegido() }), resumen, registros: conPlanilla.filter(r => r.derivado) };
+    const fijado = c.criterio && c.criterio.en ? { en: c.criterio.en, por: c.criterio.por || null } : null;
+    return { config: Object.assign({}, cfg, { key: clave ? '••••' + clave.slice(-4) : '', modelo: modeloElegido(), fijado }), resumen, registros: conPlanilla.filter(r => r.derivado) };
   }
   async function datos() {
     const s = exigir('ver');
@@ -860,8 +916,8 @@
     const s = exigir('cargar');
     const texto = typeof cuerpo === 'string' ? cuerpo : await cuerpo.text();
     let d;
-    try { d = JSON.parse(texto.replace(/^﻿/, '')); } catch (e) { throw new Error('El archivo no es un JSON válido.'); }
-    if (!d || !Array.isArray(d.resultados)) throw new Error('Ese JSON no es el que baja "Guardar JSON" del kit: no tiene "resultados".');
+    try { d = JSON.parse(texto.replace(/^﻿/, '')); } catch (e) { throw new Error('el archivo está dañado o no es una copia de respaldo del relevamiento (.json).'); }
+    if (!d || !Array.isArray(d.resultados)) throw new Error('ese archivo no es una copia de respaldo del relevamiento: no trae resoluciones.');
     // Un JSON bajado de la web trae también las estimaciones de la planilla: no son lecturas y la planilla ya está guardada aparte.
     d.resultados = d.resultados.filter(r => !r || r.fuente !== 'planilla');
     const validas = d.resultados.filter(r => r && r.derivado && !r.repetido_de).length;
@@ -889,6 +945,13 @@
       PDFJS = lib;
     }
     return PDFJS;
+  }
+  /** Por qué pdf.js no pudo abrir un PDF, en castellano (contesta en inglés: "No password given", "Invalid PDF structure."). */
+  function motivoPDF(e) {
+    const m = String((e && e.message) || e || ''), n = String((e && e.name) || '');
+    if (n === 'PasswordException' || /password/i.test(m)) return 'El PDF tiene contraseña: pedí una copia sin clave.';
+    if (n === 'InvalidPDFException' || /Invalid PDF|PDF structure|bad XRef|Unexpected end/i.test(m)) return 'El PDF está dañado o incompleto (¿se cortó la descarga?): volvé a bajarlo.';
+    return 'No se pudo abrir el PDF: ' + m;
   }
   /** La capa de texto de cada página, igual que el kit. pdf.js se queda con el buffer: se le pasa una copia. */
   async function textoPorPagina(bytes) {
@@ -962,9 +1025,9 @@
     const T = window.PierriTomos, X = window.PierriTexto, P = window.PierriCore;
     let pags;
     try { pags = await textoPorPagina(bytes); }
-    catch (e) { return { estado: 'error', error: 'No se pudo abrir el PDF: ' + (e.message || e) }; }
+    catch (e) { return { estado: 'error', error: motivoPDF(e) }; }
     const a = T.unidadesDe(pags, nombre, h);
-    const cfg = cfgDe(c, s), vistos = new Set(), registros = [];
+    const cfg = cfgDe(c), vistos = new Set(), registros = [];
     for (const u of a.unidades) {
       const base = T.registroBase(u, h);
       try {
@@ -1071,7 +1134,7 @@
             archivos[RUTAS.catastro] = await sellarDatos(ab.dek, cat);
             escrito.catastro = cat;
           }
-          anotar(ab.boveda, s, 'carga_pdf', `${n} archivo(s), ${m} resolución(es)`);
+          anotar(ab.boveda, s, 'carga_pdf', `${n} ${n === 1 ? 'archivo' : 'archivos'}, ${m} ${m === 1 ? 'resolución' : 'resoluciones'}`);
           archivos[RUTAS.admin] = await sellarBovedaDe(ab, s);
           return archivos;
         }, 'Actualización del relevamiento');
@@ -1121,7 +1184,7 @@
   async function cargarInstrucciones(cuerpo) {
     const s = exigir('administrar'); exigirToken();
     let d;
-    try { d = JSON.parse((typeof cuerpo === 'string' ? cuerpo : await cuerpo.text()).replace(/^\ufeff/, '')); } catch (e) { throw new Error('El archivo no es un JSON válido.'); }
+    try { d = JSON.parse((typeof cuerpo === 'string' ? cuerpo : await cuerpo.text()).replace(/^\ufeff/, '')); } catch (e) { throw new Error('el archivo de instrucciones está dañado: no se puede leer.'); }
     if (!d || typeof d.prompt_sistema !== 'string' || d.prompt_sistema.length < 500 || typeof d.prompt_usuario !== 'string' || !d.prompt_usuario)
       throw new Error('Ese archivo no tiene las instrucciones de la IA (instrucciones_modelo.json).');
     const inst = { prompt_sistema: d.prompt_sistema, prompt_usuario: d.prompt_usuario, version: String(d.version || ''), cargado_en: ahora() };
@@ -1195,7 +1258,7 @@
     const conPdf = incompletas.filter(r => r.pdf_web);
     const nuevas = {};
     const porProbar = conPdf.filter(r => !salteada(r.hash) && !nuevas[r.hash]);
-    const lote = porProbar.slice(0, LOTE_MODELO), ix = indices(c), modelo = modeloElegido(), cfg = cfgDe(c, s);
+    const lote = porProbar.slice(0, LOTE_MODELO), ix = indices(c), modelo = modeloElegido(), cfg = cfgDe(c);
     // El registro tal como se guardó (sin lo que se calcula al mirar), del kit o de lo leído en la web.
     const original = new Map();
     for (const r of (c.kit.resultados || []).concat(lecturasWeb(c).registros)) if (r && !original.has(r.hash)) original.set(r.hash, r);
@@ -1266,7 +1329,7 @@
           const cat = sumarParcelas(await abrirJSON(ab.dek, await estado.leer(RUTAS.catastro)), parcelas);
           archivos[RUTAS.catastro] = await sellarDatos(ab.dek, cat); escrito.catastro = cat;
         }
-        anotar(ab.boveda, s, 'completar_con_modelo', `${n} resolución(es) leídas${noLeidas ? `, ${noLeidas} que no pudo leer` : ''}, ${tokens} tokens (${modelo})`);
+        anotar(ab.boveda, s, 'completar_con_modelo', `${n} ${n === 1 ? 'resolución leída' : 'resoluciones leídas'}${noLeidas ? `, ${noLeidas} que no pudo leer` : ''}, ${tokens} tokens (${modelo})`);
         archivos[RUTAS.admin] = await sellarBovedaDe(ab, s);
         return archivos;
       }, 'Actualización del relevamiento').catch(e => {
@@ -1308,7 +1371,7 @@
       const ab = await abrirEstado(estado, s);
       const revs = (await abrirJSON(ab.dek, await estado.leer(RUTAS.revisiones))) || {};
       revs[id] = rev;
-      anotar(ab.boveda, s, 'revision', [reg.derivado.expediente || reg.archivo, rev.revisado ? 'revisada' : 'sin tilde', rev.posee_desde ? 'fecha ' + rev.posee_desde : '', rev.tipo_documento || ''].filter(Boolean).join(' · '));
+      anotar(ab.boveda, s, 'revision', [reg.derivado.expediente || reg.archivo, rev.revisado ? 'controlada a mano' : 'sin controlar', rev.posee_desde ? 'posesión desde ' + rev.posee_desde.split('-').reverse().join('/') : '', rev.tipo_documento ? 'tipo corregido: ' + rev.tipo_documento : ''].filter(Boolean).join(' · '));
       escrito = { dek: ab.dek, revisiones: limpiar(revs) };
       return { [RUTAS.revisiones]: await sellarDatos(ab.dek, revs), [RUTAS.admin]: await sellarBovedaDe(ab, s) };
     }, 'Actualización del relevamiento'));
@@ -1330,11 +1393,11 @@
     return new Promise((ok, mal) => {
       const w = new Worker(LECTOR_PLANILLAS);
       const fin = (f, x) => { clearTimeout(t); w.terminate(); f(x); };
-      const t = setTimeout(() => fin(mal, new Error('la planilla tardó demasiado en leerse')), modo ? 300000 : 120000);
+      const t = setTimeout(() => fin(mal, new Error('tardó demasiado en leerse')), modo ? 300000 : 120000);
       w.onmessage = e => {
         const r = e.data || {};
         if (r.v !== VERSION_LECTOR) return fin(ok, { viejo: true, filas: modo ? [] : (r.filas || []) });
-        if (r.error) return fin(mal, new Error(r.error));
+        if (r.error) return fin(mal, new Error('el archivo no se pudo leer como planilla de Excel (' + r.error + ')'));
         fin(ok, r);
       };
       w.onerror = e => { e.preventDefault(); fin(mal, new Error(e.message || 'no se pudo leer (¿la computadora se quedó sin memoria?)')); };
@@ -1373,11 +1436,10 @@
     const s = exigir('cargar'); exigirToken();
     const nombre = limpiar(String(nombreCrudo || 'padron.xls')).slice(0, 200);
     let filasHoja;
-    try { filasHoja = (await leerConLector(cuerpo)).filas; }
-    catch (e) { throw new Error('no se pudo leer la planilla del Padrón: ' + (e.message || e)); }
-    if (!filasHoja.length) throw new Error('la planilla está vacía');
+    filasHoja = (await leerConLector(cuerpo)).filas;   // el Tablero ya antepone "No se pudo cargar el Padrón:"
+    if (!filasHoja.length) throw new Error('el archivo no tiene filas');
     const filas = window.PierriBase.filasPadron(filasHoja);
-    await guardarUno(s, 'padron', () => ({ archivo: nombre, cargado_en: ahora(), filas }), 'carga_padron', `${nombre}: ${filas.length} filas`);
+    await guardarUno(s, 'padron', () => ({ archivo: nombre, cargado_en: ahora(), filas }), 'carga_padron', `${nombre}: ${filas.length.toLocaleString('es-AR')} ${filas.length === 1 ? 'fila' : 'filas'}`);
     await datos();
     return { filas: filas.length, cruce: VISTA.cruce || { cruzados: 0, ambiguos: 0, no_figuran: 0, sin_nombre: 0 } };
   }
@@ -1388,7 +1450,7 @@
     await guardarUno(s, 'inventario', actual => {
       const a = actual || { archivo: '', filas: [] }, previo = a.archivo || '';
       return { archivo: previo && !previo.includes(nombre) ? previo + ' + ' + nombre : nombre, cargado_en: ahora(), filas: window.PierriBase.fusionarInventario(a.filas || [], nuevo) };
-    }, 'carga_inventario', `${nombre}: ${nuevo.filas.length} expedientes (${nuevo.formato})`);
+    }, 'carga_inventario', `${nombre}: ${nuevo.filas.length.toLocaleString('es-AR')} expedientes (${({ digitalizados: 'CSV de expedientes digitalizados', suac: 'CSV del SUAC' })[nuevo.formato] || nuevo.formato})`);
     const d = await datos();
     return { formato: nuevo.formato, origen: nuevo.origen, filas: nuevo.filas.length, descartadas: nuevo.descartadas, inventario: d.resumen.inventario };
   }
@@ -1437,7 +1499,14 @@
     const todas = [...new Set(d.registros.map(r => r.derivado.geo).filter(g => g && g.cuenta_normalizada && !(g.catastro && g.catastro.encontrada))
       .map(g => g.cuenta_normalizada.replace(/\D/g, '')).filter(x => x.length === 12 && !yaConsultada(x)))];
     const previas = Object.keys(PEND_CATASTRO).length;
-    if (!todas.length && !previas) return { ubicadas: 0, consultadas: 0, pendientes: 0 };
+    if (!todas.length && !previas) {
+      // Nada para consultar: se dice cuántas no encontró Catastro y desde cuándo se vuelve a probar la primera.
+      const sin = [...new Set(d.registros.map(r => r.derivado.geo).filter(g => g && g.cuenta_normalizada && !(g.catastro && g.catastro.encontrada))
+        .map(g => g.cuenta_normalizada.replace(/\D/g, '')).filter(x => consultadas[x] && !consultadas[x].p))];
+      const primera = sin.map(x => String(consultadas[x].en || '')).filter(Boolean).sort()[0];
+      return { ubicadas: 0, consultadas: 0, pendientes: 0, no_encontradas: sin.length,
+        reintento: primera && !isNaN(Date.parse(primera)) ? new Date(Date.parse(primera) + 30 * 86400000).toISOString() : null };
+    }
     // Cada tanda guarda una sola vez: hasta un minuto de consultas o las cuentas pedidas. Guardar muy seguido hace que
     // GitHub pida ir más despacio.
     const cuentas = todas.slice(0, Math.min(Number(maximo) || 20000, 20000)), hasta = Date.now() + 60000;
@@ -1478,12 +1547,12 @@
       try {
         const hojas = await leerConLector(cuerpo, 'matriz');
         const cuales = hojas.hojas && hojas.hojas.length > 1 ? ` (el archivo tiene las hojas ${hojas.hojas.map(h => '«' + h + '»').join(', ')}${hojas.hoja ? '; se leyó «' + hojas.hoja + '»' : ''})` : '';
-        if (!hojas.filas.length) throw new Error('la planilla está vacía' + cuales);
+        if (!hojas.filas.length) throw new Error('el archivo no tiene filas' + cuales);
         try { leida = window.PierriSIA.filasSIA(hojas.filas, { fecha1904: hojas.fecha1904 }); }
         catch (e) { throw new Error(String(e.message || e) + cuales); }
-        if (!leida.filas.length) throw new Error('la planilla no tiene ningún expediente con número válido');
+        if (!leida.filas.length) throw new Error('no tiene ningún expediente con número válido');
         progreso(`Guardando ${leida.filas.length.toLocaleString('es-AR')} expedientes cifrados…`);
-        await guardarUno(s, 'sia', () => ({ archivo: nombre, cargado_en: ahora(), filas: leida.filas }), 'carga_planilla_sia', `${nombre}: ${leida.filas.length} expedientes`);
+        await guardarUno(s, 'sia', () => ({ archivo: nombre, cargado_en: ahora(), filas: leida.filas }), 'carga_planilla_sia', `${nombre}: ${leida.filas.length.toLocaleString('es-AR')} expedientes`);
       } finally { progreso(''); }
     });
     const d = await datos();
@@ -1513,9 +1582,11 @@
     const s = exigir('administrar');
     if (metodo === 'DELETE') { await guardarToken(s, ''); return { ok: true, token: false }; }
     const t = String(c.token || '').trim();
-    if (!t) throw new Error('Pegá el token.');
-    const repo = await gh(t, 'GET', '');
-    if (repo.permissions && repo.permissions.push === false) throw new Error('Con ese token no se puede escribir en este repositorio.');
+    if (!t) throw new Error('Pegá el permiso de GitHub (token).');
+    let repo;
+    try { repo = await gh(t, 'GET', ''); }
+    catch (e) { if (e.status === 401) throw new Error('GitHub no acepta ese permiso (token): está vencido, revocado o mal copiado. Pegalo de nuevo en este campo.'); throw e; }
+    if (repo.permissions && repo.permissions.push === false) throw new Error('Con ese permiso (token) no se puede escribir en este repositorio: al crearlo, dale «Contents: Read and write».');
     await guardarToken(s, t);
     CACHE = null;
     return { ok: true, token: true };
@@ -1547,10 +1618,8 @@
       case '/api/datos': return datos();
       case '/api/web/recargar': exigir('ver'); CACHE = null; return datos();   // volver a traer lo guardado (lo que cargaron otros)
       case '/api/config': {
-        const s = exigir('ver'), c = cuerpoJSON();
-        if ('key' in c || 'modelo' in c) return configModelo(c);
-        s.config = { regla: c.regla === 'PLAZO_MOVIL' ? 'PLAZO_MOVIL' : 'CORTE_FIJO', fechaCorte: c.fechaCorte, margenBordeMeses: Number(c.margenBordeMeses) || 0 };
-        return { ok: true };
+        const c = cuerpoJSON();
+        return ('key' in c || 'modelo' in c) ? configModelo(c) : fijarCriterio(c);
       }
       case '/api/auditoria': return auditoria();
       case '/api/pdf': return recibirPDF(o.body, url.searchParams.get('nombre'));

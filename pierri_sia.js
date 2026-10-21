@@ -79,7 +79,7 @@
       const nombre = { expediente: 'número de expediente (NRO_EXP_SUAC)', fecha_ingreso: 'fecha de ingreso (FECHA_INGRESO)', antiguedad: 'antigüedad (ANTIGUEDAD)' };
       const faltan = OBLIGATORIOS.filter(k => !arriba.some(v => CAMPOS[k].includes(norm(v)))).map(k => nombre[k]);
       const parecidos = [...new Set(arriba.map(v => String(v).trim().slice(0, 40)).filter(v => /EXP|INGRESO|ANTIG/.test(norm(v))))].slice(0, 8);
-      throw new Error('no reconozco la planilla: en las primeras 20 filas no hay una fila con los títulos de número de expediente (NRO_EXP_SUAC), fecha de ingreso (FECHA_INGRESO) y antigüedad (ANTIGUEDAD), como en la planilla de trámites del SIA de la UEST'
+      throw new Error('en las primeras 20 filas no hay una fila con los títulos de número de expediente (NRO_EXP_SUAC), fecha de ingreso (FECHA_INGRESO) y antigüedad (ANTIGUEDAD), como en la planilla de trámites del SIA de la UEST'
         + (arriba.length ? `. No encontré: ${faltan.join(', ') || 'los tres en una misma fila'}` + (parecidos.length ? `. Títulos parecidos: ${parecidos.map(v => '«' + v + '»').join(', ')}` : '') : '. Las primeras 20 filas están vacías'));
     }
     const titulos = filas[cab].map(norm);
