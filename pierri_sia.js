@@ -116,6 +116,10 @@
     return { fecha: pos.fecha, precision: pos.precision, motivo, elegibilidad: P.evaluarElegibilidad(pos.fecha, cfg) };
   }
   const tipoInmueble = t => { const s = P.normalizarTexto(t); return /^RUR/.test(s) ? 'rural' : /^U/.test(s) ? 'urbano' : null; };
+  function tramiteCerrado(estado) {
+    const s = P.normalizarTexto(estado);
+    return /^ANULAD/.test(s) ? 'ANULADO' : /^ARCHIVAD/.test(s) ? 'ARCHIVADO' : null;
+  }
 
   function registroDePlanilla(f, cfg, tabla, meta) {
     const m = meta || {}, est = estimacion(f, cfg);
@@ -134,6 +138,8 @@
         localidad: f.localidad || null, calle: f.domicilio || null, tipo_inmueble: tipoInmueble(f.tipo_lugar) },
       senales: [], validaciones: [], revisar: false, motivos_revision: [], sin_estimar: est.motivo,
     };
+    const cerrado = tramiteCerrado(f.estado);
+    if (cerrado) derivado.tramite_cerrado = cerrado;
     return { hash: 'sia:' + f.expediente, archivo: m.archivo || null, cargado_en: m.cargado_en || null, fuente: 'planilla', extraido: null, derivado,
       planilla: { fecha_ingreso: f.fecha_ingreso, antiguedad: numero(f.antiguedad), estado: f.estado || null, etapa: f.etapa || null,
         superficie: f.superficie || null, tipo_lugar: f.tipo_lugar || null, con_resolucion: !!(fRes || f.resolucion_numero) } };
@@ -156,7 +162,8 @@
       if (!r.derivado || r.repetido_de || r.error || r.fuente === 'planilla' || !r.derivado.tipo_documento) continue;
       const c1 = P.clasificar(r.derivado); if (c1 === 'NO_APLICA') continue;
       const f = porExp.get(canonExpediente(r.derivado.expediente)); if (!f) continue;
-      const e = registroDePlanilla(f, cfg, tabla).derivado, c2 = P.clasificar(e);
+      const e = registroDePlanilla(f, cfg, tabla).derivado; delete e.tramite_cerrado;
+      const c2 = P.clasificar(e);
       const evaluables = !/^(SIN_DATO|REVISAR)$/.test(c1) && c2 !== 'SIN_DATO';
       const coincide = evaluables ? c1.startsWith('ELEGIBLE') === c2.startsWith('ELEGIBLE') : null;
       const m = enMuestra(f.expediente);
@@ -183,5 +190,5 @@
     }
   }
 
-  return { TIPO, canonExpediente, CAMPOS, filasSIA, registroDePlanilla, compararConLeidas, controlarCruce, enMuestra, MUESTRA_CADA };
+  return { TIPO, canonExpediente, CAMPOS, filasSIA, registroDePlanilla, tramiteCerrado, compararConLeidas, controlarCruce, enMuestra, MUESTRA_CADA };
 });
