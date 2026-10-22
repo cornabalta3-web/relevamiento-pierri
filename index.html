@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-GTwzojlIzwh2zPOtAn2Za4eGJnWRNRaCi3LZBc+ODbQ=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-vhnXXCEkujQ4SLZqo4Du0jH9O3k5yv8VCaZkERPOci8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://idecor-ws.mapascordoba.gob.ar https://api.anthropic.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CEGAUI8GgVBwU9CQgkSpUF4IyGwf8qlaC45aD46WToQ=' 'sha256-GTwzojlIzwh2zPOtAn2Za4eGJnWRNRaCi3LZBc+ODbQ=' 'sha256-Y+tq/ufUiwzrtpvX02Ihsfy+gdpTMOEIFGuJVHDpSIY=' 'sha256-zRy330b7cTEMJzh6KQjI2dvstNe2pg58ekp/i5Xn6t0=' 'sha256-LNXseN/hC5en95flRcssuS4Wp96IQ9TFowmXaEFTmmQ=' 'sha256-FqJ109/IcDgAParFrWcMPt06b+0Gu1KyMRZmmT0sUWc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://wms.ign.gob.ar https://server.arcgisonline.com https://idecor-ws.mapascordoba.gob.ar; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://idecor-ws.mapascordoba.gob.ar https://api.anthropic.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1659,7 +1659,7 @@ async function api(ruta, opciones){ if(WEB) return window.PIERRI_WEB.api(ruta, o
 async function cargarDesdeServidor(volverATraer, fresca){
   // En la web lo descifrado queda en la pestaña; "Volver a traer los datos" lo pide de nuevo (lo que cargaron otros).
   const d = await api(WEB && volverATraer === true ? '/api/web/recargar' : '/api/datos');
-  registros = (d.registros || []).filter(r => r && r.derivado && !r.repetido_de);
+  registros = unificarDepartamentos((d.registros || []).filter(r => r && r.derivado && !r.repetido_de));
   resumenSrv = d.resumen || {};
   if(resumenSrv.aviso_datos) avisar(resumenSrv.aviso_datos, true);
   const res = resumenSrv;
@@ -1858,7 +1858,7 @@ async function cargarArchivo(f){
       if(todo && todo.config && typeof todo.config === 'object') cfgCopia = todo.config; }
     catch(e){ lista = txt.split('\n').filter(l => l.trim()).map(l => { try{ return JSON.parse(l); }catch(e2){ return null; } }).filter(Boolean); }
     if(lista.length && lista[0] && lista[0].resultados) lista = lista[0].resultados;
-    registros = lista.filter(r => r && r.derivado && !r.repetido_de);
+    registros = unificarDepartamentos(lista.filter(r => r && r.derivado && !r.repetido_de));
     if(!registros.length){ avisar('Ese archivo no tiene resoluciones adentro. Acá solo entra el resultados.jsonl o la copia de respaldo (.json). Para cargar PDF hay que abrir el programa con 2_abrir.bat y entrar a http://localhost:3777.', true); return; }
     origenNombre = f.name;
     $('origen').innerHTML = `<span>Archivo <b>${esc(f.name)}</b></span><span><b>${registros.length}</b> resoluciones</span>`;
@@ -2270,7 +2270,24 @@ function recalcularLocal(){
 const cl = d => P.clasificar(d);
 // La localidad se calcula una vez por expediente: con la planilla son decenas de miles y se pide en cada dibujo.
 const LOCALIDAD = new WeakMap();
-const loc = d => { let v = LOCALIDAD.get(d); if(v === undefined){ v = (d.geo && (d.geo.localidad_catastro || d.geo.localidad)) ? P.normalizarTexto(d.geo.localidad_catastro || d.geo.localidad).replace(/ EST .*$/, '') : '(SIN LOCALIDAD)'; LOCALIDAD.set(d, v); } return v; };
+// Las abreviaturas comunes de los nombres de lugar, escritas enteras ("GRAL" → "GENERAL", "V CARLOS PAZ" → "VILLA CARLOS PAZ").
+const sinAbreviaturas = t => t.replace(/^(V|VA) /, 'VILLA ').replace(/\bGRAL\b/g, 'GENERAL').replace(/\bPTE\b/g, 'PRESIDENTE').replace(/\bSTA\b/g, 'SANTA')
+  .replace(/\bSTO\b/g, 'SANTO').replace(/\bCNEL\b/g, 'CORONEL').replace(/\bTTE\b/g, 'TENIENTE').replace(/\s+/g, ' ').trim();
+/**
+ * El mismo departamento llega escrito distinto según de dónde sale: la tabla de códigos dice "GRAL. SAN MARTÍN", la lista de
+ * localidades "GRAL SAN MARTÍN", y Catastro y las resoluciones lo escriben a su manera. Al cargar se lleva cada uno al nombre de
+ * la tabla, así el filtro, el mapa, el ranking y el Excel muestran uno solo.
+ */
+const DEP_CANON = new Map();
+function unificarDepartamentos(lista){
+  const oficiales = Object.values((window.TABLA_CODIGOS && window.TABLA_CODIGOS.departamentos) || {}), clave = n => sinAbreviaturas(P.normalizarTexto(n));
+  for(const r of lista){ const g = r && r.derivado && r.derivado.geo; if(!g || !g.dep_nombre) continue;
+    let c = DEP_CANON.get(g.dep_nombre);
+    if(c === undefined){ const k = clave(g.dep_nombre); c = oficiales.find(x => clave(x) === k) || g.dep_nombre; DEP_CANON.set(g.dep_nombre, c); }
+    g.dep_nombre = c; }
+  return lista;
+}
+const loc = d => { let v = LOCALIDAD.get(d); if(v === undefined){ v = (d.geo && (d.geo.localidad_catastro || d.geo.localidad)) ? sinAbreviaturas(P.normalizarTexto(d.geo.localidad_catastro || d.geo.localidad).replace(/ EST .*$/, '')) : '(SIN LOCALIDAD)'; LOCALIDAD.set(d, v); } return v; };
 const mz = d => { const c = d.geo && d.geo.catastro; return c && c.manzana ? `${c.circunscripcion}-${c.seccion}-${c.manzana}` : (d.geo && d.geo.manzana ? 'mz ' + d.geo.manzana : ''); };
 const dep = d => (d.geo && d.geo.dep_nombre) || '(SIN DEPARTAMENTO)';
 /** Sección catastral: es la división interna de la planta urbana, lo más parecido a "barrio" que da Catastro. */
@@ -4021,7 +4038,7 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&'
 // Va al final del script, después de que todas las funciones de pintado ya están definidas.
 if(!SERVIDOR && window.DEMO_DATOS){
   const info = window.DEMO_INFO || {};
-  registros = window.DEMO_DATOS.filter(r => r && r.derivado && !r.repetido_de);
+  registros = unificarDepartamentos(window.DEMO_DATOS.filter(r => r && r.derivado && !r.repetido_de));
   origenNombre = info.origen || 'demo';
   $('cargarTitulo').textContent = info.titulo || 'Demostración con datos de prueba';
   $('cargarSub').textContent = info.sub || 'Resoluciones de prueba armadas con la plantilla real. En la versión completa acá se tiran los PDF.';
